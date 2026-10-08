@@ -71,7 +71,7 @@ tADA with scaled amounts).
    (`POST /registry-entry`), reads each supplier's `api_base_url`, and sends
    the tender to a custom `POST /tender-invite` endpoint on our Supplier
    agents. MIP-003 `/start_job` is not used: calling it would make the Board a
-   paying buyer. GamingForum is invited like the other three; proactive
+   paying buyer. Each agent still exposes the MIP-003 routes on Vercel (ADR 0002, #37). GamingForum is invited like the other three; proactive
    discovery (GamingForum finds the Board itself) is pitch only.
 2. **Bidding.** Each Supplier agent decides whether to bid and locks the 0.2
    bid fee in escrow (Board is seller, never returned; 4 suppliers, 0.8 total).

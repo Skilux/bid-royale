@@ -1,6 +1,6 @@
 # Masumi escrow: end-to-end timing and what can be lowered
 
-For the current source, see [V2 on 0.29.0 (derived, not measured)](#v2-on-0290-derived-not-measured).
+For the current source, see [Measured on preprod](#measured-on-preprod-v2-0290) and [V2 on 0.29.0 (derived, not measured)](#v2-on-0290-derived-not-measured).
 
 Checked 2026-10-08 against what we actually run: Payment Service image
 `ghcr.io/masumi-network/masumi-payment-service:0.22.0` (read from `dist/index.js` in the
@@ -189,6 +189,25 @@ Two caveats:
 3. How does the 7 min + 10 min cooldown apply between lock, result, refund request and
    authorize?
 
+
+## Measured on preprod (V2, 0.29.0)
+
+First real escrows on our V2 source (`cmuzylds0000347p4qfsw0ed3`, cooldown 60 s),
+8 Oct 2026, through `app/lib/masumi` with wallet-scoped party keys. 5 tADA each,
+Consumer → TechBlog, minimum deadlines + 2 min margin. Times are UTC.
+
+| Step | Escrow 1 (A2 refund, no result) | Escrow 2 (release) |
+|---|---|---|
+| Lock requested (`/payment` + `/purchase`) | 20:31:45 | 20:32:28 |
+| `FundsLocked` (seen by seller) | 20:34:57 (**3.2 min**) | 20:35:11 (**2.7 min**) |
+| Result submitted → `ResultSubmitted` | — | 20:35:19 → 20:36:42 (**1.4 min**) |
+| Terminal | `RefundWithdrawn` 20:59:36 (**27.8 min** after lock request) | pending |
+
+- Agent registration (`POST /registry` → `RegistrationConfirmed`): **6.5 min**.
+- A2 works: the buyer's money came back with no seller signature and no refund
+  request, as #20 derived (submit deadline + 10 min). D10 can use A2 as the
+  fallback; the cooperative refund (request → authorize) is still to measure (#28).
+- One status read failed transiently (20:56 UTC); the next read succeeded.
 
 ## V2 on 0.29.0 (derived, not measured)
 

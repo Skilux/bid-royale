@@ -161,6 +161,7 @@ Done so far:
   deployed as Railway service at `https://techblog-agent-production.up.railway.app`.
   `/availability` and `/input_schema` answer publicly. Not registered yet
   (no `AGENT_IDENTIFIER`). Business logic is still the scaffold echo + HITL stub.
+  **Retired by ADR 0002** (seller agents live on Vercel); stop the service in #27.
 - **Local sandbox**: Docker Compose quickstart (`~/Documents/masumi-services-dev-quickstart`,
   still on 0.22.0, needs the same bump) with its own funded wallets. Not used for the demo.
 - Secrets live only in Railway variables, gitignored `.env` files and
@@ -180,7 +181,7 @@ Next: the work plan below.
 | L1 | **Run the money flow on a new `Web3CardanoV2` payment source** on our 0.29.0 node. The seeded V1 source stays as a fallback. Closes D9 by choice: V2. | V2 is Masumi's current default. Its fee must be 0 (V1 takes 5% per escrow, which breaks the spec ledger). V2 allows `authorize-refund` from any state, and its cooldown is configurable. | Lane-internal |
 | L2 | **Amounts are the spec × 10, in tADA.** Awards 70 / 60 / 70, bonds 17.5 / 15 / 17.5, bid fee 2, Short-of-promise forfeit 3.75 (11.25 back to the Supplier), Consumer net −108.75 tADA. tUSDM dropped. | `transfer-funds` has a 2 ADA minimum, and small escrows risk min-UTxO errors. tUSDM on Preprod is unverified. We hold 20,000 tADA. | **Danila**: changes the numbers in `app/lib/settlement/plan.js` and on the receipt |
 | L3 | **Settlement timing for the demo is decided after the measured run** (W4–W6). Warm run + attach, video time cut, or live wait. | The 41 min / 26 min floors come from code, not measurement. | Danila, once numbers exist |
-| L4 | **"Hall" topology: one node, one scoped key per party, suppliers live on Vercel (#12).** All wallets sit on our Railway node. The Board's settlement engine calls Masumi with each party's wallet-scoped `ReadAndPay` key. 4 suppliers + Board register via `POST /registry` with `apiBaseUrl` on Vercel. The Python `techblog-agent` is retired. | Supplier logic already lives in #8 / #12, the Python SDK hardcodes 24 h deadlines, and `/start_job` is unused. Fewer services to keep alive overnight. | Matches #12; tell Danila the Python agent is retired |
+| L4 | **"Hall" topology: one node, one scoped key per party, suppliers live on Vercel (#12).** All wallets sit on our Railway node. The Board's settlement engine calls Masumi with each party's wallet-scoped `ReadAndPay` key. 4 suppliers + Board register via `POST /registry` with `apiBaseUrl` on Vercel. The Python `techblog-agent` is retired. | Supplier logic already lives in #8 / #12, the Python SDK hardcodes 24 h deadlines, and `/start_job` is unused. Fewer services to keep alive overnight. | Decided by Vladimir, [ADR 0002](../adr/0002-seller-agents-on-vercel.md) |
 
 Honest limitations this adds: team-operated suppliers, operator-managed custody
 (the node admin can move every wallet), plain transfers trust the Board.

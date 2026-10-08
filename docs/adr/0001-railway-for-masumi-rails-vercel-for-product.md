@@ -1,6 +1,8 @@
 # 0001 — Railway hosts the Masumi rails; Vercel hosts the product
 
-- **Status:** Accepted — 2026-10-08, confirmed by Danila and Vladimir
+- **Status:** Accepted — 2026-10-08, confirmed by Danila and Vladimir. **Partly superseded
+  by [ADR 0002](0002-seller-agents-on-vercel.md)**: seller agents moved from Python SDK
+  services on Railway to Vercel.
 - **Supersedes:** the scaffold assumption "Masumi hosted preprod, no Docker/VPS needed"
   (`README.md` stack table, `docs/hosting.md`)
 
