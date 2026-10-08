@@ -57,11 +57,11 @@ No x402, Masumi-only, no second rail. If Masumi preprod is unreachable, the demo
 to the labelled simulated ledger + canned replay — both honest, both built
 in from hour 1.
 
-## ElevenLabs (optional)
+## ElevenLabs
 
 | Item | Detail |
 |---|---|
-| What | TTS narration for the 2-min video |
+| What | ElevenLabs voiceover, two voices (NeoRack agent and Tender Board), for the <90 s video; captions always on |
 | Rule | Pre-generate before Oct 8; never burn quota live; captions are the fallback |
 | Status | ☐ narration MP3s rendered and downloaded |
 

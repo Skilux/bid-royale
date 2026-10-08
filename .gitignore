@@ -11,3 +11,4 @@ out/
 # Python
 .venv/
 __pycache__/
+.vercel

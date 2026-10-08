@@ -1,0 +1,74 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Settlement beat and receipt: concept C v2 (issue #7)</title>
+<!-- Approved concept for S6 (#7). Colours and type are CSS variables on .s6, a stand-in for Direction A from #15. Swap the variables when DESIGN.md lands. Amounts come from app/data/seeds/board-run.worked-example.json. Clock times are examples. -->
+<style>
+:root{color-scheme:light dark}
+body{margin:0;padding:16px;background:light-dark(#f2f3f0,#0f110f)}
+.s6{max-width:760px;margin:0 auto;--paper:light-dark(#fafaf8,#161916);--ink:light-dark(#202a23,#edf2ed);--line:light-dark(#d9dfd9,#39433b);--soft:light-dark(#edf2ec,#242e26);--brand:light-dark(#24573c,#a1d9b4);--on-brand:light-dark(#fff,#16231a);--short:light-dark(#b9770e,#f0c36a);--short-bg:light-dark(#fbf1d9,#3a2f12);--gate:light-dark(#a3231f,#ff8a80);--gate-bg:light-dark(#fbe6e4,#3a1b1a);--real:light-dark(#0b5cad,#8cc4ff);--font:system-ui,sans-serif;font:15px/1.5 var(--font);color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:22px;overflow:hidden}
+.s6 *{box-sizing:border-box}.s6 h3{font-size:16px;font-weight:600;margin:0}.s6 p{margin:4px 0}
+.s6 .meta{font-size:12.5px;opacity:.75}
+.s6 .b{display:inline-block;font-size:10.5px;font-weight:600;letter-spacing:.04em;border:1px solid currentColor;border-radius:4px;padding:1px 5px;vertical-align:middle;margin-left:4px}.s6 .b.real{color:var(--real)}
+.s6 .top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px}
+.s6 button{font:inherit;cursor:pointer;color:var(--on-brand);background:var(--brand);border:0;padding:7px 12px;border-radius:7px}
+.s6 .step{display:grid;grid-template-columns:54px 22px minmax(0,1fr);gap:0 10px;opacity:1;transform:none;transition:opacity .5s,transform .5s}
+.s6 .step.hide{opacity:0;transform:translateY(10px)}
+.s6 .tm{font-size:12px;font-variant-numeric:tabular-nums;text-align:right;padding-top:11px;opacity:.75}
+.s6 .rail{position:relative}.s6 .rail::before{content:"";position:absolute;left:10px;top:0;bottom:0;width:2px;background:var(--line)}
+.s6 .step:first-of-type .rail::before{top:18px}.s6 .step.last .rail::before{bottom:calc(100% - 18px)}
+.s6 .dot{position:absolute;left:4px;top:13px;width:14px;height:14px;border-radius:50%;background:var(--brand);border:3px solid var(--paper);box-sizing:content-box;margin:-3px 0 0 -3px}
+.s6 .dot.mid{background:var(--short)}.s6 .dot.no{background:var(--gate)}.s6 .dot.cut{background:var(--paper);border-color:var(--line)}
+.s6 .body{padding-bottom:18px}
+.s6 .bub{background:var(--soft);border-radius:4px 14px 14px 14px;padding:12px 16px;font-size:16px}
+.s6 .tag{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:1px 9px;margin-right:6px;color:#fff}
+.s6 .tag.ok{background:var(--brand);color:var(--on-brand)}.s6 .tag.mid{background:#b9770e}.s6 .tag.no{background:var(--gate)}
+.s6 .mini{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:13.5px;font-variant-numeric:tabular-nums}
+.s6 .cutl{border:1px dashed var(--line);border-radius:999px;padding:3px 14px;font-size:12.5px;display:inline-block;margin-top:5px;opacity:.85}
+.s6 .gate{background:var(--gate-bg);border:2px solid var(--gate);border-radius:6px 18px 18px 18px;padding:20px 22px;font-size:20px;line-height:1.4}
+.s6 .gate .gauge{display:flex;align-items:center;gap:10px;margin:14px 0 4px;font-size:14px}
+.s6 .gate .gauge .bar{flex:1;height:10px;border-radius:5px;background:var(--paper);position:relative;border:1px solid var(--line)}
+.s6 .gate .gauge .bar i{position:absolute;top:-5px;bottom:-5px;width:2px;background:var(--ink)}
+.s6 .slip{margin-top:16px;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 18px;font-size:16px}
+.s6 .slip .r{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line);font-variant-numeric:tabular-nums;transition:.5s}
+.s6 .slip .r.hide{opacity:0;transform:translateY(8px)}
+.s6 .slip .tot{border:0;font-weight:700;font-size:32px;color:var(--gate);padding-top:12px;align-items:baseline}
+.s6 a.btn{display:block;margin-top:14px;text-align:center;background:var(--gate);color:#fff;font-weight:700;font-size:17px;text-decoration:none;border-radius:10px;padding:14px;transition:.5s}
+.s6 a.btn.hide{opacity:0;transform:translateY(8px)}
+.s6 .final{border:2px solid var(--ink);border-radius:6px 18px 18px 18px;padding:18px}
+.s6 .final .big{font-size:36px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+.s6 .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.s6 .lc{border:1px solid var(--line);border-left:6px solid var(--brand);border-radius:10px;padding:10px 12px;display:grid;grid-template-columns:34px 1fr;gap:2px 10px;align-items:center}
+.s6 .lc.mid{border-left-color:var(--short)}.s6 .lc.no{border-left-color:var(--gate);background:var(--gate-bg)}.s6 .lc.lost{opacity:.6;border-left-color:var(--line)}
+.s6 .lc .rk{font-size:26px;font-weight:700;grid-row:span 2}
+.s6 .lc .cps{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2}.s6 .lc .cps small{display:block;font-size:12px;font-weight:400;opacity:.75}
+.s6 .r2{display:flex;height:26px;border-radius:6px;overflow:hidden;color:#fff;font-size:12px;font-weight:600;margin:6px 0}.s6 .r2 span{display:flex;align-items:center;justify-content:center}
+.s6 .tally{margin-top:14px;font-size:12.5px;border-top:1px dashed var(--line);padding-top:8px}
+@media(max-width:560px){.s6 .cards{grid-template-columns:1fr}.s6 .step{grid-template-columns:40px 18px minmax(0,1fr)}.s6 .final .big{font-size:28px}}
+</style></head><body><div class="s6">
+<div class="top"><div><strong>Settlement, told by NeoRack's buying agent</strong><div class="meta">Concept C v2 · timeline rail, big Under-gate beat, leaderboard cards</div></div><button id="p">Replay</button></div>
+<div class="step"><div class="tm">21:04</div><div class="rail"><span class="dot"></span></div><div class="body"><div class="bub">The publishers have had their hour. I locked 20 tUSDM <span class="b real">REAL</span> in 3 escrows and asked the Board to check every signup.</div></div></div>
+<div class="step"><div class="tm"></div><div class="rail"><span class="dot cut"></span></div><div class="body"><span class="cutl">N min later · time cut, minutes from Masumi checkpoint 2</span></div></div>
+<div class="step"><div class="tm">22:09</div><div class="rail"><span class="dot"></span></div><div class="body"><div class="bub"><span class="tag ok">Pass</span><strong>TechBlog</strong> promised 7 signups per 1,000 and delivered 8. I paid the full 7 and returned its 1.75 deposit.<div class="mini"><span>Paid 7 <span class="b real">REAL</span></span><span>Deposit back 1.75 <span class="b real">REAL</span></span></div></div></div></div>
+<div class="step"><div class="tm">22:10</div><div class="rail"><span class="dot mid"></span></div><div class="body"><div class="bub"><span class="tag mid">Short of promise</span><strong>CodePodcast</strong> promised 8 and delivered 6. That clears the minimum of 5, so I paid the full 6. It loses 0.375 of its deposit.<div class="mini"><span>Paid 6 <span class="b real">REAL</span></span><span>Deposit back 1.125 <span class="b real">REAL</span></span><span>Penalty to me 0.375 <span class="b real">REAL</span></span></div></div></div></div>
+<div class="step" id="gs"><div class="tm" style="color:var(--gate);font-weight:700">22:12</div><div class="rail"><span class="dot no"></span></div><div class="body"><div class="gate"><span class="tag no">Under gate</span><strong>DevNewsletter</strong> promised 12 signups per 1,000. It delivered <strong>none</strong>. I do not pay for promises, so everything comes back to me.
+<div class="gauge"><span>0</span><div class="bar"><i style="left:41.6%"></i></div><span>12 promised · minimum 5</span></div>
+<div class="slip" id="slip"><div class="meta">REFUND SLIP · verdict signed first, then the money moved</div>
+<div class="r"><span>My 7 locked for DevNewsletter, returned</span><span>+7.00 <span class="b real">REAL</span></span></div>
+<div class="r"><span>Its 1.75 deposit, forfeited to me</span><span>+1.75 <span class="b real">REAL</span></span></div>
+<div class="r tot"><span>Back in my wallet</span><span><span id="cnt">8.75</span> tUSDM</span></div></div>
+<a class="btn" id="xb" href="#">Check the refund on the Cardano explorer ↗</a></div></div></div>
+<div class="step last"><div class="tm">22:14</div><div class="rail"><span class="dot"></span></div><div class="body"><div class="final"><div class="meta">FINAL RECEIPT</div><div class="big">I paid 10.875 tUSDM <span class="b real">REAL</span><br>for 14 verified signups.</div><p>About 0.78 per signup. Ranked by cost per signup:</p>
+<div class="cards">
+<div class="lc"><div class="rk">1</div><div><strong>TechBlog</strong> <span class="meta">· Pass</span></div><div class="cps">0.875<small>per signup · 8 signups</small></div></div>
+<div class="lc mid"><div class="rk">2</div><div><strong>CodePodcast</strong> <span class="meta">· Short of promise</span></div><div class="cps">0.9375<small>per signup · 6 signups</small></div></div>
+<div class="lc no"><div class="rk">3</div><div><strong>DevNewsletter</strong> <span class="meta">· Under gate</span></div><div class="cps" style="color:var(--gate)">Refunded<small>0 signups · 8.75 back <span class="b real">REAL</span></small></div></div>
+<div class="lc lost"><div class="rk">4</div><div><strong>GamingForum</strong> <span class="meta">· Lost bid</span></div><div class="cps">·<small>bid fee 0.2 <span class="b">SIMULATED</span></small></div></div></div>
+<p style="margin-top:14px"><strong>Next round, shown not executed:</strong> half to each publisher that delivered.</p><div class="r2"><span style="width:50%;background:#24573c">TechBlog 50%</span><span style="width:50%;background:#b9770e">CodePodcast 50%</span></div><div class="meta">DevNewsletter 0%</div>
+<div class="tally">6 escrows REAL on Cardano preprod. Bid fees and traffic SIMULATED. Suppliers are our own agents.</div></div></div></div>
+<div class="meta" style="margin-top:6px">Clock times are examples. Real ones come from the warm run's tx timestamps.</div>
+</div><script>
+const steps=[...document.querySelectorAll('.step')],rows=[...document.querySelectorAll('#slip .r')],xb=document.getElementById('xb'),cnt=document.getElementById('cnt');
+document.getElementById('p').onclick=()=>{steps.forEach(s=>s.classList.add('hide'));rows.forEach(r=>r.classList.add('hide'));xb.classList.add('hide');cnt.textContent='0.00';
+ const T=[300,1500,2500,3500,4500,13500];steps.forEach((s,i)=>setTimeout(()=>s.classList.remove('hide'),T[i]));
+ setTimeout(()=>rows[0].classList.remove('hide'),6000);setTimeout(()=>rows[1].classList.remove('hide'),7500);
+ setTimeout(()=>{rows[2].classList.remove('hide');const t0=performance.now();const f=n=>{const e=Math.min(1,(n-t0)/1500);cnt.textContent=(8.75*e).toFixed(2);if(e<1)requestAnimationFrame(f)};requestAnimationFrame(f)},9000);
+ setTimeout(()=>xb.classList.remove('hide'),11000)};
+</script></body></html>

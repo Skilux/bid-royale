@@ -79,7 +79,7 @@ you're off the rails.
 6. Supplier agents (4 bidders): TechBlog Pass, CodePodcast Short of promise,
    DevNewsletter Under gate (the rehearsed failure), GamingForum below the gate
 7. Settlement beat (3 verdict branches) + ROI leaderboard + receipt
-8. 2-min video cut
+8. <90 s video cut, with an ElevenLabs voiceover and always-on captions
 
 ## Code layout (agents: read before creating any file)
 
@@ -128,6 +128,24 @@ The Vercel project builds with **`app/` as its root directory**. Files outside
 - **Commits:** conventional commits (`feat(ui): …`, `fix(settlement): …`),
   push to `main` as you go — the repo is private for now (flip to public at
   code freeze) and commit history is evidence.
+
+## Deploying (manual, Danila triggers it)
+
+**Pushing to `main` does not deploy.** Vercel is on the Hobby plan, which blocks
+Git-triggered deploys when the commit author (`Skilux`) is not the account owner,
+so `app/vercel.json` turns Git deploys off. Production changes only when Danila
+triggers a deploy. Agents never deploy on their own.
+
+- After you push to `main`, tell Danila: "pushed `<sha>`, trigger a deploy."
+- Trigger: GitHub → Actions → `deploy` → Run workflow, or
+  `gh workflow run deploy.yml --repo Skilux/bid-royale`. The workflow deploys
+  production with a Vercel token, then checks `/api/health` for `ok: true`.
+- **Known problem (#18, #35):** GitHub Actions currently ends every run in
+  `startup_failure` on this account, so `deploy` does not run yet. Fallback,
+  from a machine logged in to Vercel as `dkosygincz-1148`: copy the repo to a
+  temp dir without `.git` (the CLI attaches the commit author and Vercel blocks
+  it), then `vercel deploy --prod --yes --cwd <copy>`.
+- After any deploy, quote the `/api/health` response. A green deploy is not proof.
 
 ## Checks before every commit (mandatory)
 
@@ -226,9 +244,9 @@ a merged violation is expensive.
 
 ## Never cut (in this order, cut top-down everything else)
 
-1. ElevenLabs voiceover → captions
+1. ElevenLabs voiceover (we use it for the video) → captions
 2. Bot-signal panel and round-2 on the receipt (dashboard polish)
 3. Multi-seller discovery → seeded registry (discovery UI stays)
 4. **Never cut:** real escrow + award and bond tx with explorer links
-   (including the Under-gate refund), <30s Wrapper UI run, badges, 2-min video,
+   (including the Under-gate refund), <30s Wrapper UI run, badges, <90 s video,
    README honest-limitations section.

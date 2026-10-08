@@ -1,0 +1,646 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Concept E · Money Flow walkthrough · Ad Slot Auction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f5f3ee; --card:#ffffff; --ink:#14130f; --ink-2:#4a4740; --ink-3:#8a867c; --line:#e2ded4; --line-2:#cfcabe;
+  --cobalt:#2b4dff; --cobalt-soft:rgba(43,77,255,.10);
+  --pass:#14935a; --short:#c98300; --under:#e0321c; --lost:#8a867c;
+  --ease:cubic-bezier(.22,1,.36,1);
+  --f-display:"Space Grotesk",system-ui,sans-serif; --f-body:Inter,system-ui,sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink);font:13px/1.45 var(--f-body);-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer;color:inherit}
+.num{font-variant-numeric:tabular-nums}
+.frame{width:min(1280px,100%);height:800px;margin:0 auto;display:grid;grid-template-rows:56px 1fr;overflow:hidden;border-bottom:1px solid var(--line);
+  background:radial-gradient(circle at 1px 1px,rgba(20,19,15,.07) 1px,transparent 0) 0 0/22px 22px,var(--paper)}
+
+/* top bar */
+.top{display:flex;align-items:center;gap:14px;padding:0 24px;border-bottom:1px solid var(--line);background:rgba(245,243,238,.85);backdrop-filter:blur(8px)}
+.logo{display:flex;align-items:center;gap:10px;font:700 17px var(--f-display);letter-spacing:-.01em;white-space:nowrap}
+.logo i{width:22px;height:22px;border-radius:6px;background:var(--ink);position:relative}
+.logo i::after{content:"";position:absolute;inset:6px;border-radius:50%;background:var(--cobalt);box-shadow:0 0 0 2px var(--ink)}
+.crumbs{color:var(--ink-3);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crumbs b{color:var(--ink);font-weight:600}
+.sp{flex:1}
+.toggle{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:500;color:var(--ink-2);user-select:none;cursor:pointer;white-space:nowrap}
+.toggle input{display:none}
+.toggle .sw{width:32px;height:18px;border-radius:999px;background:var(--line-2);position:relative;transition:background .2s}
+.toggle .sw::after{content:"";position:absolute;left:2px;top:2px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .25s var(--ease)}
+.toggle input:checked+.sw{background:var(--cobalt)}
+.toggle input:checked+.sw::after{transform:translateX(14px)}
+.seg{display:flex;border:1px solid var(--line-2);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:var(--card);padding:5px 9px;font-size:11.5px;font-weight:500;color:var(--ink-3)}
+.seg button.on{background:var(--ink);color:#fff}
+.btn{border:1px solid var(--line-2);background:var(--card);padding:7px 14px;border-radius:8px;font-weight:500;font-size:12px;transition:all .18s;white-space:nowrap}
+.btn:hover{border-color:var(--ink)}
+.btn.pri{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn.pri:hover{background:#2a2822}
+.btn:disabled{opacity:.35;cursor:default}
+
+.body{display:grid;grid-template-columns:780px 1fr;min-height:0}
+
+/* canvas */
+.canvas-wrap{position:relative;border-right:1px solid var(--line);overflow:hidden}
+.canvas{position:absolute;left:10px;top:40px;width:760px;height:640px;transform-origin:0 0}
+svg.edges{position:absolute;inset:0;overflow:visible}
+.edge{fill:none;stroke:var(--line-2);stroke-width:1.5;transition:stroke .4s,stroke-width .4s,opacity .4s}
+.edge.used{stroke:var(--cobalt);stroke-width:2}
+.edge.used.sim{stroke:var(--short)} .edge.used.sig{stroke:var(--ink-2)} .edge.used.hero{stroke:var(--under);stroke-width:3}
+.edge.live{stroke-dasharray:5 6;animation:march .7s linear infinite}
+@keyframes march{to{stroke-dashoffset:-22}}
+.hint{position:absolute;left:24px;bottom:16px;font:500 11px var(--f-mono);color:var(--ink-3)}
+
+.node{position:absolute;transform:translate(-50%,-50%);background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;cursor:pointer;
+  box-shadow:0 1px 0 rgba(20,19,15,.04),0 8px 24px -12px rgba(20,19,15,.18);transition:border-color .4s,box-shadow .5s var(--ease),opacity .5s}
+.node:hover{border-color:var(--ink-3)}
+.node .k{font:500 10px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);display:flex;gap:6px;align-items:center;justify-content:space-between}
+.node .n{font:600 15px/1.2 var(--f-display);letter-spacing:-.01em;margin-top:2px}
+.node .v{font:600 22px/1.1 var(--f-display);margin-top:4px;letter-spacing:-.02em}
+.node .s{font:500 10.5px var(--f-mono);color:var(--ink-2);margin-top:3px;min-height:14px}
+.node.focus{border-color:var(--cobalt);box-shadow:0 0 0 4px var(--cobalt-soft),0 8px 24px -12px rgba(20,19,15,.25)}
+.node.land{box-shadow:0 0 0 7px var(--cobalt-soft),0 8px 24px -12px rgba(20,19,15,.25)}
+.node.redp{border-color:var(--under);box-shadow:0 0 0 6px rgba(224,50,28,.12),0 12px 30px -10px rgba(224,50,28,.4)}
+.node.off{opacity:.45}
+.node.sel{outline:2px solid var(--ink);outline-offset:3px}
+.n-user{width:150px}.n-consumer{width:180px}.n-board{width:224px}.n-escrow{width:224px}.n-feed{width:180px}.sup{width:196px}
+.mods{display:flex;gap:4px;margin-top:6px}
+.mod{font:500 9.5px var(--f-mono);padding:2px 6px;border-radius:5px;border:1px solid var(--line);color:var(--ink-3);transition:all .3s}
+.mod.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.vault{display:flex;gap:5px;margin-top:6px}
+.slot{flex:1;height:8px;border-radius:2px;background:var(--line);transition:background .4s}
+.slot.real{background:var(--pass)} .slot.sim{background:repeating-linear-gradient(45deg,var(--short) 0 3px,#f1d9a8 3px 6px)}
+.state{display:inline-block;font:600 9.5px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:5px;background:var(--paper);color:var(--ink-2);border:1px solid var(--line);white-space:nowrap}
+.state.pass{background:rgba(20,147,90,.1);color:var(--pass);border-color:rgba(20,147,90,.35)}
+.state.short{background:rgba(201,131,0,.1);color:var(--short);border-color:rgba(201,131,0,.4)}
+.state.under{background:var(--under);color:#fff;border-color:var(--under)}
+.state.lost{background:transparent;color:var(--lost);text-decoration:line-through}
+.state.lock{background:var(--cobalt-soft);color:var(--cobalt);border-color:rgba(43,77,255,.35)}
+.bar2{height:5px;border-radius:3px;background:var(--line);margin-top:6px;position:relative}
+.bar2 i{position:absolute;inset:0 auto 0 0;border-radius:3px;background:var(--pass);width:0;transition:width .4s var(--ease)}
+.bar2 .pr{position:absolute;top:-3px;width:2px;height:11px;background:var(--ink)}
+.bar2 .gt{position:absolute;top:-3px;width:2px;height:11px;background:var(--under)}
+
+.tok{position:absolute;left:0;top:0;font:600 11.5px/1 var(--f-mono);padding:6px 9px;border-radius:999px;background:var(--cobalt);color:#fff;white-space:nowrap;opacity:0;
+  box-shadow:0 4px 14px -4px rgba(43,77,255,.7);pointer-events:none;z-index:4}
+.tok.sim{background:#fff;color:var(--short);border:1.5px dashed var(--short);box-shadow:none}
+.tok.sig{background:var(--ink);box-shadow:none;font-weight:500}
+.tok.su{width:11px;height:11px;padding:0;background:var(--pass);box-shadow:0 0 0 3px rgba(20,147,90,.18)}
+.tok.hero{background:var(--under);font-size:16px;padding:9px 15px;box-shadow:0 0 0 6px rgba(224,50,28,.15),0 10px 30px -6px rgba(224,50,28,.8)}
+.pin{position:absolute;left:0;top:0;font:600 10.5px/1 var(--f-mono);padding:4px 7px;border-radius:999px;background:var(--card);color:var(--cobalt);border:1px solid rgba(43,77,255,.45);white-space:nowrap;opacity:0;transition:opacity .4s;pointer-events:none;z-index:3}
+.pin.sim{color:var(--short);border:1px dashed var(--short)} .pin.sig{color:var(--ink-2);border-color:var(--line-2)} .pin.hero{color:#fff;background:var(--under);border-color:var(--under)}
+
+/* badges */
+.b{display:inline-flex;align-items:center;gap:4px;font:600 9px/1 var(--f-mono);letter-spacing:.1em;padding:3px 6px;border-radius:4px;text-transform:uppercase;white-space:nowrap}
+.b-real{background:rgba(20,147,90,.1);color:var(--pass);border:1px solid rgba(20,147,90,.35)}
+.b-sim{color:var(--short);border:1px dashed var(--short)}
+.b-pre{background:var(--ink);color:#fff}
+.b-msg{color:var(--ink-3);border:1px solid var(--line-2)}
+
+/* side panel */
+.side{position:relative;display:flex;flex-direction:column;min-height:0;background:rgba(255,255,255,.55)}
+.steps{display:flex;gap:3px;padding:18px 26px 0}
+.steps button{all:unset;cursor:pointer;flex:1;height:5px;border-radius:3px;background:var(--line);transition:background .3s}
+.steps button.done{background:var(--ink-2)} .steps button.on{background:var(--cobalt)}
+.steps button:hover{background:var(--ink-3)}
+.scroll{flex:1;min-height:0;overflow:auto;padding:12px 26px 12px;display:flex;flex-direction:column;gap:10px}
+.no{font:500 11px var(--f-mono);color:var(--cobalt);letter-spacing:.08em;text-transform:uppercase}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 18px;transition:opacity .25s,transform .45s var(--ease)}
+.card.swap{opacity:0;transform:translateY(8px)}
+.card h1{margin:4px 0 8px;font:700 26px/1.08 var(--f-display);letter-spacing:-.025em}
+.card .what{margin:0;color:var(--ink);font-size:13.5px}
+.card .why{margin:10px 0 0;padding:9px 11px;border-radius:9px;background:var(--paper);color:var(--ink-2);font-size:12.5px}
+.card .why b{color:var(--ink);font-weight:600}
+.sub{font:600 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin:14px 0 6px;display:flex;justify-content:space-between}
+.tx{display:grid;grid-template-columns:14px 1fr auto;gap:2px 8px;align-items:center;padding:7px 0;border-top:1px solid var(--line);font-size:12.5px;transition:opacity .3s}
+.tx .d{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--line-2);transition:all .3s}
+.tx .m{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.tx .m b{font-weight:600}
+.tx .amt{font:600 13px var(--f-mono);text-align:right;white-space:nowrap}
+.tx .meta{grid-column:2/4;font:500 10.5px var(--f-mono);color:var(--ink-3);display:flex;gap:8px;align-items:center}
+.tx .meta a{color:var(--cobalt);text-decoration:none}
+.tx.wait{opacity:.4}
+.tx.move .d{border-color:var(--cobalt);background:var(--cobalt);box-shadow:0 0 0 4px var(--cobalt-soft)}
+.tx.done .d{border-color:var(--pass);background:var(--pass)}
+.tx.hero.move .d{border-color:var(--under);background:var(--under);box-shadow:0 0 0 4px rgba(224,50,28,.15)}
+.rank{width:100%;border-collapse:collapse;font-size:12px}
+.rank td,.rank th{padding:6px 4px;border-top:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums}
+.rank th{font:500 10px var(--f-mono);color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;text-align:right}
+.rank td:first-child,.rank th:first-child{text-align:left}
+.rank tr.out td{color:var(--lost)}
+.cnt{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.cnt div{border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.cnt span{display:block;font:500 10px var(--f-mono);color:var(--ink-3);text-transform:uppercase}
+.cnt b{font:700 24px/1.1 var(--f-display)}
+.cnt small{display:block;font:500 10.5px var(--f-mono);color:var(--ink-3)}
+.cnt .zero b{color:var(--under)}
+.formula{font:500 12px var(--f-mono);background:var(--paper);border-radius:8px;padding:8px 10px;margin-top:8px}
+
+.hold{position:sticky;bottom:0;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 -10px 20px -12px rgba(20,19,15,.18)}
+.hold .hd{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-bottom:1px solid var(--line);font:600 12px var(--f-display)}
+.hold .grid{display:grid;grid-template-columns:repeat(4,1fr)}
+.row{display:flex;flex-direction:column;gap:1px;padding:6px 10px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);font:500 10px var(--f-mono);color:var(--ink-3);cursor:pointer;transition:background .5s;min-width:0}
+.row>span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row:nth-child(4n){border-right:0}
+.row:nth-last-child(-n+4){border-bottom:0}
+.row:hover{background:var(--paper)}
+.row .a{font:600 13px var(--f-mono);color:var(--ink)}
+.row.flash{background:var(--cobalt-soft)}
+.row.neg .a{color:var(--under)} .row.pos .a{color:var(--pass)}
+
+.ctrl{display:flex;align-items:center;gap:8px;padding:12px 26px 16px;border-top:1px solid var(--line);background:var(--card)}
+.ctrl .lbl{font:500 11px var(--f-mono);color:var(--ink-3)}
+.ctrl .btn.pri{min-width:132px;position:relative;overflow:hidden}
+.ctrl .btn.pri i{position:absolute;left:0;bottom:0;height:3px;background:var(--cobalt);width:0}
+
+/* breakdown / receipt */
+.bd{position:absolute;inset:0 0 69px 0;background:var(--paper);display:flex;flex-direction:column;opacity:0;transform:translateX(24px);pointer-events:none;transition:opacity .35s,transform .5s var(--ease);z-index:5}
+.bd.show{opacity:1;transform:none;pointer-events:auto}
+.bd .top2{display:flex;justify-content:space-between;align-items:center;padding:16px 26px 0}
+.bd .tabs{display:flex;flex-wrap:wrap;gap:5px;padding:12px 26px 0}
+.bd .tabs button{border:1px solid var(--line-2);background:var(--card);border-radius:999px;padding:5px 10px;font-size:11.5px;font-weight:500}
+.bd .tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.bd .body2{flex:1;overflow:auto;padding:14px 26px 18px;display:flex;flex-direction:column;gap:12px}
+.bd .body2>*{flex-shrink:0}
+.hero2{background:var(--ink);color:#fff;border-radius:14px;padding:18px 20px}
+.hero2 .role{font:500 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:#a9a59b}
+.hero2 .net{font:700 56px/1 var(--f-display);letter-spacing:-.04em;margin-top:6px}
+.hero2 .net small{font:500 15px var(--f-mono);color:#a9a59b;letter-spacing:0;margin-left:6px}
+.hero2 .ln{font:500 15px var(--f-display);color:#c9d2ff;margin-top:6px}
+.hero2 .facts{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.hero2 .facts span{font:500 10.5px var(--f-mono);background:#25231e;border-radius:6px;padding:4px 7px;color:#d9d5cb}
+.lines{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.lines table{width:100%;border-collapse:collapse;font-size:12px}
+.lines th{font:500 10px var(--f-mono);color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+.lines td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.lines td.s{font:500 10.5px var(--f-mono);color:var(--ink-3);white-space:nowrap}
+.lines td.amt,.lines th.amt{text-align:right;font:600 12px var(--f-mono);white-space:nowrap}
+.lines td.amt.p{color:var(--pass)} .lines td.amt.m{color:var(--under)}
+.lines td .cp{display:block;font:500 10.5px var(--f-mono);color:var(--ink-3)}
+.lines td .cp a{color:var(--cobalt);text-decoration:none}
+.lines tr.tot td{font-weight:600;border-bottom:0;background:var(--paper)}
+.empty{padding:14px;color:var(--ink-3);font-size:12px}
+.r2{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:12px}
+.r2 .bar{display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--line);margin:8px 0 4px}
+.tag{font:700 22px/1.15 var(--f-display);letter-spacing:-.02em;margin-top:2px}
+.tag em{font-style:normal;color:var(--cobalt)}
+
+/* tokens strip */
+.tokens{max-width:1280px;margin:0 auto;padding:48px 24px 80px;display:grid;grid-template-columns:repeat(12,1fr);gap:20px}
+.tokens h2{grid-column:1/-1;margin:0;font:700 40px/1 var(--f-display);letter-spacing:-.03em}
+.tokens h2 span{color:var(--cobalt)}
+.tokens .intro{grid-column:1/-1;margin:-6px 0 0;color:var(--ink-2);max-width:780px;font-size:14px}
+.tk{grid-column:span 6;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+.tk.w{grid-column:1/-1}
+.tk h3{margin:0 0 12px;font:600 13px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.swa{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.swa div{font:500 10.5px var(--f-mono);color:var(--ink-3)}
+.swa i{display:block;height:56px;border-radius:10px;border:1px solid var(--line);margin-bottom:6px}
+.swa b{display:block;color:var(--ink);font-weight:600}
+.t1s{font:700 44px/1 var(--f-display);letter-spacing:-.04em}
+.t2s{font:500 15px var(--f-body);color:var(--ink-2)}
+.t3s{font:500 13px var(--f-mono)}
+.capt{font:500 10px var(--f-mono);letter-spacing:.08em;color:var(--ink-3);text-transform:uppercase;margin:10px 0 2px}
+table.m{width:100%;border-collapse:collapse;font-size:12px}
+table.m td{padding:7px 0;border-bottom:1px solid var(--line);color:var(--ink-2)}
+table.m td:first-child{color:var(--ink);font-weight:600;width:32%}
+.chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.pr ol{margin:0;padding-left:18px;color:var(--ink-2);columns:2;column-gap:36px}
+.pr li{margin-bottom:8px;break-inside:avoid}
+.pr b{color:var(--ink)}
+
+@media (max-width:1100px){
+  .frame{height:auto}
+  .body{grid-template-columns:1fr}
+  .canvas-wrap{height:calc(700px * var(--s,1));border-right:0;border-bottom:1px solid var(--line)}
+  .side{min-height:720px}
+  .crumbs{display:none}
+  .tk{grid-column:1/-1}
+  .swa{grid-template-columns:repeat(3,1fr)}
+  .pr ol{columns:1}
+}
+@media (max-width:640px){.seg{display:none}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div class="frame">
+  <header class="top">
+    <div class="logo"><i></i>Ad Slot Auction</div>
+    <div class="crumbs">Tender <b>T-0001</b> · NeoRack · Masumi escrow · Cardano preprod · tUSDM</div>
+    <div class="sp"></div>
+    <div class="seg" title="Token travel speed"><button data-sp="0.6">Slow</button><button data-sp="1" class="on">Normal</button><button data-sp="1.6">Fast</button></div>
+    <label class="toggle"><input type="checkbox" id="auto"><span class="sw"></span>Autoplay</label>
+    <button class="btn" id="quick" title="Judge mode: whole run in under 30 s">▶ 30 s run</button>
+    <span class="b b-pre" title="Concept: the live build shows LIVE or PRE-RECORDED">PRE-RECORDED</span>
+  </header>
+  <div class="body">
+    <div class="canvas-wrap" id="wrap">
+      <div class="canvas" id="canvas">
+        <svg class="edges" id="edges" viewBox="0 0 760 640" width="760" height="640"></svg>
+        <div id="nodes"></div>
+        <div id="toks"></div>
+      </div>
+      <div class="hint">Click any agent to see its ledger · ← → to step</div>
+    </div>
+    <aside class="side" id="side">
+      <div class="steps" id="steps"></div>
+      <div class="scroll">
+        <div class="card" id="card"></div>
+        <div class="hold">
+          <div class="hd"><span>Who holds what · tUSDM net</span><span class="b b-real">REAL ledger</span></div>
+          <div class="grid" id="rows"></div>
+        </div>
+      </div>
+      <div class="ctrl">
+        <button class="btn" id="back">← Back</button>
+        <button class="btn" id="again">Replay step</button>
+        <span class="sp"></span>
+        <span class="lbl" id="cnt"></span>
+        <button class="btn pri" id="next"><span id="nextl">Next step →</span><i id="nexti"></i></button>
+      </div>
+      <div class="bd" id="bd">
+        <div class="top2"><span class="no" id="bdtitle">Receipt</span><button class="btn" id="bdclose">Close</button></div>
+        <div class="tabs" id="tabs"></div>
+        <div class="body2" id="bdbody"></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<section class="tokens">
+  <h2>Direction E · <span>Money flow walkthrough</span></h2>
+  <p class="intro">The system diagram, alive, told as a story in 12 steps. The viewer moves at their own pace: each step moves its money along the edges, then holds still with a card that says what happened, why it matters and which transactions ran. The last step is the receipt, with a ledger for every agent. Autoplay is optional, for the video.</p>
+  <div class="tk w">
+    <h3>Palette · paper, ink, one cobalt, 3 verdict colors</h3>
+    <div class="swa">
+      <div><i style="background:#f5f3ee"></i><b>Paper #f5f3ee</b>Background</div>
+      <div><i style="background:#ffffff"></i><b>Card #ffffff</b>Nodes, panels</div>
+      <div><i style="background:#14130f"></i><b>Ink #14130f</b>Text, receipt hero</div>
+      <div><i style="background:#2b4dff"></i><b>Cobalt #2b4dff</b>Money in motion, current step</div>
+      <div><i style="background:#e2ded4"></i><b>Line #e2ded4</b>Edges, hairlines</div>
+      <div><i style="background:#14935a"></i><b>Pass #14935a</b>Signups, Pass, REAL, money in</div>
+      <div><i style="background:#c98300"></i><b>Short #c98300</b>Short of promise, SIMULATED</div>
+      <div><i style="background:#e0321c"></i><b>Under #e0321c</b>Under gate, refund, money out</div>
+      <div><i style="background:#8a867c"></i><b>Lost #8a867c</b>Lost bid, muted text</div>
+      <div><i style="background:#4a4740"></i><b>Ink-2 #4a4740</b>Secondary text, messages</div>
+    </div>
+  </div>
+  <div class="tk">
+    <h3>Type</h3>
+    <div class="capt">Display · Space Grotesk 700, tight tracking</div><div class="t1s">Who holds what</div>
+    <div class="capt">Body · Inter 400/500</div><div class="t2s">The Board signs one verdict per supplier.</div>
+    <div class="capt">Data · IBM Plex Mono, tabular</div><div class="t3s">−10.875 tUSDM · tx 8f3a…c21e</div>
+  </div>
+  <div class="tk">
+    <h3>Motion</h3>
+    <table class="m">
+      <tr><td>Pacing</td><td>Manual by default: Next, Back, ← →, step bar. Autoplay is a toggle.</td></tr>
+      <tr><td>Token travel</td><td>1.8 s per edge at Normal, staggered inside a step</td></tr>
+      <tr><td>After landing</td><td>Edge stays colored and the amount pins on it, so each step ends as a still</td></tr>
+      <tr><td>Autoplay</td><td>Advances 5 s after the last token lands, progress shown on Next</td></tr>
+      <tr><td>Hero refund</td><td>2.8 s, red edge and token, Consumer node glows</td></tr>
+      <tr><td>Ease</td><td>cubic in-out for tokens, cubic-bezier(.22, 1, .36, 1) for UI</td></tr>
+    </table>
+  </div>
+  <div class="tk">
+    <h3>Badges</h3>
+    <div class="chips"><span class="b b-real">REAL</span> preprod tx + link <span class="b b-sim">SIMULATED</span> no funds moved <span class="b b-pre">PRE-RECORDED</span> canned replay <span class="b b-msg">Message</span> no money</div>
+    <h3 style="margin-top:16px">Token kinds</h3>
+    <div class="chips"><span class="tok" style="position:static;opacity:1">7 award</span><span class="tok sim" style="position:static;opacity:1">0.2 fee</span><span class="tok sig" style="position:static;opacity:1">commit 3f9a…</span><span class="tok su" style="position:static;opacity:1"></span><span class="tok hero" style="position:static;opacity:1">7 refund</span></div>
+  </div>
+  <div class="tk">
+    <h3>Verdict states</h3>
+    <div class="chips"><span class="state pass">Pass</span><span class="state short">Short of promise</span><span class="state under">Under gate</span><span class="state lost">Lost bid</span><span class="state lock">Escrowed</span></div>
+  </div>
+  <div class="tk w pr">
+    <h3>Principles</h3>
+    <ol>
+      <li><b>One step, one idea.</b> Each step moves only its own money, then stops. The card explains it in two sentences.</li>
+      <li><b>Every token has a payer, a payee and a badge.</b> Cobalt is REAL, amber dashed is SIMULATED, ink is a message with no money.</li>
+      <li><b>The ledger answers "who holds what".</b> Balances tween as tokens land. Any agent opens its own ledger.</li>
+      <li><b>One red path.</b> Only the Under-gate refund turns an edge red.</li>
+      <li><b>The diagram is the UI, the slide and the video.</b> Draw it once.</li>
+    </ol>
+  </div>
+</section>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+  const ease = (x) => (x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+  const hex = (seed) => { let x = (seed * 2654435761) >>> 0 || 1, s = ""; for (let i = 0; i < 64; i++) { x ^= x << 13; x >>>= 0; x ^= x >>> 17; x ^= x << 5; x >>>= 0; s += (x & 15).toString(16); } return s; };
+  const short = (h) => h.slice(0, 4) + "…" + h.slice(-4);
+  const sgn = (v) => (v < -0.0005 ? "−" : v > 0.0005 ? "+" : "") + Math.abs(v).toFixed(3);
+  const txUrl = (h) => "https://preprod.cardanoscan.io/transaction/" + h;
+  const BADGE = { real: '<span class="b b-real">REAL</span>', sim: '<span class="b b-sim">SIMULATED</span>', msg: '<span class="b b-msg">Message</span>' };
+
+  // ---------- graph ----------
+  const N = {
+    feed: { x: 112, y: 56, name: "NeoRack signup feed" },
+    user: { x: 112, y: 208, name: "User NeoRack" },
+    consumer: { x: 112, y: 372, name: "NeoRack Consumer" },
+    board: { x: 385, y: 160, name: "Tender Board" },
+    escrow: { x: 385, y: 500, name: "Masumi escrow" },
+    tb: { x: 655, y: 80, name: "TechBlog", promised: 7, delivered: 8, impr: 1000, price: 7, pps: "1.00" },
+    cp: { x: 655, y: 236, name: "CodePodcast", promised: 8, delivered: 6, impr: 1000, price: 6, pps: "0.75" },
+    dn: { x: 655, y: 392, name: "DevNewsletter", promised: 12, delivered: 0, impr: 1500, price: 7, pps: "0.39" },
+    gf: { x: 655, y: 548, name: "GamingForum", promised: 4, impr: 1000, price: 3, pps: "0.75" },
+  };
+  const SUP = ["tb", "cp", "dn", "gf"];
+  const E = {};
+  const ek = (a, b) => [a, b].sort().join("-");
+  function addEdge(a, b) {
+    const A = N[a], B = N[b], dx = B.x - A.x, dy = B.y - A.y;
+    const d = Math.abs(dx) > Math.abs(dy)
+      ? `M${A.x} ${A.y} C${A.x + dx * .5} ${A.y},${B.x - dx * .5} ${B.y},${B.x} ${B.y}`
+      : `M${A.x} ${A.y} C${A.x} ${A.y + dy * .5},${B.x} ${B.y - dy * .5},${B.x} ${B.y}`;
+    const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    p.setAttribute("d", d); p.setAttribute("class", "edge"); $("#edges").appendChild(p);
+    E[ek(a, b)] = { el: p, a };
+  }
+  addEdge("feed", "board"); addEdge("user", "consumer"); addEdge("consumer", "board"); addEdge("consumer", "escrow"); addEdge("board", "escrow");
+  SUP.forEach((s) => { addEdge("board", s); addEdge(s, "escrow"); });
+  Object.values(E).forEach((e) => (e.len = e.el.getTotalLength()));
+
+  $("#nodes").innerHTML =
+    `<div class="node n-feed" data-p="feed" style="left:${N.feed.x}px;top:${N.feed.y}px"><div class="k">Shop events <span class="b b-sim">SIM</span></div><div class="n">NeoRack signup feed</div><div class="s" id="sd-feed">signed by shop key</div></div>` +
+    `<div class="node n-user" data-p="user" style="left:${N.user.x}px;top:${N.user.y}px"><div class="k">Human</div><div class="n">User NeoRack</div><div class="s">GPU neocloud</div></div>` +
+    `<div class="node n-consumer" data-p="consumer" style="left:${N.consumer.x}px;top:${N.consumer.y}px"><div class="k">Consumer agent</div><div class="n">NeoRack</div><div class="v num" id="v-consumer">0.000</div><div class="s">net tUSDM</div></div>` +
+    `<div class="node n-board" data-p="board" style="left:${N.board.x}px;top:${N.board.y}px"><div class="k">Our service <span>T-0001</span></div><div class="n">Tender Board</div><div class="mods"><span class="mod" id="m-auc">Auction</span><span class="mod" id="m-ver">Verifier</span><span class="mod" id="m-set">Settlement</span></div><div class="s" id="sd-board">holds 0.000</div></div>` +
+    `<div class="node n-escrow" data-p="escrow" style="left:${N.escrow.x}px;top:${N.escrow.y}px"><div class="k">Masumi rails <span>preprod</span></div><div class="n">Escrow contract</div><div class="v num" id="v-escrow">0.000</div><div class="vault" id="vault">${Array.from({ length: 10 }, (_, i) => `<span class="slot" data-i="${i}"></span>`).join("")}</div><div class="s" id="sd-escrow">0 REAL · 0 SIMULATED of 10</div></div>` +
+    SUP.map((s) => { const n = N[s]; return `<div class="node sup" data-p="${s}" style="left:${n.x}px;top:${n.y}px"><div class="k">Supplier <span class="state" id="st-${s}">idle</span></div><div class="n">${n.name}</div><div class="s" id="sd-${s}">—</div>${s !== "gf" ? `<div class="bar2"><i id="sb-${s}"></i><span class="gt" style="left:${5 / 14 * 100}%"></span><span class="pr" style="left:${n.promised / 14 * 100}%"></span></div>` : ""}</div>`; }).join("");
+
+  // ---------- story ----------
+  const T = (a, b) => hex(a * 97 + b);
+  let txn = 0;
+  const F = (from, to, label, kind, at, o = {}) => ({ from, to, label, kind, at, dur: kind === "hero" ? 2.8 : kind === "su" ? 1.1 : 1.8, fx: {}, ...o, id: txn++ });
+  const pay = (from, to, amt, label, at, desc, o = {}) => F(from, to, label, o.kind || "money", at, { amt, desc, badge: o.badge || "real", tx: o.badge === "sim" ? null : T(txn, 3), fx: { [from]: -amt, [to]: amt }, ...o });
+  const msg = (from, to, label, at, desc) => F(from, to, label, "sig", at, { desc, badge: "msg" });
+  const W = [["dn", 7, 1.75], ["cp", 6, 1.5], ["tb", 7, 1.75]];
+
+  const STEPS = [
+    { k: "Brief", title: "A human sets the goal", what: "User NeoRack, a GPU neocloud, tells its Consumer agent: “Budget 20 tUSDM, technical users, pay per verified signup.”",
+      why: "<b>The human sets an outcome, not a media plan.</b> The agent does the buying.", flows: [msg("user", "consumer", "brief · 20 tUSDM", .3, "Brief to the Consumer agent")] },
+    { k: "Tender", title: "The tender is published", what: "The Consumer agent publishes tender T-0001 to the Tender Board. Gate: 5 verified signups per 1,000 impressions. Bond: 25% of the award. Bid fee: 0.2.",
+      why: "<b>The rules are fixed before anyone bids.</b> Nobody negotiates after the results are in.", flows: [msg("consumer", "board", "tender T-0001", .3, "Tender T-0001 published")] },
+    { k: "Invite", title: "Suppliers are invited", what: "The Board looks up Supplier agents in the Masumi registry and sends the tender to 4 publishers: TechBlog, CodePodcast, DevNewsletter and GamingForum.",
+      why: "<b>Agents find each other through the registry,</b> not through a sales team.", flows: SUP.map((s, i) => msg("board", s, "invite", .3 + i * .6, `Invite to ${N[s].name}`)) },
+    { k: "Sealed bids", title: "Four sealed bids", what: "Each supplier sends only a SHA-256 hash of its bid: price, impressions, promised signups and a secret salt. Each also pays a 0.2 bid fee.",
+      why: "<b>Nobody, the Board included, can see or change a bid before the close.</b> The fee keeps spam bids out.",
+      flows: SUP.flatMap((s, i) => [msg(s, "board", "commit " + T(i, 9).slice(0, 4) + "…", .3 + i * 1.3, `Commit ${short(T(i, 9))} from ${N[s].name}`),
+        pay(s, "board", .2, "0.2 fee", .8 + i * 1.3, `Bid fee from ${N[s].name}`, { kind: "sim", badge: "sim", slot: 6 + i })]) },
+    { k: "Reveal", title: "Reveal, rank, fill the budget", what: "After the close, each supplier reveals its bid and salt. The Board recomputes every hash and all four match. Bids are ranked by price per promised signup, cheapest first, until 20 tUSDM is spent.",
+      why: "<b>GamingForum promised 4 signups per 1,000, below the gate of 5.</b> It is a Lost bid and loses only its 0.2 fee.",
+      flows: SUP.map((s, i) => msg(s, "board", "reveal ✓", .3 + i * .6, `${N[s].name} revealed, hash match`)), panel: "rank" },
+    { k: "Awards", title: "Awards locked in escrow", what: "The Consumer locks each winner's award in Masumi escrow: 7 for DevNewsletter, 6 for CodePodcast, 7 for TechBlog. The supplier is the seller on each escrow.",
+      why: "<b>The money exists before the work starts.</b> Suppliers know they get paid if they deliver.",
+      flows: W.map(([s, a], i) => pay("consumer", "escrow", a, `${a} award`, .3 + i * 1.5, `Award for ${N[s].name}`, { slot: i, for: s })) },
+    { k: "Bonds", title: "Winners post a bond", what: "Each winner locks 25% of its award as a performance bond, with the Board as seller: DevNewsletter 1.75, CodePodcast 1.5, TechBlog 1.75.",
+      why: "<b>Over-promising now costs money.</b> A supplier that misses its promise loses part or all of its bond.",
+      flows: W.map(([s, , b], i) => pay(s, "escrow", b, `${b} bond`, .3 + i * 1.5, `Bond from ${N[s].name}`, { slot: 3 + i })) },
+    { k: "Delivery", title: "Only verified signups count", what: "Suppliers serve impressions. The NeoRack shop emits a signed event for each signup. The Board's verifier checks the signature, the attribution and the time window.",
+      why: "<b>Impressions alone pay nothing.</b> DevNewsletter served 1,500 impressions and got 0 verified signups.",
+      flows: [...Array.from({ length: 8 }, (_, k) => F("feed", "board", "", "su", .3 + k * .62, { su: "tb" })), ...Array.from({ length: 6 }, (_, k) => F("feed", "board", "", "su", .55 + k * .8, { su: "cp" }))], panel: "count" },
+    { k: "Pass", title: "TechBlog: Pass", what: "TechBlog promised 7 signups per 1,000 and delivered 8. The Board signs a Pass verdict. TechBlog withdraws its full award, and the Board releases its bond.",
+      why: "<b>Delivered at or above the promise means full pay and the bond back.</b>",
+      flows: [pay("escrow", "tb", 7, "7 award", .3, "Award paid to TechBlog"), pay("escrow", "tb", 1.75, "1.75 bond back", 1.6, "Bond returned to TechBlog")] },
+    { k: "Short", title: "CodePodcast: Short of promise", what: "CodePodcast promised 8 and delivered 6, above the gate of 5. It keeps the full award of 6 but loses part of its bond. Escrows cannot split, so the Board withdraws the bond, returns the rest and forwards the forfeit.",
+      why: "<b>The penalty is proportional to the miss.</b>", panel: "forfeit",
+      flows: [pay("escrow", "cp", 6, "6 award", .3, "Award paid to CodePodcast"), pay("escrow", "board", 1.5, "1.5 bond", 1.4, "Bond withdrawn by the Board"),
+        pay("board", "cp", 1.125, "1.125 back", 3.4, "Bond remainder to CodePodcast"), pay("board", "consumer", .375, "0.375 forfeit", 3.9, "Forfeit forwarded to the Consumer")] },
+    { k: "Under gate", title: "DevNewsletter: Under gate", what: "DevNewsletter promised 12 signups per 1,000 and delivered 0. That is below the gate, so the Consumer reclaims the award of 7, and the full bond of 1.75 is forfeited to the Consumer.",
+      why: "<b>This is the whole point:</b> the advertiser pays nothing for impressions that brought no customers, and the over-promiser pays for the miss.",
+      flows: [pay("escrow", "consumer", 7, "7 refund", .3, "Award refunded to the Consumer", { kind: "hero" }), pay("escrow", "board", 1.75, "1.75 bond", 2.0, "Bond withdrawn by the Board"),
+        pay("board", "consumer", 1.75, "1.75 forfeit", 3.9, "Full bond forwarded to the Consumer")] },
+    { k: "Receipt", title: "The receipt", what: "The Consumer spent 10.875 tUSDM net and got 14 verified signups, about 0.78 per signup.", why: "<b>Don't pay for impressions. Pay for outcomes.</b>", flows: [], receipt: true },
+  ];
+  STEPS.forEach((s, i) => { s.flows.forEach((f) => (f.step = i)); s.end = s.flows.reduce((m, f) => Math.max(m, f.at + f.dur), 0); });
+  const ALL = STEPS.flatMap((s) => s.flows);
+
+  // tokens + pins
+  const layer = $("#toks");
+  ALL.forEach((f) => {
+    f.edge = E[ek(f.from, f.to)]; f.rev = f.edge.a !== f.from;
+    f.tok = document.createElement("div"); f.tok.className = "tok " + (f.kind === "money" ? "" : f.kind); f.tok.textContent = f.label; layer.appendChild(f.tok);
+    if (f.kind !== "su") { f.pin = document.createElement("div"); f.pin.className = "pin " + (f.kind === "money" ? "" : f.kind); f.pin.textContent = f.label; layer.appendChild(f.pin); }
+  });
+  STEPS.forEach((s) => { const seen = {}; s.flows.forEach((f) => { const k = ek(f.from, f.to); f.stack = seen[k] = (seen[k] ?? -1) + 1; }); });
+
+  // ledger rows
+  const PARTIES = [["consumer", "Consumer"], ["escrow", "Masumi escrow"], ["board", "Tender Board"], ["tb", "TechBlog"], ["cp", "CodePodcast"], ["dn", "DevNewsletter"], ["gf", "GamingForum"]];
+  $("#rows").innerHTML = PARTIES.map(([k, n]) => `<div class="row" data-p="${k}" id="r-${k}"><span>${n}</span><span class="a num" id="ra-${k}">0.000</span></div>`).join("") + `<div class="row" style="cursor:default"><span>Sum of all</span><span class="a num" style="color:var(--ink-3)">0.000</span></div>`;
+  const disp = Object.fromEntries(PARTIES.map(([k]) => [k, 0])), prevT = { ...disp };
+
+  $("#steps").innerHTML = STEPS.map((s, i) => `<button data-i="${i}" title="${i + 1}. ${s.k}"></button>`).join("");
+  const stepBtns = [...document.querySelectorAll("#steps button")];
+
+  // ---------- state ----------
+  let cur = 0, lt = 0, speed = 1, auto = false, sel = null, cardKey = "", bdTick = -1, READ = 5;
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const arrived = (f) => f.step < cur || (f.step === cur && lt >= f.at + f.dur);
+  const moving = (f) => f.step === cur && lt >= f.at && lt < f.at + f.dur;
+
+  function go(i) {
+    cur = clamp(i, 0, STEPS.length - 1); lt = reduce ? STEPS[cur].end + .01 : 0;
+    cardKey = ""; renderCard(true);
+    stepBtns.forEach((b, j) => { b.classList.toggle("on", j === cur); b.classList.toggle("done", j < cur); });
+    $("#back").disabled = cur === 0; $("#nextl").textContent = cur === STEPS.length - 1 ? "Start over ↺" : "Next step →";
+    $("#cnt").textContent = `${cur + 1} / ${STEPS.length}`;
+    if (STEPS[cur].receipt) openBd(sel || "consumer"); else closeBd();
+    try { history.replaceState(null, "", "#step=" + (cur + 1)); } catch (e) {}
+  }
+  function balances() {
+    const b = Object.fromEntries(PARTIES.map(([k]) => [k, 0]));
+    ALL.forEach((f) => { if (arrived(f)) Object.entries(f.fx).forEach(([k, v]) => (b[k] += v)); });
+    return b;
+  }
+
+  // ---------- card ----------
+  const amtTxt = (a) => (Number.isInteger(a) ? String(a) : String(+a.toFixed(3)));
+  function txRow(f) {
+    const st = arrived(f) ? "done" : moving(f) ? "move" : "wait";
+    return `<div class="tx ${st} ${f.kind}"><span class="d"></span><span class="m"><b>${N[f.from].name}</b> → <b>${N[f.to].name}</b></span><span class="amt">${f.amt != null ? amtTxt(f.amt) + " tUSDM" : ""}</span>
+      <span class="meta">${f.desc} ${BADGE[f.badge] || ""} ${f.tx ? `<a href="${txUrl(f.tx)}" target="_blank" rel="noopener">tx ${short(f.tx)} ↗</a>` : ""}</span></div>`;
+  }
+  function panelHtml(s) {
+    if (s.panel === "rank") {
+      const rows = [["dn", 1500, 7, 12, "0.39", "Win · total 7"], ["cp", 1000, 6, 8, "0.75", "Win · total 13"], ["tb", 1000, 7, 7, "1.00", "Win · total 20"], ["gf", 1000, 3, 4, "0.75", ""]];
+      return `<div class="sub"><span>Ranking</span><span>price ÷ promised signups</span></div><table class="rank"><tr><th>Supplier</th><th>Impr.</th><th>Price</th><th>Promise /1k</th><th>Per signup</th><th>Result</th></tr>${rows.map((r) => `<tr class="${r[0] === "gf" ? "out" : ""}"><td>${N[r[0]].name}</td><td>${r[1].toLocaleString("en")}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[0] === "gf" ? '<span class="state lost">Lost bid</span>' : r[5]}</td></tr>`).join("")}</table>`;
+    }
+    if (s.panel === "count") {
+      const c = { tb: 0, cp: 0 }; s.flows.forEach((f) => { if (arrived(f)) c[f.su]++; });
+      const p = clamp(lt / s.end);
+      return `<div class="sub"><span>Verified signups</span><span>sig ✓ attr ✓ window ✓</span></div><div class="cnt">
+        <div><span>TechBlog</span><b>${c.tb}</b><small>of 7 promised</small><small>${Math.round(p * 1000).toLocaleString("en")} impr</small></div>
+        <div><span>CodePodcast</span><b>${c.cp}</b><small>of 8 promised</small><small>${Math.round(p * 1000).toLocaleString("en")} impr</small></div>
+        <div class="zero"><span>DevNewsletter</span><b>0</b><small>of 12 promised</small><small>${Math.round(p * 1500).toLocaleString("en")} impr</small></div></div>
+        <div class="sub" style="margin-top:10px"><span>Signup feed</span>${BADGE.sim}</div>`;
+    }
+    if (s.panel === "forfeit") return `<div class="formula">forfeit = bond × (promised − delivered) ÷ promised<br>= 1.5 × (8 − 6) ÷ 8 = <b>0.375</b> → Consumer</div>`;
+    return "";
+  }
+  function renderCard(swap) {
+    const s = STEPS[cur];
+    const key = cur + "|" + s.flows.map((f) => (arrived(f) ? 2 : moving(f) ? 1 : 0)).join("") + (s.panel === "count" ? "|" + Math.floor(lt * 4) : "");
+    if (key === cardKey) return; cardKey = key;
+    const list = s.flows.filter((f) => f.kind !== "su");
+    const html = `<div class="no">Step ${cur + 1} of ${STEPS.length} · ${s.k}</div><h1>${s.title}</h1><p class="what">${s.what}</p><div class="why">${s.why}</div>${panelHtml(s)}
+      ${list.length ? `<div class="sub"><span>${list.some((f) => f.amt != null) ? "Transactions in this step" : "Messages in this step · no money"}</span><span>${list.filter(arrived).length} / ${list.length}</span></div>${list.map(txRow).join("")}` : ""}`;
+    const card = $("#card");
+    if (swap) { card.classList.add("swap"); setTimeout(() => { card.innerHTML = html; card.classList.remove("swap"); }, 160); }
+    else card.innerHTML = html;
+  }
+
+  // ---------- breakdown ----------
+  const ROLE = { consumer: "Consumer agent · NeoRack", escrow: "Masumi escrow · Cardano preprod", board: "Tender Board · our service", tb: "Supplier agent", cp: "Supplier agent", dn: "Supplier agent", gf: "Supplier agent" };
+  const FACTS = {
+    consumer: ["14 verified signups", "about 0.78 per signup", "locked 20 · got back 9.125"],
+    tb: ["Pass", "delivered 8 vs promised 7", "bond returned"],
+    cp: ["Short of promise", "6 vs 8, gate met", "0.375 forfeited"],
+    dn: ["Under gate", "0 vs 12 per 1,000", "full bond forfeited"],
+    gf: ["Lost bid", "promised 4 per 1,000", "below gate 5"],
+    board: ["4 bid fees kept", "forfeits forwarded", "trust assumption"],
+    escrow: ["10 escrows", "6 REAL · 4 SIMULATED", "ends at 0"],
+  };
+  function openBd(p) {
+    if (p === "user" || p === "feed") p = "consumer";
+    sel = p; $("#bd").classList.add("show");
+    const fin = !!STEPS[cur].receipt;
+    $("#bdtitle").textContent = fin ? "Receipt · ledger per agent" : `Ledger up to step ${cur + 1}`;
+    $("#bdclose").style.display = fin ? "none" : "";
+    $("#tabs").innerHTML = PARTIES.map(([k, n]) => `<button data-p="${k}" class="${k === p ? "on" : ""}">${n}</button>`).join("");
+    const lines = []; let run = 0;
+    ALL.forEach((f) => { if (f.fx[p] != null && arrived(f)) { run += f.fx[p]; lines.push({ f, v: f.fx[p], run }); } });
+    const other = (f) => (f.from === p ? f.to : f.from);
+    const net = run, name = PARTIES.find((x) => x[0] === p)[1];
+    $("#bdbody").innerHTML = `<div class="hero2"><div class="role">${ROLE[p]}</div><div class="net num">${sgn(net)}<small>tUSDM net</small></div>
+      <div class="ln">${p === "consumer" && fin ? "for 14 verified signups · about 0.78 tUSDM each" : name}</div>
+      ${fin ? `<div class="facts">${FACTS[p].map((x) => `<span>${x}</span>`).join("")}</div>` : ""}</div>
+      <div class="lines">${lines.length ? `<table><tr><th>Step</th><th>What</th><th class="amt">Amount</th><th class="amt">Balance</th></tr>${lines.map((l) => `<tr><td class="s">${l.f.step + 1}</td><td>${l.f.desc}<span class="cp">${l.v < 0 ? "to" : "from"} ${N[other(l.f)].name} · ${l.f.badge === "sim" ? "SIMULATED, no funds moved" : `<a href="${txUrl(l.f.tx)}" target="_blank" rel="noopener">REAL tx ${short(l.f.tx)} ↗</a>`}</span></td><td class="amt ${l.v > 0 ? "p" : "m"}">${sgn(l.v)}</td><td class="amt">${sgn(l.run)}</td></tr>`).join("")}<tr class="tot"><td></td><td>Net</td><td class="amt">${sgn(net)}</td><td></td></tr></table>` : `<div class="empty">No money has moved for ${name} yet.</div>`}</div>
+      ${p === "consumer" && fin ? `<div class="r2"><div style="display:flex;justify-content:space-between"><b>Round 2 allocation</b>${BADGE.sim}</div><div class="bar"><i style="width:50%;background:var(--cobalt)"></i><i style="width:50%;background:var(--pass)"></i></div>TechBlog 50% · CodePodcast 50% · DevNewsletter 0%. Illustrative, shown, not executed.</div>` : ""}
+      ${fin ? `<div class="tag">Don't pay for impressions.<br><em>Pay for outcomes.</em></div>` : ""}`;
+    document.querySelectorAll(".node").forEach((n) => n.classList.toggle("sel", n.dataset.p === p));
+  }
+  function closeBd() { $("#bd").classList.remove("show"); sel = null; document.querySelectorAll(".node").forEach((n) => n.classList.remove("sel")); }
+
+  // ---------- render ----------
+  function render(dt) {
+    const s = STEPS[cur], b = balances(), used = new Map();
+    ALL.forEach((f) => {
+      const live = moving(f);
+      if (f.step === cur && lt >= f.at) { const u = used.get(f.edge.el); used.set(f.edge.el, { kind: u && u.kind === "hero" ? "hero" : f.kind, live: live || (u && u.live) }); }
+      if (live) {
+        const p = (lt - f.at) / f.dur, q = f.rev ? 1 - ease(p) : ease(p);
+        const pt = f.edge.el.getPointAtLength(q * f.edge.len);
+        f.tok.style.opacity = Math.min(1, Math.min(p, 1 - p) * 10);
+        f.tok.style.transform = `translate(${pt.x}px,${pt.y}px) translate(-50%,-50%)${f.kind === "hero" ? ` scale(${1 + Math.sin(p * Math.PI) * .2})` : ""}`;
+      } else f.tok.style.opacity = 0;
+      if (f.pin) {
+        const show = f.step === cur && arrived(f);
+        if (show) { const pt = f.edge.el.getPointAtLength(.5 * f.edge.len); f.pin.style.transform = `translate(${pt.x}px,${pt.y + f.stack * 22}px) translate(-50%,-50%)`; }
+        f.pin.style.opacity = show ? 1 : 0;
+      }
+    });
+    Object.values(E).forEach((e) => { const u = used.get(e.el); e.el.classList.toggle("used", !!u); e.el.classList.toggle("live", !!(u && u.live)); ["sim", "sig", "hero"].forEach((c) => e.el.classList.toggle(c, !!u && (u.kind === c || (c === "sig" && u.kind === "su")))); });
+
+    const focus = new Set(), land = new Set();
+    s.flows.forEach((f) => { if (lt >= f.at) { focus.add(f.from); focus.add(f.to); } if (arrived(f) && lt - (f.at + f.dur) < .45) land.add(f.to); });
+    document.querySelectorAll(".node").forEach((n) => { n.classList.toggle("focus", focus.has(n.dataset.p)); n.classList.toggle("land", land.has(n.dataset.p)); });
+    $('.node[data-p="consumer"]').classList.toggle("redp", cur === 10 && lt >= .3);
+    $('.node[data-p="dn"]').classList.toggle("redp", cur === 10);
+
+    const k = reduce ? 1 : Math.min(1, dt * 6);
+    PARTIES.forEach(([p]) => {
+      const r = $("#r-" + p);
+      if (Math.abs(b[p] - prevT[p]) > 1e-6) { r.classList.add("flash"); setTimeout(() => r.classList.remove("flash"), 600); prevT[p] = b[p]; }
+      disp[p] += (b[p] - disp[p]) * k; if (Math.abs(b[p] - disp[p]) < .0005) disp[p] = b[p];
+      $("#ra-" + p).textContent = p === "escrow" ? disp[p].toFixed(3) : sgn(disp[p]);
+      r.classList.toggle("neg", p !== "escrow" && b[p] < -.0005); r.classList.toggle("pos", p !== "escrow" && b[p] > .0005);
+    });
+    $("#v-consumer").textContent = sgn(disp.consumer); $("#v-escrow").textContent = disp.escrow.toFixed(3);
+    $("#sd-board").textContent = `net ${sgn(disp.board)} · fees SIMULATED`;
+
+    const slots = {}; ALL.forEach((f) => { if (f.slot != null && arrived(f)) slots[f.slot] = f.badge; });
+    document.querySelectorAll("#vault .slot").forEach((el) => { const v = slots[+el.dataset.i]; el.className = "slot" + (v ? " " + v : ""); });
+    const real = Object.values(slots).filter((x) => x === "real").length, sim = Object.values(slots).filter((x) => x === "sim").length;
+    $("#sd-escrow").textContent = `${real} REAL · ${sim} SIMULATED of 10`;
+
+    $("#m-auc").classList.toggle("on", cur >= 3 && cur <= 4); $("#m-ver").classList.toggle("on", cur === 7); $("#m-set").classList.toggle("on", cur >= 8 && cur <= 10);
+
+    const su = { tb: 0, cp: 0 }; ALL.forEach((f) => { if (f.su && arrived(f)) su[f.su]++; });
+    $("#sd-feed").textContent = `signed by shop key · ${su.tb + su.cp} events`;
+    SUP.forEach((p, i) => {
+      const n = N[p], fl = (step, pred) => STEPS[step].flows.find(pred);
+      const reached = (step, pred) => cur > step || (cur === step && arrived(fl(step, pred)));
+      let cls = "", txt = "idle", det = "—";
+      if (reached(2, (f) => f.to === p)) { txt = "invited"; det = "tender received"; }
+      if (reached(3, (f) => f.from === p && f.kind === "sig")) { txt = "sealed"; det = "commit " + short(T(i, 9)); }
+      if (reached(4, (f) => f.from === p)) {
+        txt = "won"; det = `${n.impr.toLocaleString("en")} impr · ${n.price} · promise ${n.promised} → ${n.pps}`;
+        if (p === "gf") { cls = "lost"; txt = "Lost bid"; det = "promised 4 / 1,000 · below gate 5"; }
+      }
+      if (p !== "gf") {
+        if (reached(5, (f) => f.for === p)) { cls = "lock"; txt = "award locked"; }
+        if (reached(6, (f) => f.from === p)) { cls = "lock"; txt = "escrowed"; det = "award + bond locked"; }
+        if (cur >= 7) { txt = cur === 7 ? "serving" : "awaiting verdict"; det = `${p === "dn" ? 0 : su[p]} verified · promised ${n.promised}`; }
+        const vs = { tb: 8, cp: 9, dn: 10 }[p];
+        if (cur >= vs) { cls = { tb: "pass", cp: "short", dn: "under" }[p]; txt = { tb: "Pass", cp: "Short of promise", dn: "Under gate" }[p]; det = `${n.delivered} verified · promised ${n.promised}`; }
+        $("#sb-" + p).style.width = ((p === "dn" ? 0 : su[p]) / 14) * 100 + "%";
+      }
+      const st = $("#st-" + p); st.className = "state " + cls; st.textContent = txt; $("#sd-" + p).textContent = det;
+      $(`.node[data-p="${p}"]`).classList.toggle("off", p === "gf" && txt === "Lost bid");
+    });
+
+    renderCard(false);
+    if (sel && !s.receipt && Math.floor(lt * 2) !== bdTick) { bdTick = Math.floor(lt * 2); openBd(sel); }
+    $("#nexti").style.width = auto && !s.receipt ? clamp(lt / (s.end + READ)) * 100 + "%" : "0";
+  }
+
+  // ---------- fit ----------
+  function fit() { const w = $("#wrap").clientWidth, sc = Math.min(1, (w - 20) / 760); $("#canvas").style.transform = `scale(${sc})`; document.documentElement.style.setProperty("--s", sc); }
+  addEventListener("resize", fit); fit();
+
+  // ---------- controls ----------
+  $("#next").onclick = () => go(cur === STEPS.length - 1 ? 0 : cur + 1);
+  $("#back").onclick = () => go(cur - 1);
+  $("#again").onclick = () => { lt = 0; cardKey = ""; };
+  $("#steps").onclick = (e) => { const b = e.target.closest("button"); if (b) go(+b.dataset.i); };
+  const setSpeed = (v) => { speed = v; document.querySelectorAll(".seg button").forEach((x) => x.classList.toggle("on", +x.dataset.sp === v)); };
+  $("#auto").onchange = (e) => { auto = e.target.checked; READ = 5; if (speed > 1.6) setSpeed(1); };
+  $("#quick").onclick = () => { setSpeed(2.2); READ = .35; auto = true; $("#auto").checked = true; closeBd(); go(0); };
+  document.querySelectorAll(".seg button").forEach((b) => (b.onclick = () => setSpeed(+b.dataset.sp)));
+  $("#nodes").onclick = (e) => { const n = e.target.closest(".node"); if (n) openBd(n.dataset.p); };
+  $("#rows").onclick = (e) => { const r = e.target.closest(".row[data-p]"); if (r) openBd(r.dataset.p); };
+  $("#tabs").onclick = (e) => { const b = e.target.closest("button"); if (b) openBd(b.dataset.p); };
+  $("#bdclose").onclick = closeBd;
+  addEventListener("keydown", (e) => {
+    if (e.code === "ArrowRight") go(cur + 1);
+    else if (e.code === "ArrowLeft") go(cur - 1);
+    else if (e.code === "Escape" && !STEPS[cur].receipt) closeBd();
+  });
+
+  const m = location.hash.match(/step=(\d+)/);
+  go(m ? +m[1] - 1 : 0);
+  window.__go = (i, t) => { go(i); if (t != null) lt = t; };
+  let last = performance.now();
+  (function frame(now) {
+    const dt = Math.min(.1, (now - last) / 1000); last = now;
+    lt += dt * speed;
+    const s = STEPS[cur];
+    if (auto && !s.receipt && lt > s.end + READ) go(cur + 1);
+    render(dt);
+    requestAnimationFrame(frame);
+  })(performance.now());
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1341 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Night Auction House · Ad Slot Auction · Direction C</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f3ede1;
+  --paper-2:#ebe3d1;
+  --paper-3:#e0d6bf;
+  --vellum:#faf6ec;
+  --ink:#1b1712;
+  --ink-2:#4a4338;
+  --ink-3:#6b6354;
+  --hair:rgba(27,23,18,.17);
+  --hair-2:rgba(27,23,18,.09);
+  --oxblood:#8e231e;
+  --oxblood-deep:#6c1a16;
+  --oxblood-wash:rgba(142,35,30,.07);
+  --gold:#b08a3e;
+  --gold-ink:#94701e;
+  --gold-light:#dcc58c;
+  --pass:#20382c;
+  --night:#0b0908;
+  --cream:#eee6d8;
+
+  --f-display:'Instrument Serif','Playfair Display','Iowan Old Style',Georgia,'Times New Roman',serif;
+  --f-text:'Newsreader','Iowan Old Style',Georgia,'Times New Roman',serif;
+  --f-mono:'JetBrains Mono','IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+
+  --ease:cubic-bezier(.22,1,.36,1);
+  --ease-io:cubic-bezier(.65,0,.35,1);
+  --ease-thud:cubic-bezier(.2,.9,.3,1.25);
+  --ease-fly:cubic-bezier(.5,.05,.2,1);
+  --ease-hammer:cubic-bezier(.55,0,.9,.4);
+
+  --d-deal:800ms;
+  --d-press:450ms;
+  --d-open:800ms;
+  --d-unfold:900ms;
+  --d-ink:1100ms;
+  --d-thud:520ms;
+  --d-hammer:1000ms;
+  --d-fly:1300ms;
+  --d-tally:280ms;
+
+  --body-h:clamp(262px,37vh,312px);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--paper);-webkit-text-size-adjust:100%}
+body{font-family:var(--f-text);color:var(--ink);background:var(--paper);line-height:1.4;font-size:15px;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:300;opacity:.55;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .27 0 0 0 0 .16 .26 0 0 0 -.05'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+button{font:inherit;color:inherit}
+a{color:inherit}
+.lbl{font-family:var(--f-text);font-size:10.5px;font-weight:600;letter-spacing:.17em;text-transform:uppercase;color:var(--ink-3);line-height:1.2}
+.lbl.sm{font-size:9.5px;letter-spacing:.12em}
+.mono{font-family:var(--f-mono)}
+em,i.it{font-style:italic}
+.disp{font-family:var(--f-display);font-weight:400}
+
+/* ---------- badges, chips, tx links ---------- */
+.badge{display:inline-flex;align-items:center;gap:5px;height:18px;padding:0 7px 0 6px;border-radius:2px;font-family:var(--f-text);font-weight:700;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;line-height:1;white-space:nowrap;vertical-align:middle}
+.badge i{display:block;width:6px;height:6px;flex:none}
+.badge.xs{height:15px;font-size:8px;padding:0 5px 0 5px;gap:4px;letter-spacing:.1em}
+.badge.xs i{width:5px;height:5px}
+.b-real{background:var(--ink);color:var(--cream)}
+.b-real i{background:var(--gold-light);transform:rotate(45deg)}
+.b-sim{color:var(--ink-2);border:1px dashed var(--ink-3);background:repeating-linear-gradient(135deg,transparent 0 4px,rgba(27,23,18,.08) 4px 5px)}
+.b-sim i{border:1.2px solid currentColor;border-radius:50%}
+.b-rec{background:var(--paper-3);color:var(--ink);border:1px solid var(--ink-3)}
+.b-rec i{background:var(--oxblood);clip-path:polygon(0 0,100% 50%,0 100%)}
+.chip{font-style:normal;display:inline-flex;align-items:center;gap:6px;height:20px;padding:0 9px;border-radius:2px;font-weight:700;font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;white-space:nowrap}
+.chip::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor}
+.chip.pass{background:var(--pass);color:var(--cream)}
+.chip.short{background:var(--gold-light);color:#4a3710;border:1px solid var(--gold)}
+.chip.under{background:var(--oxblood);color:#fff}
+.chip.lost{color:var(--oxblood);border:1.5px dashed var(--oxblood);background:var(--oxblood-wash)}
+a.tx{display:inline-flex;align-items:center;gap:4px;font-family:var(--f-mono);font-size:10.5px;font-weight:500;color:var(--ink);text-decoration:none;border-bottom:1px solid var(--ink-3);padding-bottom:1px;transition:color .2s,border-color .2s}
+a.tx:hover{color:var(--oxblood);border-color:var(--oxblood)}
+a.tx svg{width:9px;height:9px;fill:none;stroke:currentColor;stroke-width:1.4}
+
+/* ---------- ribbon ---------- */
+.ribbon{display:flex;justify-content:space-between;align-items:center;gap:16px;background:var(--night);color:var(--cream);padding:0 clamp(14px,2.4vw,34px);height:32px;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;white-space:nowrap;overflow:hidden}
+.ribbon h1{font-size:inherit;font-weight:600;letter-spacing:.2em;display:flex;align-items:center}
+.ribbon .moon{display:inline-block;width:9px;height:9px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ed4b43,#8e231e);margin-right:11px;box-shadow:0 0 12px rgba(237,75,67,.75)}
+.ribbon h1 em{font-family:var(--f-display);font-style:italic;text-transform:none;letter-spacing:.01em;font-size:15px;font-weight:400;color:#e7c98a;margin-left:12px}
+.ribbon .rb-r{color:rgba(238,230,216,.7)}
+.ribbon .rb-r b{color:#e7a84b;font-weight:600}
+
+/* ---------- demo shell ---------- */
+.demo{min-height:100svh;display:flex;flex-direction:column;position:relative}
+.stage{flex:1;position:relative;padding:14px clamp(14px,2.4vw,34px) 14px;display:flex;flex-direction:column;min-width:0}
+.cap{display:grid;grid-template-columns:minmax(230px,.8fr) 1.6fr;gap:clamp(14px,3vw,48px);align-items:end;padding-bottom:10px;border-bottom:1px solid var(--hair);margin-bottom:14px;min-height:62px}
+.cap-t{font-family:var(--f-display);font-size:clamp(30px,3.2vw,44px);line-height:.95;letter-spacing:-.01em}
+.cap-t em{color:var(--oxblood)}
+.cap-l{font-family:var(--f-display);font-style:italic;font-size:clamp(16px,1.55vw,21px);line-height:1.18;color:var(--ink-2);max-width:56ch;justify-self:end;text-align:left}
+.views{position:relative;flex:1;display:flex;flex-direction:column;min-height:0}
+.view{position:absolute;inset:0;opacity:0;visibility:hidden;transform:translateY(10px);transition:opacity .5s var(--ease),transform .7s var(--ease),visibility 0s .5s}
+.view.on{position:relative;inset:auto;flex:1;opacity:1;visibility:visible;transform:none;transition-delay:.12s,.12s,0s}
+
+/* ---------- cover (scene 1) ---------- */
+.v-cover.on{display:flex;align-items:center}
+.cover{width:100%;display:grid;grid-template-columns:1.12fr 1fr;gap:clamp(22px,4.5vw,72px);align-items:center;min-height:420px}
+.cv-cat{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.cv-cat span+span::before{content:"";display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--ink-3);margin-right:14px;vertical-align:middle}
+.quote{font-family:var(--f-display);font-style:italic;font-size:clamp(38px,5.2vw,76px);line-height:1.02;letter-spacing:-.012em;margin:18px 0 22px;text-wrap:balance}
+.quote .qm{color:var(--oxblood);margin-right:.04em}
+.quote .w{display:inline-block;opacity:0;transform:translateY(.45em);filter:blur(6px);transition:opacity .7s var(--ease),transform .85s var(--ease),filter .7s var(--ease);transition-delay:calc(var(--i)*85ms)}
+.quote .w.hl{color:var(--oxblood)}
+.cover.q-in .quote .w{opacity:1;transform:none;filter:none}
+.flow{display:flex;align-items:center;gap:10px;max-width:520px}
+.flow .nd{font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;border:1px solid var(--ink);padding:6px 10px;background:var(--vellum);white-space:nowrap}
+.flow .nd.ag{border-color:var(--oxblood);color:var(--oxblood)}
+.flow .ln{flex:1;height:1px;background:var(--ink);transform:scaleX(0);transform-origin:left;transition:transform .9s var(--ease-io);position:relative;min-width:20px}
+.flow .ln::after{content:"";position:absolute;right:-1px;top:-3px;width:6px;height:6px;border-top:1px solid var(--ink);border-right:1px solid var(--ink);transform:rotate(45deg)}
+.flow .nd{opacity:0;transition:opacity .6s var(--ease)}
+.cover.f-in .flow .nd{opacity:1}
+.cover.f-in .flow .ln{transform:none}
+.cover.f-in .flow .ln:nth-of-type(2){transition-delay:.35s}
+.notice{position:relative;background:var(--vellum);border:1px solid var(--ink);padding:clamp(18px,2.2vw,30px) clamp(18px,2.4vw,32px) clamp(18px,2vw,26px);box-shadow:0 0 0 5px var(--vellum),0 0 0 6px var(--ink-3),0 30px 44px -30px rgba(60,40,10,.55);opacity:0;transform:translateX(70px) rotate(1.4deg);transition:opacity .8s var(--ease),transform 1s var(--ease)}
+.notice::before{content:"";position:absolute;inset:7px;border:1px solid var(--hair);pointer-events:none}
+.notice.in{opacity:1;transform:rotate(-.5deg)}
+.nt-head{display:flex;justify-content:space-between;align-items:baseline}
+.notice h2{font-family:var(--f-display);font-weight:400;font-size:clamp(32px,3.4vw,48px);line-height:1;margin:8px 0 4px;letter-spacing:-.01em}
+.notice h2 em{color:var(--oxblood)}
+.nt-sub{font-style:italic;color:var(--ink-2);font-size:14px;margin-bottom:12px}
+.terms{border-top:1px solid var(--ink)}
+.trow{display:flex;align-items:baseline;gap:10px;padding:9px 0;border-bottom:1px dotted var(--ink-3);opacity:0;transform:translateY(7px);transition:opacity .6s var(--ease),transform .7s var(--ease);transition-delay:calc(var(--i)*120ms)}
+.trow dt{flex:none;min-width:64px}
+.trow dd{margin-left:auto;text-align:right;font-size:14px;display:flex;align-items:baseline;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.trow dd b{font-family:var(--f-display);font-weight:400;font-size:28px;line-height:1;color:var(--ink)}
+.notice.rows .trow{opacity:1;transform:none}
+.nt-foot{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:14px;min-height:62px}
+.posted{font-family:var(--f-display);font-style:italic;font-size:19px;color:var(--ink-2);opacity:0;transform:translateY(6px);transition:opacity .6s var(--ease) .35s,transform .7s var(--ease) .35s}
+.notice.posted-on .posted{opacity:1;transform:none}
+.nt-seal{width:62px;height:62px;flex:none;opacity:0;transform:scale(1.8) rotate(-16deg);transition:opacity .15s,transform var(--d-press) var(--ease-thud);filter:drop-shadow(0 3px 3px rgba(60,40,10,.35))}
+.notice.posted-on .nt-seal{opacity:1;transform:none}
+.nt-seal svg,.seal svg{display:block;width:100%;height:100%}
+
+/* ---------- room (scenes 2-6) ---------- */
+.room-head{display:grid;grid-template-columns:1fr minmax(260px,340px);gap:clamp(16px,3vw,44px);align-items:end;margin-bottom:14px;opacity:0;transform:translateY(8px);transition:opacity .7s var(--ease),transform .8s var(--ease)}
+.room-head.in{opacity:1;transform:none}
+.budget .row,.purse .row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:6px}
+.budget .fig{font-family:var(--f-display);font-size:26px;line-height:1}
+.budget .fig small{font-family:var(--f-text);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-left:4px}
+.bar{position:relative;height:28px;border:1px solid var(--ink);background:repeating-linear-gradient(90deg,transparent 0 calc(5% - 1px),var(--hair-2) calc(5% - 1px) 5%),var(--vellum);overflow:hidden}
+.seg{position:absolute;top:0;bottom:0;display:flex;align-items:center;padding-left:9px;color:var(--cream);font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap;clip-path:inset(0 100% 0 0);transition:clip-path .9s var(--ease-io)}
+.seg.on{clip-path:inset(0 0 0 0)}
+.seg-dn{left:0;width:35%;background:#1b1712}
+.seg-cp{left:35%;width:30%;background:#3b352c}
+.seg-tb{left:65%;width:35%;background:#5b5346}
+.seg+.seg{box-shadow:inset 1px 0 0 rgba(238,230,216,.35)}
+.bar-s{display:flex;justify-content:space-between;margin-top:5px}
+.bud-state{transition:color .4s}
+.v-room.full .bud-state{color:var(--oxblood)}
+.purse{position:relative}
+.pfig-w{display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--ink);padding:2px 0 4px;position:relative}
+.pfig-w svg{width:28px;height:28px;fill:none;stroke:var(--ink);stroke-width:1.3;stroke-linejoin:round;stroke-linecap:round;flex:none}
+.pfig{font-family:var(--f-display);font-size:34px;line-height:1;padding:2px 6px;margin-left:-6px;font-variant-numeric:tabular-nums}
+.pfig-w small{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.pdelta{position:absolute;right:0;top:-2px;font-family:var(--f-display);font-size:22px;color:var(--oxblood);opacity:0}
+.lots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(10px,1.3vw,18px)}
+.lot{position:relative;display:flex;flex-direction:column;background:var(--vellum);border:1px solid var(--hair);border-top:3px double var(--ink);border-radius:2px;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 18px 28px -22px rgba(60,40,10,.55);opacity:0;transform:translateY(24px) rotate(var(--tilt,0deg));transition:opacity var(--d-deal) var(--ease),transform var(--d-deal) var(--ease),box-shadow .5s var(--ease),filter .5s var(--ease);transition-delay:calc(var(--i)*110ms)}
+.lots.dealt .lot{opacity:1;transform:none}
+.lots.settled .lot{transition-delay:0s}
+.lot-h{display:flex;align-items:center;gap:12px;padding:10px 14px 9px;border-bottom:1px solid var(--hair-2)}
+.lot-no{flex:none;white-space:nowrap;text-align:center;min-width:42px;padding-right:12px;border-right:1px solid var(--hair);display:flex;flex-direction:column;align-items:center;gap:1px}
+.lot-no .lbl{font-size:8.5px;letter-spacing:.14em}
+.lot-no b{font-family:var(--f-display);font-weight:400;font-size:36px;line-height:.9;color:var(--oxblood)}
+.lot-ti{min-width:0}
+.lot-ti h3{font-family:var(--f-display);font-weight:400;font-size:clamp(22px,2vw,28px);line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lot-ti p{font-style:italic;font-size:12px;color:var(--ink-3);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lot-body{position:relative;height:var(--body-h);overflow:hidden;transition:filter .5s var(--ease),opacity .5s var(--ease)}
+.lot-f{display:flex;align-items:center;gap:8px;padding:8px 14px;border-top:1px solid var(--hair-2);min-height:35px}
+.lot-f .dot{width:7px;height:7px;border-radius:50%;background:var(--ink-3);flex:none;transition:background .4s}
+.lot-f .st{font-size:10.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lot[data-tone=win] .dot{background:var(--pass)}
+.lot[data-tone=gold] .dot{background:var(--gold)}
+.lot[data-tone=red] .dot{background:var(--oxblood)}
+.lot[data-tone=live] .dot{background:var(--ink);animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.25}}
+.lot.lost .lot-h,.lot.lost .letter{filter:grayscale(.8);opacity:.55}
+.v-room.focus .lot:not(.hero){opacity:.45;filter:saturate(.5)}
+.lot.hero{transform:translateY(-6px) scale(1.025);box-shadow:0 0 0 1px var(--oxblood),0 30px 50px -22px rgba(142,35,30,.6);z-index:5}
+
+.face{position:absolute;inset:0;padding:10px 14px 8px;opacity:0;visibility:hidden;transform:translateY(8px);transition:opacity .5s var(--ease),transform .6s var(--ease),visibility 0s .5s}
+.lot[data-face=env] .f-env,.lot[data-face=bid] .f-bid,.lot[data-face=led] .f-led,.lot[data-face=del] .f-del,.lot[data-face=set] .f-set{opacity:1;visibility:visible;transform:none;transition-delay:0s,0s,0s}
+
+/* envelope */
+.env-label{position:absolute;top:16px;left:0;right:0;text-align:center;transition:opacity .4s}
+.lot.is-open .env-label{opacity:0}
+.env-wrap{width:min(226px,82%);margin:62px auto 0;filter:drop-shadow(0 9px 8px rgba(60,40,10,.2));opacity:0;transform:translateY(-28px) rotate(-1.5deg);transition:opacity .6s var(--ease),transform .85s var(--ease);transition-delay:calc(var(--i)*130ms)}
+.lot.env-in .env-wrap{opacity:1;transform:none}
+.env{position:relative;aspect-ratio:188/118;perspective:640px}
+.env-back{position:absolute;inset:0;background:linear-gradient(180deg,#cdc1a4,#d9cfb4);border:1px solid rgba(27,23,18,.3);border-radius:2px}
+.peek{position:absolute;left:16px;right:16px;top:8px;height:52px;background:var(--vellum);border:1px solid var(--hair);transition:transform .8s var(--ease) .35s}
+.lot.is-open .peek{transform:translateY(-24px)}
+.env-front{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none}
+.env-hash{position:absolute;left:9px;right:9px;bottom:6px;z-index:3;font-family:var(--f-mono);font-size:clamp(7.6px,.7vw,9px);line-height:1.4;letter-spacing:.02em;color:var(--ink-2);clip-path:inset(0 100% 0 0);transition:clip-path .9s steps(32)}
+.lot.hash-on .env-hash{clip-path:inset(0 0 0 0);transition-delay:calc(var(--i)*120ms)}
+.flap-w{position:absolute;left:0;top:0;width:100%;height:50%;z-index:4;transform-origin:50% 0;transition:transform var(--d-open) var(--ease-io),z-index 0s .3s;filter:drop-shadow(0 1px 0 rgba(27,23,18,.32))}
+.flap{width:100%;height:100%;clip-path:polygon(0 0,100% 0,50% 100%);background:linear-gradient(180deg,#f6eedb,#e7dcc2);transition:background .5s .3s}
+.lot.is-open .flap-w{transform:rotateX(180deg);z-index:0}
+.lot.is-open .flap{background:linear-gradient(180deg,#dcd0b3,#e9dfc6)}
+.seal{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px 0 0 -27px;z-index:6;opacity:0;transform:scale(1.8) rotate(-16deg);filter:drop-shadow(0 3px 2px rgba(60,40,10,.4));transition:opacity .15s,transform var(--d-press) var(--ease-thud);transition-delay:calc(var(--i)*140ms)}
+.lot.sealed .seal{opacity:1;transform:none}
+.seal .half{position:absolute;inset:0;transition:transform .55s var(--ease-io) .12s,opacity .5s .2s}
+.seal .hl{clip-path:polygon(0 0,52% 0,45% 22%,55% 37%,45% 53%,55% 72%,48% 97%,48% 100%,0 100%)}
+.seal .hr{clip-path:polygon(52% 0,100% 0,100% 100%,48% 100%,48% 97%,55% 72%,45% 53%,55% 37%,45% 22%)}
+.lot.is-cracked .seal{transition-delay:0s,0s}
+.lot.is-cracked .hl{transform:translate(-13px,7px) rotate(-20deg);opacity:0}
+.lot.is-cracked .hr{transform:translate(13px,10px) rotate(17deg);opacity:0}
+.fee{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;font-size:12px;color:var(--ink-2);opacity:0;transform:translateY(5px);transition:opacity .5s var(--ease),transform .6s var(--ease);transition-delay:calc(var(--i)*120ms)}
+.lot.fee-on .fee{opacity:1;transform:none}
+.shard{position:absolute;width:5px;height:5px;background:var(--gold);z-index:9;pointer-events:none;clip-path:polygon(50% 0,100% 100%,0 100%)}
+
+/* letter (revealed bid) */
+.f-bid{padding:0}
+.letter{position:absolute;inset:7px 9px;background:var(--vellum);border:1px solid var(--hair);padding:10px 12px;display:flex;flex-direction:column;gap:7px;clip-path:inset(47% 0 47% 0);transition:clip-path var(--d-unfold) var(--ease);
+  background-image:linear-gradient(to bottom,transparent calc(33.3% - 1px),rgba(27,23,18,.07) calc(33.3% - 1px),rgba(27,23,18,.07) 33.3%,transparent 33.3%,transparent calc(66.6% - 1px),rgba(27,23,18,.07) calc(66.6% - 1px),rgba(27,23,18,.07) 66.6%,transparent 66.6%)}
+.lot.is-unfolded .letter{clip-path:inset(0 0 0 0)}
+.letter>*{opacity:0;transition:opacity .5s var(--ease) .5s}
+.lot.is-unfolded .letter>*{opacity:1}
+.lt-top{display:flex;justify-content:space-between;align-items:center}
+.lt-grid{display:grid;grid-template-columns:1fr 1.25fr;gap:12px 12px;margin-top:4px}
+.lt-grid .lbl{letter-spacing:.07em;white-space:nowrap}
+.lt-grid div{display:flex;flex-direction:column;gap:2px;border-top:1px solid var(--hair);padding-top:4px}
+.lt-grid b{font-family:var(--f-display);font-weight:400;font-size:31px;line-height:1}
+.lt-grid b small{font-family:var(--f-text);font-size:10px;letter-spacing:.1em;color:var(--ink-3);text-transform:uppercase;margin-left:3px}
+.lt-hash{margin-top:4px;display:flex;align-items:center;gap:6px;font-size:10px;color:var(--ink-2);flex-wrap:wrap;line-height:1.3}
+.lt-hash .mono{font-size:9.5px;color:var(--ink)}
+.lt-hash .lt-pre{flex-basis:100%;font-size:8.2px;color:var(--ink-3);letter-spacing:0;margin-top:2px}
+.lt-chk{width:14px;height:14px;flex:none}
+.lt-chk path{fill:none;stroke:var(--pass);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1 2;stroke-dashoffset:1.05;transition:stroke-dashoffset .5s var(--ease) 1.05s}
+.lot.is-unfolded .lt-chk path{stroke-dashoffset:0}
+.lt-ok{font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--pass);font-size:9.5px}
+.lt-res{margin-top:auto;border-top:1px solid var(--ink);padding-top:6px;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);min-height:26px;transition:color .4s}
+.lt-res.win{color:var(--pass)}
+.lt-res.out{color:var(--oxblood)}
+
+/* stamps */
+.stamp-pos{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;z-index:8}
+.stamp{display:inline-block;color:var(--c,var(--oxblood));text-transform:uppercase;text-align:center;opacity:0;transform:rotate(var(--r,-8deg));transform-origin:center;mix-blend-mode:multiply}
+.stamp.on{opacity:1}
+.stamp-in{border:3px solid currentColor;outline:1.5px solid currentColor;outline-offset:-8px;padding:8px 16px 8px;filter:url(#rough);position:relative}
+.stamp .s1{display:block;white-space:nowrap;font-weight:700;font-size:var(--s1,30px);letter-spacing:.11em;line-height:1.02}
+.stamp .s2{display:block;font-size:9.5px;font-weight:700;letter-spacing:.18em;margin-top:5px;padding-top:5px;border-top:1.5px solid currentColor}
+.stamp.lost{--r:-9deg;--s1:38px;--c:var(--oxblood)}
+.stamp.lost .stamp-in{background:rgba(142,35,30,.04)}
+.stamp.pass{--r:-5deg;--s1:38px;--c:var(--pass)}
+.stamp.short{--r:4deg;--s1:23px;--c:var(--gold-ink)}
+.stamp.under{--r:-6deg;--s1:29px;--c:var(--oxblood)}
+.stamp.under .stamp-in{border-width:4px}
+
+/* ledger face */
+.f-led{display:flex;flex-direction:column;gap:2px}
+.led-row{padding:3px 0 2px;border-bottom:1px dotted var(--ink-3);flex:1}
+.led-row:last-of-type{border-bottom:0}
+.led-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.led-top .amt{font-family:var(--f-display);font-size:24px;line-height:1}
+.led-top .amt small{font-family:var(--f-text);font-size:10px;color:var(--ink-3);letter-spacing:.1em;margin-left:3px}
+.sig{display:block;width:100%;height:44px}
+.sig .base{stroke:var(--ink-3);stroke-width:.9;stroke-dasharray:2 3}
+.sig .x{stroke:var(--ink-3);stroke-width:1.1;fill:none;stroke-linecap:round}
+.sig .pen{fill:none;stroke:var(--ink);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1 2;stroke-dashoffset:1.05;transition:stroke-dashoffset var(--d-ink) var(--ease-io)}
+.led-row.signed .pen{stroke-dashoffset:0}
+.led-tx{display:flex;align-items:center;gap:8px;height:20px;opacity:0;transform:translateY(4px);transition:opacity .5s var(--ease) 1s,transform .6s var(--ease) 1s}
+.led-row.signed .led-tx{opacity:1;transform:none}
+.led-who{font-size:10px;font-style:italic;color:var(--ink-3)}
+
+/* delivery face */
+.f-del{display:flex;flex-direction:column;gap:2px}
+.del-row{display:flex;justify-content:space-between;align-items:baseline}
+.del-row b{font-family:var(--f-display);font-weight:400;font-size:25px;line-height:1;font-variant-numeric:tabular-nums}
+.tally{display:block;width:100%;height:auto;flex:1;min-height:0;margin:4px 0 0;overflow:visible}
+.tally path{fill:none;stroke:var(--ink);stroke-width:3;stroke-linecap:round}
+.tally .ghost{opacity:.14;stroke-width:2;stroke-dasharray:.6 .9}
+.tally .mk{stroke-dasharray:1 2;stroke-dashoffset:1.05;transition:stroke-dashoffset var(--d-tally) var(--ease)}
+.tally .mk.on{stroke-dashoffset:0}
+.del-ver{display:flex;justify-content:space-between;align-items:flex-end;border-top:1px solid var(--ink);padding-top:6px}
+.del-ver b{font-family:var(--f-display);font-weight:400;font-size:52px;line-height:.85;display:block;margin-top:3px;font-variant-numeric:tabular-nums}
+.del-meta{text-align:right;font-size:11px;color:var(--ink-3);line-height:1.35;font-style:italic}
+.del-meta strong{font-style:normal;color:var(--ink);font-weight:600}
+.wait{display:none;font-style:italic;font-size:11px;color:var(--oxblood);margin-top:3px}
+.lot.silent .wait{display:block;animation:pulse 1.6s ease-in-out infinite}
+.lot.silent .del-ver b{color:var(--oxblood)}
+
+/* settlement face */
+.f-set{display:flex;flex-direction:column;gap:5px}
+.stamp-slot{position:relative;height:94px;display:grid;place-items:center;flex:none}
+.stamp-ph{position:absolute;inset:6px 14px;border:1.5px dashed var(--hair);display:grid;place-items:center;font-style:italic;color:var(--ink-3);font-size:12.5px;transition:opacity .3s}
+.lot.stamped-lot .stamp-ph{opacity:0}
+.set-body{display:flex;flex-direction:column;gap:3px;flex:1;opacity:0;transition:opacity .5s var(--ease) .5s}
+.lot.stamped-lot .set-body{opacity:1}
+.set-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:3px 0;border-bottom:1px dotted var(--ink-3);font-size:12.5px}
+.set-row b{font-family:var(--f-display);font-weight:400;font-size:20px;line-height:1}
+.set-row.mute{color:var(--ink-3)}
+.slot{position:relative;height:36px;border:1.5px dashed transparent;transition:border-color .4s}
+.slot.empty{border-color:var(--hair)}
+.slip-w{position:absolute;inset:0;filter:drop-shadow(0 4px 3px rgba(60,40,10,.3))}
+.slip-w.gone{visibility:hidden}
+.slip-w.flying{z-index:60;pointer-events:none}
+.slip{width:100%;height:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 13px;background:#f1e5cd;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);clip-path:polygon(0 8%,4% 0,9% 9%,14% 0,20% 8%,26% 0,32% 9%,38% 0,45% 8%,52% 0,58% 9%,65% 0,71% 8%,78% 0,84% 9%,91% 0,96% 8%,100% 0,100% 92%,96% 100%,91% 91%,85% 100%,79% 92%,73% 100%,66% 91%,60% 100%,53% 92%,47% 100%,40% 91%,34% 100%,27% 92%,21% 100%,15% 91%,9% 100%,4% 92%,0 100%)}
+.slip b{font-family:var(--f-display);font-weight:400;font-size:23px;letter-spacing:0;color:var(--oxblood);line-height:1}
+.slip.gold b{color:var(--gold-ink)}
+.slot.sm{height:30px}
+.slot.sm .slip{font-size:10px}
+.slot.sm .slip b{font-size:19px}
+.set-note{font-size:11.5px;font-style:italic;color:var(--ink-2);line-height:1.3;position:relative;min-height:30px}
+.set-note .n2{position:absolute;left:0;top:0;opacity:0;transition:opacity .5s}
+.set-note .n1{transition:opacity .5s}
+.lot.returned .set-note .n1{opacity:0}
+.lot.returned .set-note .n2{opacity:1;color:var(--oxblood);font-style:normal;font-weight:600}
+.set-tx{display:flex;align-items:center;gap:8px;height:22px;opacity:0;transition:opacity .5s var(--ease) 1s}
+.lot.stamped-lot .set-tx{opacity:1}
+
+/* foot panes */
+.foot{position:relative;height:46px;margin-top:14px;border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);opacity:0;transition:opacity .6s var(--ease) .3s}
+.foot.in{opacity:1}
+.pane{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;gap:16px;opacity:0;visibility:hidden;transition:opacity .45s var(--ease),visibility 0s .45s;white-space:nowrap}
+.foot[data-p=esc] .p-esc,.foot[data-p=feed] .p-feed,.foot[data-p=led] .p-led{opacity:1;visibility:visible;transition-delay:0s}
+.pane .grp{display:flex;align-items:center;gap:10px;min-width:0}
+.pane .ital{font-style:italic;font-size:13px;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis}
+.pips{display:flex;gap:6px}
+.pip{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--ink-3);transition:background .35s,border-color .35s,transform .45s var(--ease-thud)}
+.pip.sim{border-style:dashed}
+.pip.on{transform:scale(1.12)}
+.pip.sim.on{background:var(--gold-light);border-color:var(--ink-3)}
+.pip.real.on{background:var(--ink);border-color:var(--ink)}
+.cnt{font-family:var(--f-display);font-size:22px;line-height:1;font-variant-numeric:tabular-nums}
+.chk{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);transition:color .2s}
+.chk svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.chk path{stroke-dasharray:1 2;stroke-dashoffset:1.05;transition:stroke-dashoffset .2s}
+.chk.ok{color:var(--pass);transition-delay:calc(var(--c)*70ms)}
+.chk.ok path{stroke-dashoffset:0;transition-delay:calc(var(--c)*70ms)}
+.li{display:flex;align-items:baseline;gap:8px;opacity:0;transform:translateY(5px);transition:opacity .5s var(--ease),transform .6s var(--ease)}
+.li.on{opacity:1;transform:none}
+.li b{font-family:var(--f-display);font-weight:400;font-size:24px;line-height:1;font-variant-numeric:tabular-nums}
+.li.neg b{color:var(--ink)}
+.li.pos b{color:var(--oxblood)}
+
+/* trails + gavel */
+.trails{position:absolute;inset:0;pointer-events:none;z-index:55}
+.trails svg{width:100%;height:100%;overflow:visible}
+.trails path{fill:none;stroke:var(--oxblood);stroke-width:1.6;stroke-linecap:round;stroke-dasharray:1 2;stroke-dashoffset:1.05}
+.gavel-ov{position:absolute;inset:-6px;z-index:70;background:radial-gradient(ellipse at 50% 45%,rgba(243,237,225,.96),rgba(243,237,225,.9) 55%,rgba(243,237,225,.82));display:grid;place-items:center;opacity:0;visibility:hidden;transition:opacity .35s var(--ease),visibility 0s .35s;overflow:hidden}
+.gavel-ov.on{opacity:1;visibility:visible;transition-delay:0s}
+.gv{display:flex;align-items:center;gap:clamp(20px,4vw,64px);position:relative}
+.gv-art{position:relative;width:270px;height:112px;flex:none}
+.gv-gavel{position:absolute;left:0;top:0;width:270px;height:101px;transform-origin:95% 42.5%;transform:rotate(34deg)}
+.gv-block{position:absolute;left:6px;top:66px;width:104px;height:38px}
+.gv-txt{display:flex;flex-direction:column;gap:8px;position:relative}
+.sold{font-family:var(--f-display);font-style:italic;font-size:clamp(84px,12vw,170px);line-height:.85;color:var(--oxblood);letter-spacing:-.025em;opacity:0;transform:scale(1.35);transform-origin:left center;transition:opacity .25s,transform .55s var(--ease-thud);padding-right:.08em}
+.gavel-ov.hit .sold{opacity:1;transform:none}
+.gv-txt .lbl{opacity:0;transition:opacity .5s .3s;font-size:12px}
+.gavel-ov.hit .gv-txt .lbl{opacity:1}
+.gv-txt .rule{height:2px;background:var(--oxblood);transform:scaleX(0);transform-origin:left;transition:transform .7s var(--ease) .2s}
+.gavel-ov.hit .gv-txt .rule{transform:none}
+.ring{position:absolute;left:78px;top:100px;width:10px;height:10px;margin:-5px;border:2px solid var(--oxblood);border-radius:50%;opacity:0;pointer-events:none}
+
+/* ---------- receipt ---------- */
+.v-receipt{display:flex;align-items:center;justify-content:center}
+.v-receipt .invoice{margin:2px 0}
+.invoice{position:relative;width:100%;max-width:1180px;background:var(--vellum);border:1px solid var(--ink);box-shadow:0 0 0 6px var(--vellum),0 0 0 7px var(--ink-2),0 36px 60px -34px rgba(60,40,10,.55);padding:clamp(14px,1.6vw,24px) clamp(18px,2.8vw,40px) clamp(12px,1.4vw,20px);margin:8px 0;overflow:hidden;opacity:0;transform:translateY(40px) rotate(-.5deg);transition:opacity .8s var(--ease),transform 1.1s var(--ease)}
+.invoice.in{opacity:1;transform:none}
+.invoice::before{content:"";position:absolute;inset:9px;border:1px solid var(--hair);pointer-events:none}
+.guil{position:absolute;pointer-events:none}
+.guil.g1{right:-190px;top:-230px;width:520px;height:520px;opacity:.42}
+.guil.g2{left:-190px;bottom:-250px;width:520px;height:520px;opacity:.28}
+.inv-h{position:relative;display:flex;justify-content:space-between;align-items:center;gap:20px;padding-bottom:10px;border-bottom:2px solid var(--ink);margin-bottom:0}
+.inv-h h2{font-family:var(--f-display);font-weight:400;font-size:clamp(28px,2.7vw,38px);line-height:1;margin:3px 0 2px}
+.inv-h h2 em{color:var(--oxblood)}
+.inv-h p{font-size:12.5px;color:var(--ink-2);font-style:italic}
+.inv-r{display:flex;align-items:center;gap:16px;text-align:right}
+.inv-r b{display:block;font-family:var(--f-display);font-weight:400;font-size:28px;line-height:1;margin-top:3px}
+.rosette{position:relative;width:70px;height:70px;flex:none}
+.rosette svg.ro{position:absolute;inset:0;width:100%;height:100%}
+.rosette .rs{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px;filter:drop-shadow(0 2px 2px rgba(60,40,10,.35))}
+.inv-body{position:relative;display:grid;grid-template-columns:1fr 1.02fr;gap:clamp(22px,3.4vw,54px);padding:clamp(8px,1.1vw,14px) 0 clamp(8px,1vw,12px)}
+.net .lbl{display:block}
+.net-fig{display:flex;align-items:baseline;gap:12px;margin:6px 0 2px;flex-wrap:wrap}
+.net-num{font-family:var(--f-display);font-size:clamp(70px,9vw,132px);line-height:.88;letter-spacing:-.025em;color:var(--ink);font-variant-numeric:lining-nums tabular-nums;white-space:nowrap}
+@supports ((-webkit-background-clip:text) or (background-clip:text)){
+  .net-num .nn{background:repeating-linear-gradient(0deg,#1b1712 0 2px,#4a4338 2px 3px);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+}
+.net-num .mn{color:var(--oxblood);margin-right:.02em}
+.net-fig .unit{font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.net-sub{font-family:var(--f-display);font-style:italic;font-size:clamp(20px,2.1vw,28px);line-height:1.1;margin:4px 0 12px;opacity:0;transform:translateY(8px);transition:opacity .7s var(--ease),transform .8s var(--ease)}
+.net-sub b{font-weight:400;font-style:normal;color:var(--oxblood)}
+.invoice.s-sub .net-sub{opacity:1;transform:none}
+.brk{list-style:none;border-top:1px solid var(--ink)}
+.brk li{display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px dotted var(--ink-3);font-size:13px;opacity:0;transform:translateX(-10px);transition:opacity .5s var(--ease),transform .6s var(--ease);transition-delay:calc(var(--i)*110ms)}
+.brk li b{margin-left:auto;font-family:var(--f-display);font-weight:400;font-size:22px;line-height:1;font-variant-numeric:tabular-nums}
+.brk li small{color:var(--ink-3);font-size:11.5px;font-style:italic}
+.invoice.s-brk .brk li{opacity:1;transform:none}
+.lead h3{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--ink);padding-bottom:5px;margin-bottom:2px}
+.lead h3 span:last-child{letter-spacing:.1em}
+.lb{list-style:none}
+.lb li{display:grid;grid-template-columns:20px minmax(0,1fr) auto 78px;gap:3px 10px;align-items:center;padding:5px 0 4px;border-bottom:1px dotted var(--ink-3);opacity:0;transform:translateY(8px);transition:opacity .5s var(--ease),transform .6s var(--ease);transition-delay:calc(var(--i)*110ms)}
+.invoice.s-lead .lb li{opacity:1;transform:none}
+.lb .rk{font-family:var(--f-display);font-style:italic;font-size:20px;color:var(--oxblood);line-height:1}
+.lb .nm{font-family:var(--f-display);font-size:22px;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb .nm small{font-family:var(--f-text);font-size:11px;font-style:italic;color:var(--ink-3);margin-left:6px}
+.lb .nt{font-family:var(--f-display);font-size:24px;text-align:right;font-variant-numeric:tabular-nums;line-height:1}
+.lb .nt.neg{color:var(--oxblood)}
+.lb .bx{grid-column:2 / 5;display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center}
+.lb .trk{height:3px;background:var(--hair-2)}
+.lb .trk i{display:block;height:100%;background:var(--ink);transform:scaleX(0);transform-origin:left;transition:transform 1s var(--ease-io);transition-delay:calc(var(--i)*110ms + .3s)}
+.lb .trk i.neg{background:var(--oxblood)}
+.invoice.s-lead .lb .trk i{transform:none}
+.lb .bg{display:flex;gap:5px}
+.chip.ph{visibility:hidden}
+.r2{margin-top:10px}
+.r2 h3{margin-bottom:4px}
+.r2 .row{display:grid;grid-template-columns:104px 1fr 40px;gap:10px;align-items:center;padding:2px 0;font-size:13px;opacity:0;transition:opacity .5s var(--ease);transition-delay:calc(var(--i)*100ms)}
+.r2 .tr{height:10px;background:repeating-linear-gradient(90deg,var(--hair) 0 1px,transparent 1px 10%);border:1px solid var(--hair);position:relative}
+.r2 .tr i{position:absolute;left:0;top:0;bottom:0;background:repeating-linear-gradient(135deg,var(--ink) 0 2px,var(--ink-2) 2px 3px);width:var(--w);transform:scaleX(0);transform-origin:left;transition:transform .9s var(--ease-io);transition-delay:calc(var(--i)*100ms)}
+.r2 .pc{font-family:var(--f-display);font-size:20px;text-align:right;line-height:1}
+.invoice.s-r2 .r2 .row{opacity:1}
+.invoice.s-r2 .r2 .tr i{transform:none}
+.inv-f{position:relative;display:flex;justify-content:space-between;align-items:center;gap:14px 20px;border-top:2px solid var(--ink);padding-top:10px;flex-wrap:wrap}
+.closing{font-family:var(--f-display);font-size:clamp(24px,2.7vw,38px);line-height:1;letter-spacing:-.01em;opacity:0;transform:translateY(8px);transition:opacity .9s var(--ease),transform 1s var(--ease)}
+.closing em{color:var(--oxblood)}
+.invoice.s-close .closing{opacity:1;transform:none}
+.settle-links{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;justify-content:flex-end;opacity:0;transition:opacity .7s var(--ease) .3s}
+.settle-links .sl{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink-2)}
+.settle-links .sl a.tx{font-size:10px}
+.invoice.s-close .settle-links{opacity:1}
+
+/* ---------- controls ---------- */
+.controls{position:sticky;bottom:0;z-index:100;background:rgba(243,237,225,.95);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:1px solid var(--ink)}
+.prog{position:relative;height:4px;background:var(--hair);cursor:pointer}
+.prog::after{content:"";position:absolute;inset:-9px 0}
+.prog i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--oxblood)}
+.ctl-row{display:flex;align-items:center;gap:14px;padding:8px clamp(14px,2.4vw,34px) 9px}
+.btn{width:38px;height:38px;flex:none;border:1px solid var(--ink);background:var(--vellum);display:grid;place-items:center;cursor:pointer;border-radius:50%;transition:background .2s,color .2s,transform .2s var(--ease)}
+.btn:hover{background:var(--ink);color:var(--cream)}
+.btn:active{transform:scale(.94)}
+.btn:focus-visible,.step:focus-visible{outline:2px solid var(--oxblood);outline-offset:2px}
+.btn svg{width:15px;height:15px;fill:currentColor}
+.btn.rp svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.rail{display:flex;flex:1;gap:4px;min-width:0}
+.step{flex:1;min-width:0;background:none;border:0;border-top:2px solid var(--hair);padding:7px 4px 2px;text-align:left;cursor:pointer;color:var(--ink-3);display:flex;gap:7px;align-items:baseline;transition:color .3s,border-color .3s}
+.step .n{font-family:var(--f-display);font-style:italic;font-size:19px;line-height:1}
+.step .t{font-size:10px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.step:hover{color:var(--ink)}
+.step.done{border-top-color:var(--ink);color:var(--ink-2)}
+.step.on{border-top-color:var(--oxblood);color:var(--ink)}
+.step.on .n{color:var(--oxblood)}
+.clock{font-size:11px;letter-spacing:.1em;color:var(--ink-3);font-variant-numeric:tabular-nums;flex:none;font-weight:600}
+
+/* ---------- tokens strip ---------- */
+.tokens{background:var(--paper-2);border-top:1px solid var(--ink);padding:clamp(34px,5vw,72px) clamp(14px,2.4vw,34px) 64px;position:relative}
+.tk-inner{max-width:1280px;margin:0 auto}
+.tk-h{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;border-bottom:2px solid var(--ink);padding-bottom:16px;margin-bottom:28px}
+.tk-h h2{font-family:var(--f-display);font-weight:400;font-size:clamp(40px,5vw,68px);line-height:.95;letter-spacing:-.015em;margin-top:6px}
+.tk-h h2 em{color:var(--oxblood)}
+.tk-h p{max-width:46ch;font-style:italic;color:var(--ink-2);font-size:15px}
+.tk-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:18px}
+.tk-card{background:var(--vellum);border:1px solid var(--hair);border-top:3px double var(--ink);padding:18px 20px 20px;min-width:0}
+.tk-card h3{margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--hair)}
+.tk-pal{grid-column:span 7}
+.tk-type{grid-column:span 5}
+.tk-motion{grid-column:span 7}
+.tk-side{grid-column:span 5;display:flex;flex-direction:column;gap:18px}
+.sw-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.sw{border:1px solid var(--hair)}
+.sw .c{height:62px;border-bottom:1px solid var(--hair)}
+.sw .m{padding:7px 9px 8px}
+.sw .m b{display:block;font-family:var(--f-display);font-weight:400;font-size:18px;line-height:1.1}
+.sw .m span{display:block;font-family:var(--f-mono);font-size:10.5px;color:var(--ink-2);margin-top:2px}
+.sw .m em{display:block;font-size:11.5px;color:var(--ink-3);margin-top:3px;line-height:1.25}
+.ty{display:grid;gap:14px}
+.ty>div{border-bottom:1px dotted var(--ink-3);padding-bottom:12px}
+.ty>div:last-child{border:0;padding-bottom:0}
+.ty .big{font-family:var(--f-display);font-size:60px;line-height:.95;letter-spacing:-.02em;margin:4px 0 2px}
+.ty .big em{color:var(--oxblood)}
+.ty p{font-size:14px;color:var(--ink-2)}
+.ty .spec{font-family:var(--f-mono);font-size:10.5px;color:var(--ink-3);margin-top:5px;display:block}
+.mt{width:100%;border-collapse:collapse;font-size:13px}
+.mt th{text-align:left;font-weight:600;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);padding:0 8px 7px 0;border-bottom:1px solid var(--ink)}
+.mt td{padding:7px 8px 7px 0;border-bottom:1px dotted var(--ink-3);vertical-align:middle}
+.mt td:first-child{font-family:var(--f-display);font-size:19px;line-height:1;white-space:nowrap}
+.mt td.mono{font-family:var(--f-mono);font-size:10.5px;color:var(--ink-2)}
+.mt svg{width:34px;height:34px;display:block}
+.mt svg path{fill:none;stroke:var(--oxblood);stroke-width:1.6;stroke-linecap:round}
+.mt svg rect{fill:none;stroke:var(--hair);stroke-width:1}
+.bd-list{display:grid;gap:11px}
+.bd-list .badge{justify-self:start}
+.bd-list>div{display:grid;grid-template-columns:140px 1fr;gap:12px;align-items:center;font-size:13px;color:var(--ink-2)}
+.chip-list{display:grid;grid-template-columns:1fr 1fr;gap:11px 14px}
+.chip-list>div{display:flex;flex-direction:column;gap:5px;align-items:flex-start;font-size:12px;color:var(--ink-3);font-style:italic}
+.tk-foot{margin-top:28px;text-align:center;font-family:var(--f-display);font-style:italic;font-size:24px;color:var(--ink-2)}
+
+/* ---------- responsive ---------- */
+@media (max-height:740px) and (min-width:1000px){
+  .net-num{font-size:min(8vw,100px)}
+  .inv-h p{display:none}
+  .lb li{padding:3px 0 2px}
+  .r2 h3{margin-bottom:2px}
+  .stage{padding-bottom:10px}
+  .net-sub{margin:2px 0 8px}
+  .lb li{padding:2px 0 1px}
+  .inv-h{padding-bottom:6px}
+  .inv-body{padding:4px 0}
+  .r2{margin-top:2px}
+  .cap{min-height:46px;margin-bottom:8px;padding-bottom:6px}
+  .cap-t{font-size:30px}
+  .inv-f{padding-top:6px}
+}
+@media (max-height:780px) and (min-width:1000px){
+  .cap{min-height:56px;margin-bottom:10px}
+  .room-head{margin-bottom:10px}
+  .foot{margin-top:10px}
+  .net-num{font-size:clamp(64px,9vw,128px)}
+  .inv-body{padding:8px 0 6px}
+  .lb li{padding:4px 0 3px}
+  .brk li{padding:4px 0}
+  .r2{margin-top:6px}
+  .invoice{margin:4px 0}
+}
+@media (max-width:1060px){
+  .lots{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cover{grid-template-columns:minmax(0,1fr);min-height:0;gap:26px}
+  .cv-l,.notice{min-width:0}
+  .inv-body{grid-template-columns:1fr}
+  .tk-pal,.tk-type,.tk-motion,.tk-side{grid-column:span 12}
+  .cap{grid-template-columns:1fr}
+  .cap-l{justify-self:start}
+}
+@media (max-width:700px){
+  .ribbon .rb-r{display:none}
+  .room-head{grid-template-columns:1fr}
+  .step .t{display:none}
+  .step.on .t{display:block}
+  .step.on{flex:3}
+  .step{padding-right:2px}
+  .clock{display:none}
+  .sw-grid{grid-template-columns:repeat(2,1fr)}
+  .gv{flex-direction:column;gap:10px}
+  .gv-art{transform:scale(.8);transform-origin:left center;margin-right:-50px}
+  .inv-h{flex-wrap:wrap}
+  .inv-r{text-align:left}
+  .lb li{grid-template-columns:20px minmax(0,1fr) 72px}
+  .lb li .chip{display:none}
+  .lb .bx{grid-column:2 / 4}
+  .lb .bg .b-sim{display:none}
+  .mt .hide-s{display:none}
+  .bd-list>div{grid-template-columns:1fr}
+}
+@media (max-width:560px){
+  .lots{grid-template-columns:1fr}
+  .chip-list{grid-template-columns:1fr}
+  .quote{font-size:40px}
+  .pane .ital{display:none}
+  .net-num{font-size:84px}
+}
+
+/* ---------- motion safety ---------- */
+body.instant *,body.instant *::before,body.instant *::after{transition:none!important}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition-duration:.001ms!important;transition-delay:0s!important;animation:none!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <radialGradient id="wax" cx=".36" cy=".3" r=".85">
+      <stop offset="0" stop-color="#ecd9a2"/>
+      <stop offset=".5" stop-color="#b8923f"/>
+      <stop offset="1" stop-color="#7a5c1f"/>
+    </radialGradient>
+    <filter id="rough" x="-6%" y="-10%" width="112%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="4" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -12 0 0 0 9.2" result="holes"/>
+      <feComposite in="SourceGraphic" in2="holes" operator="in" result="worn"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="9" result="w"/>
+      <feDisplacementMap in="worn" in2="w" scale="2.6" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
+<main class="demo" id="demo">
+  <header class="ribbon">
+    <h1><span class="moon"></span>Night Auction House<em>Ad Slot Auction</em></h1>
+    <span class="rb-r">From Dusk Till Dawn #01 · Prague · 8 to 9 Oct 2026 · <b>The sun is the deadline.</b></span>
+  </header>
+
+  <section class="stage" id="stage" aria-label="Ad Slot Auction storyline">
+    <div class="cap" aria-live="polite">
+      <div><span class="lbl" id="cap-k">Scene I of VII</span><div class="cap-t" id="cap-t">The brief</div></div>
+      <p class="cap-l" id="cap-l"></p>
+    </div>
+    <div class="views" id="views"></div>
+  </section>
+
+  <div class="controls">
+    <div class="prog" id="prog" role="progressbar" aria-label="Playback progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="prog-i"></i></div>
+    <div class="ctl-row">
+      <button class="btn" id="btn-play" type="button" aria-label="Pause"></button>
+      <button class="btn rp" id="btn-replay" type="button" aria-label="Replay from the start">
+        <svg viewBox="0 0 16 16"><path d="M3 8a5 5 0 1 0 1.8-3.8"/><path d="M3 2.2v3.2h3.2"/></svg>
+      </button>
+      <nav class="rail" id="rail" aria-label="Scenes"></nav>
+      <span class="clock" id="clock">0:00 / 0:30</span>
+    </div>
+  </div>
+</main>
+
+<section class="tokens" id="tokens" aria-label="Design tokens">
+  <div class="tk-inner">
+    <header class="tk-h">
+      <div><span class="lbl">Direction C · Design tokens</span><h2>Night <em>Auction</em> House</h2></div>
+      <p>An old-world catalogue that happens to settle on a ledger nobody can alter. Paper, ink, one oxblood, one gold.</p>
+    </header>
+    <div class="tk-grid">
+      <div class="tk-card tk-pal"><h3 class="lbl">Palette</h3><div class="sw-grid" id="sw"></div></div>
+      <div class="tk-card tk-type"><h3 class="lbl">Type</h3>
+        <div class="ty">
+          <div><span class="lbl sm">Display · Instrument Serif</span><div class="big">Lot No. <em>3</em></div><span class="spec">fallback: Playfair Display, Georgia · 400 / italic · 38 to 152 px</span></div>
+          <div><span class="lbl sm">Text · Newsreader</span><p>The Board signs one verdict per supplier, and escrow settles by the rules.</p><span class="spec">fallback: Georgia · 400, 600 · 12 to 15 px</span></div>
+          <div><span class="lbl sm">Label · Newsreader small caps</span><p><span class="lbl" style="font-size:12px">Sealed bid · Reveal and rank</span></p><span class="spec">600 · uppercase · tracking .17em · 10.5 px</span></div>
+          <div><span class="lbl sm">Mono · JetBrains Mono (hashes and tx only)</span><p class="mono" style="font-size:13px">8f3a…c21e &nbsp; 3c9e1a40…b7d2</p><span class="spec">fallback: ui-monospace · 400, 500 · 7.6 to 11 px</span></div>
+        </div>
+      </div>
+      <div class="tk-card tk-motion"><h3 class="lbl">Motion</h3>
+        <table class="mt"><thead><tr><th>Move</th><th>Time</th><th>Easing</th><th class="hide-s">Curve</th></tr></thead><tbody id="mt"></tbody></table>
+      </div>
+      <div class="tk-side">
+        <div class="tk-card"><h3 class="lbl">Money badges</h3>
+          <div class="bd-list" id="bd"></div>
+        </div>
+        <div class="tk-card"><h3 class="lbl">Verdict chips</h3>
+          <div class="chip-list">
+            <div><span class="chip pass">Pass</span>delivered at or above promise</div>
+            <div><span class="chip short">Short of promise</span>gate met, promise missed</div>
+            <div><span class="chip under">Under gate</span>award and bond return</div>
+            <div><span class="chip lost">Lost bid</span>rejected before the auction</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="tk-foot">Don't pay for impressions. Pay for outcomes.</p>
+  </div>
+</section>
+
+<script>
+(() => {
+'use strict';
+
+const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+
+/* ---------- SHA-256 (real hashes, so the reveal check is honest) ---------- */
+const K256 = new Uint32Array([
+0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2]);
+function sha256(str) {
+  const bytes = new TextEncoder().encode(str);
+  const l = bytes.length, nb = ((l + 9 + 63) >> 6) << 6;
+  const buf = new Uint8Array(nb); buf.set(bytes); buf[l] = 0x80;
+  const dv = new DataView(buf.buffer);
+  dv.setUint32(nb - 8, Math.floor(l * 8 / 0x100000000)); dv.setUint32(nb - 4, (l * 8) >>> 0);
+  let h = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  const w = new Uint32Array(64);
+  const rr = (x, n) => (x >>> n) | (x << (32 - n));
+  for (let o = 0; o < nb; o += 64) {
+    for (let i = 0; i < 16; i++) w[i] = dv.getUint32(o + i * 4);
+    for (let i = 16; i < 64; i++) {
+      const s0 = rr(w[i-15],7) ^ rr(w[i-15],18) ^ (w[i-15] >>> 3);
+      const s1 = rr(w[i-2],17) ^ rr(w[i-2],19) ^ (w[i-2] >>> 10);
+      w[i] = (w[i-16] + s0 + w[i-7] + s1) >>> 0;
+    }
+    let [a,b,c,d,e,f,g,hh] = h;
+    for (let i = 0; i < 64; i++) {
+      const S1 = rr(e,6) ^ rr(e,11) ^ rr(e,25), ch = (e & f) ^ (~e & g), t1 = (hh + S1 + ch + K256[i] + w[i]) >>> 0;
+      const S0 = rr(a,2) ^ rr(a,13) ^ rr(a,22), mj = (a & b) ^ (a & c) ^ (b & c), t2 = (S0 + mj) >>> 0;
+      hh = g; g = f; f = e; e = (d + t1) >>> 0; d = c; c = b; b = a; a = (t1 + t2) >>> 0;
+    }
+    h = [h[0]+a,h[1]+b,h[2]+c,h[3]+d,h[4]+e,h[5]+f,h[6]+g,h[7]+hh].map(x => x >>> 0);
+  }
+  return h.map(x => x.toString(16).padStart(8, '0')).join('');
+}
+const short = h => h.slice(0, 4) + '…' + h.slice(-4);
+const seedOf = s => parseInt(sha256(s).slice(0, 8), 16);
+function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+const f3 = n => n.toFixed(3);
+const TXURL = h => 'https://preprod.cardanoscan.io/transaction/' + h;
+
+/* ---------- data ---------- */
+const SUP = [
+  { id:'tb', name:'TechBlog',      kind:'Developer blog',     imp:1000, price:7, prom:7,  ppp:'1.00', salt:'tb-31c9e0', award:7, bond:1.75, del:8, verdict:'pass',  deliv:'8 of 7' },
+  { id:'cp', name:'CodePodcast',   kind:'Weekly podcast',     imp:1000, price:6, prom:8,  ppp:'0.75', salt:'cp-8e02a7', award:6, bond:1.5,  del:6, verdict:'short', deliv:'6 of 8' },
+  { id:'dn', name:'DevNewsletter', kind:'Engineering digest', imp:1500, price:7, prom:12, ppp:'0.39', salt:'dn-5b77d4', award:7, bond:1.75, del:0, verdict:'under', deliv:'0 of 12' },
+  { id:'gf', name:'GamingForum',   kind:'Community forum',    imp:1000, price:3, prom:4,  ppp:'0.75', salt:'gf-c4190b', lost:true }
+];
+const BY = Object.fromEntries(SUP.map(s => [s.id, s]));
+SUP.forEach(s => { s.pre = [s.price, s.imp, s.prom, s.salt].join('|'); s.commit = sha256(s.pre); s.seal = s.commit.slice(0, 4); });
+const TX = k => sha256('bid-royale/preprod/' + k);
+const TENDER = sha256('tender-001|budget=20|gate=5|bond=25%|fee=0.2');
+const RECEIPT = sha256('receipt|net=-10.875|signups=14');
+
+/* ---------- svg helpers ---------- */
+function blob(seed, n = 13, r0 = 29, j = 2.4) {
+  const rnd = rng(seed), pts = [];
+  for (let k = 0; k < n; k++) { const a = k / n * Math.PI * 2, r = r0 + (rnd() - .5) * 2 * j; pts.push([32 + Math.cos(a) * r, 32 + Math.sin(a) * r]); }
+  const mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  const m0 = mid(pts[n - 1], pts[0]);
+  let d = `M${m0[0].toFixed(1)} ${m0[1].toFixed(1)}`;
+  for (let k = 0; k < n; k++) { const p = pts[k], m = mid(p, pts[(k + 1) % n]); d += ` Q${p[0].toFixed(1)} ${p[1].toFixed(1)} ${m[0].toFixed(1)} ${m[1].toFixed(1)}`; }
+  return d + 'Z';
+}
+function sealSVG(hex, key) {
+  const d = blob(seedOf('seal' + key));
+  const mf = 'JetBrains Mono,IBM Plex Mono,ui-monospace,Menlo,monospace';
+  return `<svg viewBox="0 0 64 64" aria-hidden="true"><path d="${d}" fill="url(#wax)" stroke="#6d5118" stroke-opacity=".55" stroke-width="1"/>
+<circle cx="32" cy="32" r="21" fill="none" stroke="#6d5118" stroke-opacity=".4" stroke-width="1.3"/>
+<circle cx="32" cy="32" r="22.6" fill="none" stroke="#fff3cf" stroke-opacity=".38" stroke-width=".8"/>
+<text x="32.7" y="36.6" text-anchor="middle" font-family="${mf}" font-size="12" font-weight="600" fill="#fff3cf" fill-opacity=".55">${hex}</text>
+<text x="32" y="36" text-anchor="middle" font-family="${mf}" font-size="12" font-weight="600" fill="#5a4210">${hex}</text></svg>`;
+}
+function sigPath(seed) {
+  const r = rng(seed); let x = 10, d = `M${x} ${(26 + r() * 8).toFixed(1)}`;
+  const n = 8 + Math.floor(r() * 3);
+  for (let i = 0; i < n; i++) {
+    const dx = 9 + r() * 12, up = r() > .4, loop = r() > .55;
+    const c1x = x + (loop ? dx * 1.35 : dx * .3), c2x = x + (loop ? -dx * .15 : dx * .75);
+    const c1y = up ? 0 + r() * 12 : 30 + r() * 12, c2y = up ? 4 + r() * 16 : 26 + r() * 14, ny = 12 + r() * 26;
+    d += ` C${c1x.toFixed(1)} ${c1y.toFixed(1)} ${c2x.toFixed(1)} ${c2y.toFixed(1)} ${(x + dx).toFixed(1)} ${ny.toFixed(1)}`;
+    x += dx;
+  }
+  d += ` C${(x + 10).toFixed(1)} ${(36 + r() * 5).toFixed(1)} ${(x + 30).toFixed(1)} ${(28 + r() * 5).toFixed(1)} ${Math.min(x + 64, 214).toFixed(1)} ${(21 + r() * 6).toFixed(1)}`;
+  return d;
+}
+function rosette(cx, cy, R, n, stroke, op) {
+  let s = '';
+  for (let k = 0; k < n; k++) {
+    const a = (k * 180 / n).toFixed(2);
+    s += `<ellipse cx="${cx}" cy="${cy}" rx="${R}" ry="${(R * .34).toFixed(1)}" transform="rotate(${a} ${cx} ${cy})"/>`;
+    if (k % 2) s += `<ellipse cx="${cx}" cy="${cy}" rx="${(R * .78).toFixed(1)}" ry="${(R * .6).toFixed(1)}" transform="rotate(${a} ${cx} ${cy})"/>`;
+  }
+  return `<g fill="none" stroke="${stroke}" stroke-width=".55" stroke-opacity="${op}">${s}<circle cx="${cx}" cy="${cy}" r="${R}"/><circle cx="${cx}" cy="${cy}" r="${(R * .12).toFixed(1)}"/></g>`;
+}
+const badge = (t, x = '') => t === 'real'
+  ? `<span class="badge b-real${x}" title="Real preprod transaction with explorer link"><i></i>REAL</span>`
+  : t === 'sim'
+  ? `<span class="badge b-sim${x}" title="Simulated, no funds moved"><i></i>SIMULATED</span>`
+  : `<span class="badge b-rec${x}" title="Pre-recorded canned replay"><i></i>PRE-RECORDED</span>`;
+const txLink = k => { const h = TX(k); return `<a class="tx" href="${TXURL(h)}" target="_blank" rel="noopener" title="${h}"><span>${short(h)}</span><svg viewBox="0 0 12 12"><path d="M4 2h6v6M10 2 3 9"/></svg></a>`; };
+const stampHTML = (cls, s1, s2) => `<div class="stamp ${cls}"><div class="stamp-in"><span class="s1">${s1}</span><span class="s2">${s2}</span></div></div>`;
+
+/* ---------- markup ---------- */
+function coverHTML() {
+  const words = [['Budget'],['20','hl'],['tUSDM,','hl'],['technical'],['users,'],['pay'],['per'],['verified'],['signup.']];
+  const q = words.map((w, i) => `<span class="w${w[1] ? ' hl' : ''}" style="--i:${i}">${w[0]}</span>`).join(' ');
+  return `<div class="view v-cover" data-v="cover"><div class="cover">
+    <div class="cv-l">
+      <div class="cv-cat lbl"><span>Sale No. 001</span><span>Thursday 8 October 2026</span><span>Lots 1 to 4</span></div>
+      <blockquote class="quote"><span class="qm">“</span>${q}<span class="qm">”</span></blockquote>
+      <div class="flow"><span class="nd">NeoRack</span><span class="ln"></span><span class="nd ag">Consumer agent</span><span class="ln"></span><span class="nd">Tender Board</span></div>
+    </div>
+    <aside class="notice">
+      <div class="nt-head"><span class="lbl">Tender notice</span><span class="lbl">No. 001</span></div>
+      <h2>Invitation <em>to bid</em></h2>
+      <p class="nt-sub">One audience of technical users, paid per verified signup.</p>
+      <dl class="terms">
+        <div class="trow" style="--i:0"><dt class="lbl">Budget</dt><dd><b>20</b> tUSDM ${badge('real')}</dd></div>
+        <div class="trow" style="--i:1"><dt class="lbl">Gate</dt><dd><b>5</b> verified signups per 1,000 impressions</dd></div>
+        <div class="trow" style="--i:2"><dt class="lbl">Bond</dt><dd><b>25%</b> of award, locked by each winner ${badge('real')}</dd></div>
+        <div class="trow" style="--i:3"><dt class="lbl">Bid fee</dt><dd><b>0.2</b> tUSDM per bidder ${badge('sim')}</dd></div>
+      </dl>
+      <div class="nt-foot"><span class="posted">Posted to the Tender Board</span><div class="nt-seal">${sealSVG(TENDER.slice(0, 4), 'tender')}</div></div>
+    </aside>
+  </div></div>`;
+}
+
+function lotHTML(s, k) {
+  const tilt = ['-.35deg', '.3deg', '-.25deg', '.4deg'][k];
+  const half = sealSVG(s.seal, s.id);
+  const h = s.commit;
+  const sigs = (kind, label, amt, who, key, seedKey) => `<div class="led-row" data-k="${kind}">
+      <div class="led-top"><span class="lbl sm">${label}</span><span class="amt">${amt}<small>tUSDM</small></span></div>
+      <svg class="sig" viewBox="0 0 220 44" preserveAspectRatio="none" aria-hidden="true"><line class="base" x1="6" y1="38" x2="214" y2="38"/><path class="x" d="M9 29l7 7M16 29l-7 7"/><path class="pen" pathLength="1" d="${sigPath(seedOf(seedKey))}"/></svg>
+      <div class="led-tx">${badge('real')}${txLink(key)}<span class="led-who">${who}</span></div></div>`;
+  const marks = n => { // tally marks 0..n-1
+    let out = '';
+    const r = rng(seedOf('tally' + s.id + n));
+    for (let i = 0; i < n; i++) {
+      const g = Math.floor(i / 5), m = i % 5, gx = 16 + g * 78;
+      const jx = (r() - .5) * 2.2, jy = (r() - .5) * 3;
+      out += m < 4
+        ? `M${(gx + m * 14 + jx).toFixed(1)} ${(10 + jy).toFixed(1)} L${(gx + m * 14 + jx + (r() - .5) * 2).toFixed(1)} ${(88 + jy).toFixed(1)}`
+        : `M${(gx - 7).toFixed(1)} ${(74 + jy).toFixed(1)} L${(gx + 53).toFixed(1)} ${(28 + jy).toFixed(1)}`;
+      out += '|';
+    }
+    return out.split('|').filter(Boolean);
+  };
+  const ghost = marks(s.prom).map(d => `<path class="ghost" pathLength="1" d="${d}"/>`).join('');
+  const ink = s.lost ? '' : marks(s.del).map(d => `<path class="mk" pathLength="1" d="${d}"/>`).join('');
+  const nfmt = n => n.toLocaleString('en-US');
+  let setFace = '';
+  if (s.id === 'tb') setFace = `${stampHTML('pass', 'Pass', 'delivered 8 of 7')}`;
+  if (s.id === 'cp') setFace = `${stampHTML('short', 'Short of<br>promise', '6 of 8 · gate met')}`;
+  if (s.id === 'dn') setFace = `${stampHTML('under', 'Under gate', '0 of 12 · gate missed')}`;
+  let setBody = '';
+  if (s.id === 'tb') setBody = `<div class="set-row"><span>Award paid to TechBlog</span><b>7.000</b></div><div class="set-row"><span>Bond returned</span><b>1.750</b></div>`;
+  if (s.id === 'cp') setBody = `<div class="set-row"><span>Award paid to CodePodcast</span><b>6.000</b></div>
+      <div class="slot sm" data-slot="cp"><div class="slip-w"><div class="slip gold"><span>1.5 × (8 − 6) ÷ 8 forfeit</span><b>0.375</b></div></div></div>
+      <div class="set-row"><span>Bond remainder returned</span><b>1.125</b></div>`;
+  if (s.id === 'dn') setBody = `<div class="slot" data-slot="dn1"><div class="slip-w"><div class="slip"><span>Award refunded</span><b>+7.000</b></div></div></div>
+      <div class="slot" data-slot="dn2"><div class="slip-w"><div class="slip"><span>Bond forfeited</span><b>+1.750</b></div></div></div>
+      <div class="set-note"><span class="n1">Delivered 0 of 12 promised. The gate of 5 per 1,000 was missed.</span><span class="n2">Returned to the Consumer: 8.750</span></div>`;
+  const settleTx = s.lost ? '' : `<div class="set-tx">${badge('real')}${txLink('settle-' + s.id)}<span class="led-who">settlement</span></div>`;
+  const faceSet = s.lost ? '' : `<div class="face f-set">
+      <div class="stamp-slot"><div class="stamp-ph">Verdict pending</div><div class="stamp-pos">${setFace}</div></div>
+      <div class="set-body">${setBody}</div>${settleTx}</div>`;
+  const faceLed = s.lost ? '' : `<div class="face f-led">
+      ${sigs('award', 'Award · Consumer', f3(s.award), 'NeoRack Consumer', 'award-' + s.id, 'sigC' + s.id)}
+      ${sigs('bond', `Bond 25% · ${s.name}`, f3(s.bond), s.name, 'bond-' + s.id, 'sigS' + s.id)}</div>`;
+  const faceDel = s.lost ? '' : `<div class="face f-del">
+      <div class="del-row"><span class="lbl">Impressions</span><b class="imp" data-t="${s.imp}">0</b></div>
+      <svg class="tally" viewBox="0 0 250 100" aria-hidden="true">${ghost}${ink}</svg>
+      <div class="del-ver"><div><span class="lbl">Verified signups</span><b class="ver">0</b><span class="wait">Waiting for the first signup</span></div>
+      <div class="del-meta">promised <strong>${s.prom}</strong> per 1,000<br>gate <strong>5</strong> per 1,000</div></div></div>`;
+  return `<article class="lot" data-id="${s.id}" data-face="env" data-tone="ink" style="--i:${k};--tilt:${tilt}">
+  <header class="lot-h"><div class="lot-no"><span class="lbl">Lot No.</span><b>${k + 1}</b></div><div class="lot-ti"><h3>${s.name}</h3><p>${s.kind}</p></div></header>
+  <div class="lot-body">
+    <div class="face f-env">
+      <div class="env-label lbl">Sealed bid</div>
+      <div class="env-wrap"><div class="env">
+        <div class="env-back"></div><div class="peek"></div>
+        <svg class="env-front" viewBox="0 0 188 118" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 0 L94 66 L0 118Z" fill="#efe6d1" stroke="rgba(27,23,18,.26)" stroke-width="1"/>
+          <path d="M188 0 L94 66 L188 118Z" fill="#ece2cb" stroke="rgba(27,23,18,.26)" stroke-width="1"/>
+          <path d="M0 118 L94 58 L188 118Z" fill="#f5edda" stroke="rgba(27,23,18,.3)" stroke-width="1"/></svg>
+        <div class="env-hash">${h.slice(0, 32)}<br>${h.slice(32)}</div>
+        <div class="flap-w"><div class="flap"></div></div>
+        <div class="seal"><div class="half hl">${half}</div><div class="half hr">${half}</div></div>
+      </div></div>
+      <div class="fee"><span>Bid fee 0.2 tUSDM</span>${badge('sim')}</div>
+    </div>
+    <div class="face f-bid"><div class="letter">
+      <div class="lt-top"><span class="lbl">Bid revealed</span><span class="lbl sm">Lot ${k + 1}</span></div>
+      <div class="lt-grid">
+        <div><span class="lbl sm">Impressions</span><b>${nfmt(s.imp)}</b></div>
+        <div><span class="lbl sm">Price</span><b>${s.price}<small>tUSDM</small></b></div>
+        <div><span class="lbl sm">Promised / 1,000</span><b>${s.prom}</b></div>
+        <div><span class="lbl sm">Per promised signup</span><b>${s.ppp}</b></div>
+      </div>
+      <div class="lt-hash"><svg class="lt-chk" viewBox="0 0 14 14" aria-hidden="true"><path pathLength="1" d="M2.5 7.5 L5.8 10.8 L11.5 3.5"/></svg><span>Recomputed</span><span class="mono" title="${s.commit}">${short(s.commit)}</span><span class="lt-ok">Matches seal ${s.seal}</span><span class="lt-pre mono">SHA-256( ${s.pre.split('|').join(' | ')} )</span></div>
+      <div class="lt-res">Awaiting the ranking</div>
+    </div></div>
+    ${faceLed}${faceDel}${faceSet}
+    ${s.lost ? `<div class="stamp-pos">${stampHTML('lost', 'Lost bid', 'below gate · 4 &lt; 5')}</div>` : ''}
+  </div>
+  <footer class="lot-f"><span class="dot"></span><span class="st">Awaiting the sale</span></footer>
+</article>`;
+}
+
+function roomHTML() {
+  const pips = '<span class="pip sim"></span>'.repeat(4) + '<span class="pip real"></span>'.repeat(6);
+  return `<div class="view v-room" data-v="room">
+    <div class="room-head">
+      <div class="budget">
+        <div class="row"><span class="lbl">Budget filled · allocation by price per promised signup</span><span class="fig"><span id="bud" data-v="0">0</span><small>/ 20 tUSDM</small></span></div>
+        <div class="bar"><i class="seg seg-dn">Lot 3 · 7</i><i class="seg seg-cp">Lot 2 · 6</i><i class="seg seg-tb">Lot 1 · 7</i></div>
+        <div class="bar-s"><span class="lbl sm bud-state" id="bud-state">Bidding open</span><span class="lbl sm">Escrowed for real in scene IV</span></div>
+      </div>
+      <div class="purse">
+        <div class="row"><span class="lbl">NeoRack Consumer · purse</span>${badge('real')}</div>
+        <div class="pfig-w">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M9.5 13.5C4.5 18.5 4.5 27 10.5 28.5h11c6-1.5 6-10 1-15z"/><path d="M11 13.5 9.6 8h12.8L21 13.5M10 13.5h12"/><circle cx="16" cy="21.5" r="3"/></svg>
+          <b class="pfig" id="pfig" data-v="20">20.000</b><small>tUSDM</small><span class="pdelta" id="pdelta"></span>
+        </div>
+      </div>
+    </div>
+    <div class="lots" id="lots">${SUP.map(lotHTML).join('')}</div>
+    <div class="foot" id="foot" data-p="">
+      <div class="pane p-esc">
+        <div class="grp"><span class="lbl">Tender terms</span><span class="ital">Gate 5 per 1,000 · bond 25% of award · bid fee 0.2</span></div>
+        <div class="grp"><span class="lbl">Escrows</span><span class="pips" id="pips">${pips}</span><span class="cnt"><span id="esc-n">0</span> / 10</span></div>
+      </div>
+      <div class="pane p-feed">
+        <div class="grp">${badge('sim')}<span class="lbl">NeoRack signup feed</span><span class="ital" id="feed-evt">waiting for the first event</span></div>
+        <div class="grp"><span class="chk" style="--c:0"><svg viewBox="0 0 12 12"><path pathLength="1" d="M2 6.4 4.8 9 10 3"/></svg>Signature</span><span class="chk" style="--c:1"><svg viewBox="0 0 12 12"><path pathLength="1" d="M2 6.4 4.8 9 10 3"/></svg>Attribution</span><span class="chk" style="--c:2"><svg viewBox="0 0 12 12"><path pathLength="1" d="M2 6.4 4.8 9 10 3"/></svg>Time window</span><span class="cnt"><span id="feed-n">0</span><span class="lbl sm" style="margin-left:6px">verified</span></span></div>
+      </div>
+      <div class="pane p-led">
+        <div class="grp"><span class="lbl">Consumer ledger</span>${badge('real')}</div>
+        <div class="grp" style="gap:26px">
+          <span class="li neg" id="li-esc"><span class="lbl sm">Escrowed</span><b>−20.000</b></span>
+          <span class="li pos" id="li-ref"><span class="lbl sm">Award refund</span><b>+7.000</b></span>
+          <span class="li pos" id="li-for"><span class="lbl sm">Forfeits</span><b id="for-v">+0.375</b></span>
+        </div>
+      </div>
+    </div>
+    <div class="trails"><svg aria-hidden="true"></svg></div>
+    <div class="gavel-ov" id="gov" aria-hidden="true">
+      <div class="gv">
+        <div class="gv-art">
+          <svg class="gv-block" viewBox="0 0 104 38"><ellipse cx="52" cy="33" rx="50" ry="5" fill="#1b1712" opacity=".18"/><rect x="2" y="4" width="100" height="26" rx="4" fill="#3a2a17"/><rect x="2" y="4" width="100" height="7" rx="3" fill="#6a4d2a"/><rect x="2" y="23" width="100" height="7" rx="3" fill="#25190c"/></svg>
+          <svg class="gv-gavel" id="gavel" viewBox="0 0 320 120"><defs><linearGradient id="gw" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#7a5632"/><stop offset=".5" stop-color="#4e3418"/><stop offset="1" stop-color="#2e1d0c"/></linearGradient></defs>
+            <rect x="118" y="45" width="196" height="14" rx="7" fill="url(#gw)"/>
+            <rect x="8" y="14" width="118" height="68" rx="15" fill="url(#gw)"/>
+            <rect x="26" y="14" width="9" height="68" fill="#b08a3e"/><rect x="99" y="14" width="9" height="68" fill="#b08a3e"/>
+            <rect x="12" y="20" width="106" height="9" rx="4" fill="#fff" opacity=".12"/></svg>
+        </div>
+        <div class="gv-txt"><div class="sold">Sold.</div><div class="rule"></div><div class="lbl">Hammer · 20 of 20 tUSDM · 3 lots</div></div>
+        <span class="ring" id="ring"></span>
+      </div>
+    </div>
+  </div>`;
+}
+
+function receiptHTML() {
+  const rows = [
+    ['TechBlog', 'Pass', 'pass', '+6.800', 6.8, 'real+sim', '8 of 7'],
+    ['CodePodcast', 'Short of promise', 'short', '+5.425', 5.425, 'real+sim', '6 of 8'],
+    ['GamingForum', 'Lost bid', 'lost', '−0.200', -0.2, 'sim', 'below gate'],
+    ['DevNewsletter', 'Under gate', 'under', '−1.950', -1.95, 'real+sim', '0 of 12']
+  ];
+  const lb = rows.map((r, i) => `<li style="--i:${i}"><span class="rk">${i + 1}</span><span class="nm">${r[0]}<small>${r[6]}</small></span><span class="chip ${r[2]}">${r[1]}</span><span class="nt ${r[4] < 0 ? 'neg' : ''}">${r[3]}</span>
+      <span class="bx"><span class="trk"><i class="${r[4] < 0 ? 'neg' : ''}" style="width:${Math.max(3, Math.abs(r[4]) / 6.8 * 100).toFixed(1)}%"></i></span><span class="bg">${r[5] === 'sim' ? badge('sim', ' xs') : badge('real', ' xs') + badge('sim', ' xs')}</span></span></li>`).join('');
+  const r2 = [['TechBlog', 50], ['CodePodcast', 50], ['DevNewsletter', 0]].map((r, i) =>
+    `<div class="row" style="--i:${i}"><span>${r[0]}</span><span class="tr"><i style="--w:${r[1]}%;--i:${i}"></i></span><span class="pc">${r[1]}%</span></div>`).join('');
+  const links = badge('real', ' xs') + ['tb', 'cp', 'dn'].map(id => `<span class="sl"><span>${BY[id].name}</span>${txLink('settle-' + id)}</span>`).join('');
+  return `<div class="view v-receipt" data-v="receipt"><article class="invoice" id="invoice">
+    <svg class="guil g1" viewBox="0 0 520 520" aria-hidden="true">${rosette(260, 260, 250, 40, '#8e231e', .5)}</svg>
+    <svg class="guil g2" viewBox="0 0 520 520" aria-hidden="true">${rosette(260, 260, 250, 34, '#94701e', .6)}</svg>
+    <header class="inv-h">
+      <div><span class="lbl">Invoice of sale</span><h2>NeoRack <em>Consumer</em></h2><p>Sale No. 001 · 8 Oct 2026 · settled on Cardano preprod, test USDM</p></div>
+      <div class="inv-r"><div><span class="lbl">Invoice No.</span><b>NR-0001</b></div>
+        <div class="rosette"><svg class="ro" viewBox="0 0 78 78" aria-hidden="true">${rosette(39, 39, 37, 24, '#8e231e', .6)}</svg><div class="rs">${sealSVG(RECEIPT.slice(0, 4), 'receipt')}</div></div></div>
+    </header>
+    <div class="inv-body">
+      <section class="net">
+        <span class="lbl">Net cost to the Consumer</span>
+        <div class="net-fig"><span class="net-num"><span class="mn">−</span><span class="nn" id="netnum">0.000</span></span><span class="unit">tUSDM</span></div>
+        <p class="net-sub"><b>14 verified signups</b>, about 0.78 each</p>
+        <ul class="brk">
+          <li style="--i:0"><span>Escrowed</span>${badge('real')}<b>−20.000</b></li>
+          <li style="--i:1"><span>Award refund, DevNewsletter</span>${badge('real')}<b>+7.000</b></li>
+          <li style="--i:2"><span>Forfeits <small>1.750 + 0.375</small></span>${badge('real')}<b>+2.125</b></li>
+        </ul>
+      </section>
+      <section class="lead">
+        <h3 class="lbl"><span>ROI leaderboard · supplier net</span><span>tUSDM</span></h3>
+        <ul class="lb">${lb}
+          <li style="--i:4"><span class="rk"></span><span class="nm">Tender Board<small>4 bid fees</small></span><span class="chip ph"></span><span class="nt">+0.800</span><span class="bx"><span class="trk"><i style="width:11.8%"></i></span><span class="bg">${badge('sim', ' xs')}</span></span></li>
+        </ul>
+        <div class="r2"><h3 class="lbl"><span>Round 2 allocation</span><span>illustrative, not executed</span></h3>${r2}</div>
+      </section>
+    </div>
+    <footer class="inv-f"><p class="closing">Don't pay for impressions. <em>Pay for outcomes.</em></p><div class="settle-links">${links}</div></footer>
+  </article></div>`;
+}
+
+/* ---------- engine ---------- */
+const SCN = [
+  ['The brief',        'NeoRack states one sentence. Its Consumer agent turns it into a tender and posts it to the Board.'],
+  ['Sealed bids',      'Four Supplier agents from the Masumi registry each send a sealed bid and pay a 0.2 bid fee.'],
+  ['Reveal and rank',  'Envelopes open, the Board recomputes every hash, then fills the budget in price order.'],
+  ['Lock',             'Three awards and three bonds are signed into escrow. Six REAL transactions.'],
+  ['Delivery',         'Impressions run. Each signup event passes three deterministic checks before it counts.'],
+  ['Verdicts',         'The Board signs one verdict per supplier, and escrow settles by the rules.'],
+  ['Receipt',          'The Consumer paid only for what was verified.']
+];
+const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
+const RAILNAMES = ['Brief', 'Sealed bids', 'Reveal', 'Lock', 'Delivery', 'Verdicts', 'Receipt'];
+const S = [0, 3500, 7000, 13500, 17500, 22000, 27500];
+const END = 30000;
+
+const views = $('#views');
+let t = 0, idx = 0, playing = false, tweens = [], pausedAnims = [], activeScene = -1;
+const cues = [];
+const at = (s, o, fn) => cues.push({ t: S[s] + o, fn });
+
+const R = sel => $(sel, views);
+const L = id => $(`.lot[data-id="${id}"]`, views);
+const LOTS = () => $$('.lot', views);
+const wait = (el, cls, on = true) => el && el.classList.toggle(cls, on);
+
+function build() {
+  views.innerHTML = coverHTML() + roomHTML() + receiptHTML();
+}
+function view(name) { $$('.view', views).forEach(v => v.classList.toggle('on', v.dataset.v === name)); }
+
+const easeOut = x => 1 - Math.pow(1 - x, 3);
+function tween(fn, from, to, dur, instant, ease) {
+  if (instant || dur <= 0) { fn(to); return; }
+  tweens.push({ fn, from, to, dur, t: 0, ease: ease || easeOut });
+}
+function stepTweens(dt) {
+  for (const tw of tweens.slice()) {
+    tw.t += dt;
+    const p = Math.min(1, tw.t / tw.dur);
+    tw.fn(tw.from + (tw.to - tw.from) * tw.ease(p));
+    if (p >= 1) tweens.splice(tweens.indexOf(tw), 1);
+  }
+}
+
+function cap(i, instant) {
+  $('#cap-k').textContent = `Scene ${ROMAN[i]} of VII`;
+  $('#cap-t').innerHTML = i === 2 ? 'Reveal <em>and</em> rank' : SCN[i][0];
+  setCapLine(SCN[i][1], instant);
+  if (!instant) $('#cap-t').animate([{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 600, easing: 'cubic-bezier(.22,1,.36,1)' });
+}
+function setCapLine(text, instant) {
+  const el = $('#cap-l'); el.textContent = text;
+  if (!instant) el.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 700, delay: 120, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'backwards' });
+}
+function setStatus(id, text, tone) { const l = L(id); if (!l) return; $('.st', l).textContent = text; l.dataset.tone = tone || 'ink'; }
+function setFace(id, f) { const l = L(id); if (l) l.dataset.face = f; }
+function setRes(id, text, cls) { const r = $('.lt-res', L(id)); r.textContent = text; r.className = 'lt-res ' + (cls || ''); }
+function shake(px, dur, delay, amp = 3) {
+  const el = R('.lots'); if (!el) return;
+  el.animate([{ transform: 'translateY(0)' }, { transform: `translateY(${px}px)`, offset: .18 }, { transform: `translateY(${-px * .4}px)`, offset: .45 }, { transform: `translateY(${px * .15}px)`, offset: .7 }, { transform: 'none' }], { duration: dur, delay: delay || 0, easing: 'ease-out' });
+}
+function thud(stamp, instant, weight = 1) {
+  stamp.classList.add('on');
+  if (instant) return;
+  const r = getComputedStyle(stamp).getPropertyValue('--r').trim() || '0deg';
+  const sc = 1 + weight * 1.3;
+  stamp.animate([
+    { opacity: 0, transform: `rotate(${r}) scale(${sc})`, easing: 'cubic-bezier(.55,0,.95,.5)' },
+    { opacity: 1, transform: `rotate(${r}) scale(.93)`, offset: .52, easing: 'cubic-bezier(.2,.8,.3,1)' },
+    { transform: `rotate(${r}) scale(1.03)`, offset: .74 },
+    { opacity: 1, transform: `rotate(${r}) scale(1)` }
+  ], { duration: 520 });
+  stamp.firstElementChild.animate([
+    { boxShadow: '0 0 18px 5px currentColor', textShadow: '0 0 10px currentColor', opacity: .55 },
+    { boxShadow: '0 0 0 0 transparent', textShadow: '0 0 0 transparent', opacity: 1 }
+  ], { duration: 1200, delay: 260, easing: 'ease-out', fill: 'backwards' });
+  shake(3 * weight, 360, 250);
+}
+function bump(el) { el.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.18)' }, { transform: 'scale(1)' }], { duration: 320, easing: 'cubic-bezier(.22,1,.36,1)' }); }
+
+function burst(lot) {
+  const seal = $('.seal', lot), body = $('.f-env', lot);
+  const sr = seal.getBoundingClientRect(), br = body.getBoundingClientRect();
+  for (let i = 0; i < 7; i++) {
+    const s = document.createElement('i'); s.className = 'shard';
+    s.style.left = (sr.left - br.left + sr.width / 2) + 'px'; s.style.top = (sr.top - br.top + sr.height / 2) + 'px';
+    body.appendChild(s);
+    const a = (i / 7) * Math.PI * 2 + Math.random() * .6, d = 22 + Math.random() * 26;
+    s.animate([{ transform: 'translate(0,0) rotate(0deg) scale(1)', opacity: 1 }, { transform: `translate(${Math.cos(a) * d}px,${Math.sin(a) * d + 14}px) rotate(${(Math.random() - .5) * 360}deg) scale(.4)`, opacity: 0 }], { duration: 650, easing: 'cubic-bezier(.2,.8,.3,1)', fill: 'forwards' }).onfinish = () => s.remove();
+  }
+}
+
+/* counters on the engine clock */
+function setBudget(to, instant) {
+  const b = R('#bud'); const from = +b.dataset.v; b.dataset.v = to;
+  tween(v => { b.textContent = Math.round(v); }, from, to, 800, instant);
+}
+function purseMove(delta, instant, dur = 700) {
+  const p = R('#pfig'); const from = +p.dataset.v, to = from + delta; p.dataset.v = to;
+  tween(v => { p.textContent = v.toFixed(3); }, from, to, dur, instant);
+  if (delta > 0 && !instant) {
+    p.animate([{ backgroundColor: 'rgba(176,138,62,.6)' }, { backgroundColor: 'rgba(176,138,62,0)' }], { duration: 1400, easing: 'ease-out' });
+    const d = R('#pdelta'); d.textContent = '+' + delta.toFixed(3);
+    d.animate([{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none', offset: .2 }, { opacity: 1, transform: 'none', offset: .65 }, { opacity: 0, transform: 'translateY(-8px)' }], { duration: 1500, easing: 'ease-out' });
+  } else if (delta < 0 && !instant) {
+    p.animate([{ backgroundColor: 'rgba(27,23,18,.14)' }, { backgroundColor: 'rgba(27,23,18,0)' }], { duration: 900, easing: 'ease-out' });
+  }
+}
+function pipsOn(n) { $$('.pip', views).forEach((p, i) => p.classList.toggle('on', i < n)); }
+function setEsc(n, instant) { const c = R('#esc-n'); const from = +c.dataset.v || 0; c.dataset.v = n; tween(v => { c.textContent = Math.round(v); }, from, n, 500, instant); }
+
+/* money in flight: clone a slip, arc it to the purse, draw the ink trail */
+function fly(srcEl, instant, dur = 1300, delay = 0) {
+  const room = R('.v-room'), dst = R('#pfig');
+  srcEl.parentElement.classList.add('empty');
+  srcEl.classList.add('gone');
+  if (instant) return;
+  const rr = room.getBoundingClientRect(), s = srcEl.getBoundingClientRect(), d = dst.getBoundingClientRect();
+  const c = srcEl.cloneNode(true); c.classList.remove('gone'); c.classList.add('flying');
+  Object.assign(c.style, { position: 'absolute', left: (s.left - rr.left) + 'px', top: (s.top - rr.top) + 'px', width: s.width + 'px', height: s.height + 'px', inset: 'auto', margin: '0' });
+  c.style.left = (s.left - rr.left) + 'px'; c.style.top = (s.top - rr.top) + 'px';
+  room.appendChild(c);
+  const sx = s.left - rr.left + s.width / 2, sy = s.top - rr.top + s.height / 2;
+  const ex = d.left - rr.left + 20, ey = d.top - rr.top + d.height / 2;
+  const dx = ex - sx, dy = ey - sy;
+  c.animate([
+    { transform: 'translate(0,0) rotate(0deg) scale(1)', opacity: 1, offset: 0 },
+    { transform: `translate(${dx * .08}px,-34px) rotate(-5deg) scale(1.1)`, opacity: 1, offset: .18 },
+    { transform: `translate(${dx * .62}px,${dy * .62 - 70}px) rotate(5deg) scale(.72)`, opacity: 1, offset: .62 },
+    { transform: `translate(${dx}px,${dy}px) rotate(-3deg) scale(.3)`, opacity: 0, offset: 1 }
+  ], { duration: dur, delay, easing: 'cubic-bezier(.5,.05,.2,1)', fill: 'both' }).onfinish = () => c.remove();
+  const svg = $('.trails svg', room);
+  const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  p.setAttribute('pathLength', '1');
+  p.setAttribute('d', `M${sx} ${sy} C${sx + dx * .1} ${sy - 150}, ${sx + dx * .6} ${sy + dy * .6 - 150}, ${ex} ${ey}`);
+  svg.appendChild(p);
+  p.animate([{ strokeDashoffset: 1.05, opacity: 1 }, { strokeDashoffset: 0, opacity: 1, offset: .75 }, { strokeDashoffset: 0, opacity: 0 }], { duration: dur + 500, delay, easing: 'cubic-bezier(.5,.05,.2,1)', fill: 'both' }).onfinish = () => p.remove();
+}
+function wiggle(el, instant) {
+  if (instant) return;
+  el.animate([{ transform: 'none' }, { transform: 'translate(-2px,-3px) rotate(-2.5deg)', offset: .3 }, { transform: 'translate(2px,-1px) rotate(1.8deg)', offset: .65 }, { transform: 'none' }], { duration: 320, easing: 'ease-in-out' });
+}
+
+/* ---------- cue timeline ---------- */
+// Scene I
+at(0, 0,    i => { view('cover'); cap(0, i); });
+at(0, 250,  i => R('.cover').classList.add('q-in'));
+at(0, 1500, i => R('.cover').classList.add('f-in'));
+at(0, 1750, i => R('.notice').classList.add('in'));
+at(0, 2150, i => R('.notice').classList.add('rows'));
+at(0, 3000, i => R('.notice').classList.add('posted-on'));
+
+// Scene II
+at(1, 0, i => { view('room'); cap(1, i); R('.room-head').classList.add('in'); R('.foot').classList.add('in'); R('.foot').dataset.p = 'esc'; R('.lots').classList.add('dealt'); LOTS().forEach(l => setStatus(l.dataset.id, 'Invited from the registry', 'ink')); });
+at(1, 1150, i => R('.lots').classList.add('settled'));
+at(1, 650,  i => LOTS().forEach(l => l.classList.add('env-in')));
+at(1, 1250, i => { LOTS().forEach(l => l.classList.add('hash-on')); });
+at(1, 2000, i => { LOTS().forEach(l => l.classList.add('sealed')); LOTS().forEach(l => setStatus(l.dataset.id, 'Sealed bid received', 'gold')); });
+at(1, 2750, i => { LOTS().forEach(l => l.classList.add('fee-on')); pipsOn(4); setEsc(4, i); });
+
+// Scene III
+at(2, 0, i => cap(2, i));
+SUP.forEach((s, k) => {
+  at(2, 200 + k * 160,  i => { const l = L(s.id); l.classList.add('is-cracked'); if (!i) burst(l); });
+  at(2, 600 + k * 160,  i => L(s.id).classList.add('is-open'));
+  at(2, 1250 + k * 180, i => { const l = L(s.id); l.classList.add('is-unfolded'); setFace(s.id, 'bid'); setStatus(s.id, 'Revealed · hash matches', 'ink'); });
+});
+at(2, 3050, i => { const l = L('gf'); l.classList.add('lost'); thud($('.stamp', l), i, 1.15); setRes('gf', 'Promised 4 per 1,000 · gate is 5', 'out'); setStatus('gf', 'Lost bid · below gate', 'red'); });
+function win(id, rank, total, instant) {
+  setRes(id, `Rank ${rank} · Win · running total ${total}`, 'win');
+  setStatus(id, `Win · running total ${total}`, 'win');
+  const seg = R('.seg-' + id); if (seg) seg.classList.add('on');
+  setBudget(total, instant);
+}
+at(2, 3800, i => win('dn', 1, 7, i));
+at(2, 4400, i => win('cp', 2, 13, i));
+at(2, 5000, i => { win('tb', 3, 20, i); R('.v-room').classList.add('full'); R('#bud-state').textContent = 'Sold · budget full'; });
+at(2, 5300, i => R('#gov').classList.add('on'));
+at(2, 5650, i => {
+  const g = R('#gavel');
+  if (!i) {
+    g.animate([
+      { transform: 'rotate(34deg)', easing: 'cubic-bezier(.55,0,.9,.4)' },
+      { transform: 'rotate(0deg)', offset: .34, easing: 'cubic-bezier(.2,.7,.3,1)' },
+      { transform: 'rotate(13deg)', offset: .52, easing: 'cubic-bezier(.55,0,.9,.4)' },
+      { transform: 'rotate(0deg)', offset: .7, easing: 'cubic-bezier(.2,.7,.3,1)' },
+      { transform: 'rotate(0deg)' }
+    ], { duration: 1000, fill: 'forwards' });
+  } else { g.style.transform = 'rotate(0deg)'; }
+});
+at(2, 5990, i => {
+  const ov = R('#gov'); ov.classList.add('hit');
+  if (!i) {
+    shake(7, 480, 0);
+    const ring = R('#ring');
+    ring.animate([{ opacity: .8, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(26)' }], { duration: 900, easing: 'cubic-bezier(.2,.7,.3,1)' });
+  }
+});
+at(2, 6350, i => { R('#gov').classList.remove('on'); });
+
+// Scene IV
+const LOCK = ['tb', 'cp', 'dn'];
+at(3, 0, i => { cap(3, i); R('.foot').dataset.p = 'esc'; LOCK.forEach(id => { setFace(id, 'led'); setStatus(id, 'Signing escrow', 'live'); }); setStatus('gf', 'Lost bid · no escrow', 'red'); });
+LOCK.forEach((id, k) => {
+  at(3, 350 + k * 250, i => {
+    const row = $('.led-row[data-k="award"]', L(id)); row.classList.add('signed');
+    purseMove(-BY[id].award, i);
+    const n = $$('.pip.on', views).length + 1; pipsOn(n); setEsc(n, i);
+  });
+  at(3, 1750 + k * 250, i => {
+    const row = $('.led-row[data-k="bond"]', L(id)); row.classList.add('signed');
+    const n = $$('.pip.on', views).length + 1; pipsOn(n); setEsc(n, i);
+  });
+});
+at(3, 3400, i => LOCK.forEach(id => setStatus(id, 'Locked · award and bond', 'win')));
+
+// Scene V
+const EVT = ['tb', 'tb', 'cp', 'tb', 'cp', 'tb', 'cp', 'tb', 'cp', 'tb', 'cp', 'cp', 'tb', 'tb'];
+at(4, 0, i => { cap(4, i); R('.foot').dataset.p = 'feed'; LOCK.forEach(id => { setFace(id, 'del'); setStatus(id, 'Delivering', 'live'); }); });
+at(4, 250, i => LOCK.forEach(id => {
+  const el = $('.imp', L(id)), to = BY[id].imp;
+  tween(v => { el.textContent = Math.round(v).toLocaleString('en-US'); }, 0, to, 2900, i);
+}));
+EVT.forEach((id, k) => {
+  at(4, 650 + k * 215, i => {
+    const lot = L(id), n = +lot.dataset.ver || 0;
+    $$('.mk', lot)[n].classList.add('on'); lot.dataset.ver = n + 1;
+    const v = $('.ver', lot); v.textContent = n + 1; if (!i) bump(v);
+    R('#feed-n').textContent = k + 1;
+    R('#feed-evt').textContent = `evt ${short(sha256('evt' + k))} · ${BY[id].name}`;
+    $$('.chk', views).forEach(c => c.classList.remove('ok'));
+    if (i) $$('.chk', views).forEach(c => c.classList.add('ok'));
+    else { void R('.foot').offsetWidth; $$('.chk', views).forEach(c => c.classList.add('ok')); }
+  });
+});
+at(4, 3250, i => { const l = L('dn'); l.classList.add('silent'); setStatus('dn', 'No signup attributed', 'red'); });
+at(4, 3700, i => { setStatus('tb', 'Delivered · 8 verified', 'win'); setStatus('cp', 'Delivered · 6 verified', 'gold'); R('#feed-evt').textContent = '14 verified · DevNewsletter 0'; });
+
+// Scene VI
+const VER = ['tb', 'cp', 'dn'];
+at(5, 0, i => { cap(5, i); R('.foot').dataset.p = 'led'; R('#li-esc').classList.add('on'); VER.forEach(id => { setFace(id, 'set'); setStatus(id, 'Verdict pending', 'live'); }); });
+at(5, 300, i => { const l = L('tb'); l.classList.add('stamped-lot'); thud($('.stamp', l), i); setStatus('tb', 'Pass · paid in full', 'win'); });
+at(5, 1250, i => { const l = L('cp'); l.classList.add('stamped-lot'); thud($('.stamp', l), i); setStatus('cp', 'Short of promise · pro rata', 'gold'); });
+at(5, 1950, i => { fly($('.slip-w', L('cp')), i); });
+at(5, 2800, i => { purseMove(.375, i, 500); const f = R('#li-for'); f.classList.add('on'); R('#for-v').textContent = '+0.375'; });
+at(5, 2150, i => {
+  const l = L('dn'); l.classList.add('stamped-lot', 'hero'); R('.v-room').classList.add('focus');
+  thud($('.stamp', l), i, 1.5); setStatus('dn', 'Under gate · award returns', 'red');
+  setCapLine('DevNewsletter delivered 0 of 12 promised. The award and the bond go back to the Consumer.', i);
+});
+at(5, 3100, i => { const s = $$('.slot', L('dn')); s.forEach(x => wiggle($('.slip-w', x), i)); });
+at(5, 3350, i => fly($('.slip-w', $$('.slot', L('dn'))[0]), i));
+at(5, 3700, i => fly($('.slip-w', $$('.slot', L('dn'))[1]), i));
+at(5, 4350, i => { purseMove(7, i, 600); R('#li-ref').classList.add('on'); });
+at(5, 4700, i => { purseMove(1.75, i, 600); R('#for-v').textContent = '+2.125'; if (!i) bump(R('#for-v')); L('dn').classList.add('returned'); });
+at(5, 5200, i => { R('.v-room').classList.remove('focus'); L('dn').classList.remove('hero'); });
+
+// Scene VII
+at(6, 0, i => { view('receipt'); cap(6, i); R('#invoice').classList.add('in'); });
+at(6, 450, i => { const el = R('#netnum'); tween(v => { el.textContent = v.toFixed(3); }, 0, 10.875, 1500, i, x => 1 - Math.pow(1 - x, 4)); R('#invoice').classList.add('s-sub'); });
+at(6, 900, i => R('#invoice').classList.add('s-brk'));
+at(6, 1250, i => R('#invoice').classList.add('s-lead'));
+at(6, 1650, i => R('#invoice').classList.add('s-r2'));
+at(6, 2050, i => R('#invoice').classList.add('s-close'));
+cues.sort((a, b) => a.t - b.t);
+
+/* ---------- transport ---------- */
+const btnPlay = $('#btn-play'), progI = $('#prog-i'), prog = $('#prog'), clock = $('#clock'), rail = $('#rail');
+const ICON_PLAY = '<svg viewBox="0 0 16 16"><path d="M4 2.5v11l9-5.5z"/></svg>';
+const ICON_PAUSE = '<svg viewBox="0 0 16 16"><path d="M4 2.5h3v11H4zM9 2.5h3v11H9z"/></svg>';
+rail.innerHTML = RAILNAMES.map((n, i) => `<button class="step" type="button" data-s="${i}"><span class="n">${ROMAN[i]}</span><span class="t">${n}</span></button>`).join('');
+const steps = $$('.step', rail);
+
+function fmtT(ms) { const s = Math.floor(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+function syncUI() {
+  let a = 0; for (let k = 1; k < S.length; k++) if (t > S[k]) a = k;
+  progI.style.width = (t / END * 100).toFixed(2) + '%';
+  prog.setAttribute('aria-valuenow', Math.round(t / END * 100));
+  clock.textContent = fmtT(t) + ' / ' + fmtT(END);
+  if (a !== activeScene || a === 6 && t >= END) {
+    activeScene = a;
+    steps.forEach((b, k) => { b.classList.toggle('on', k === a); b.classList.toggle('done', k < a); if (k === a) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current'); });
+  }
+}
+function syncBtn() {
+  btnPlay.innerHTML = playing ? ICON_PAUSE : ICON_PLAY;
+  btnPlay.setAttribute('aria-label', playing ? 'Pause' : (t >= END ? 'Play again' : 'Play'));
+}
+function pauseAnims() { pausedAnims = document.getAnimations().filter(a => a.playState === 'running'); pausedAnims.forEach(a => a.pause()); }
+function resumeAnims() { pausedAnims.forEach(a => { try { a.play(); } catch (e) {} }); pausedAnims = []; }
+function setPlaying(p) {
+  if (p === playing) return;
+  playing = p;
+  if (p) resumeAnims(); else pauseAnims();
+  syncBtn();
+}
+
+function seek(T, play) {
+  document.getAnimations().forEach(a => { try { a.cancel(); } catch (e) {} });
+  pausedAnims = []; tweens = []; idx = 0; activeScene = -1;
+  build();
+  void views.offsetHeight;
+  document.body.classList.add('instant');
+  while (idx < cues.length && cues[idx].t < T) { try { cues[idx].fn(true); } catch (e) { console.error(e); } idx++; }
+  void document.body.offsetHeight;
+  document.body.classList.remove('instant');
+  t = T; playing = play; syncBtn(); syncUI();
+}
+
+let last = 0;
+function tick(now) {
+  requestAnimationFrame(tick);
+  const dt = Math.min(64, now - last); last = now;
+  if (!playing) return;
+  t += dt;
+  stepTweens(dt);
+  while (idx < cues.length && cues[idx].t <= t) { try { cues[idx].fn(REDUCED); } catch (e) { console.error(e); } idx++; }
+  if (t >= END) { stepTweens(1e6); t = END; playing = false; syncBtn(); }
+  syncUI();
+}
+
+btnPlay.addEventListener('click', () => { if (t >= END) seek(0, true); else setPlaying(!playing); });
+$('#btn-replay').addEventListener('click', () => seek(0, true));
+steps.forEach(b => b.addEventListener('click', () => seek(S[+b.dataset.s], true)));
+prog.addEventListener('click', e => { const r = prog.getBoundingClientRect(); seek(Math.max(0, Math.min(END - 1, (e.clientX - r.left) / r.width * END)), true); });
+document.addEventListener('keydown', e => {
+  if (e.target.closest && e.target.closest('button,a')) return;
+  if (e.code === 'Space') { e.preventDefault(); btnPlay.click(); }
+  else if (e.key === 'ArrowRight') seek(S[Math.min(6, Math.max(0, activeScene) + 1)], true);
+  else if (e.key === 'ArrowLeft') seek(S[Math.max(0, Math.max(0, activeScene) - 1)], true);
+});
+
+/* ---------- tokens strip ---------- */
+const PAL = [
+  ['Paper', '#f3ede1', 'Page ground'],
+  ['Vellum', '#faf6ec', 'Cards, envelope letters, invoice'],
+  ['Deep paper', '#e0d6bf', 'Envelopes, inset wells'],
+  ['Ink', '#1b1712', 'Text, rules, REAL badge'],
+  ['Soft ink', '#6b6354', 'Labels, secondary text'],
+  ['Oxblood', '#8e231e', 'Accent: stamps, Under gate, Lost bid'],
+  ['Gold wax', '#b08a3e', 'Seals, Short of promise'],
+  ['Pass ink', '#20382c', 'Pass verdict, hash match'],
+  ['Night', '#0b0908', 'Ribbon, hackathon HQ nod']
+];
+$('#sw').innerHTML = PAL.map(p => `<div class="sw"><div class="c" style="background:${p[1]}"></div><div class="m"><b>${p[0]}</b><span>${p[1]}</span><em>${p[2]}</em></div></div>`).join('');
+const MOT = [
+  ['Deal in', '800 ms', 'cubic-bezier(.22,1,.36,1)', [.22, 1, .36, 1], 'Lot cards, panels'],
+  ['Seal press', '450 ms', 'cubic-bezier(.2,.9,.3,1.25)', [.2, .9, .3, 1.25], 'Wax lands on the flap'],
+  ['Flap open', '800 ms', 'cubic-bezier(.65,0,.35,1)', [.65, 0, .35, 1], 'Seal cracks, flap rotates'],
+  ['Unfold', '900 ms', 'cubic-bezier(.22,1,.36,1)', [.22, 1, .36, 1], 'Bid letter opens from the fold'],
+  ['Ink write', '1100 ms', 'cubic-bezier(.65,0,.35,1)', [.65, 0, .35, 1], 'Signatures, tally marks (280 ms)'],
+  ['Stamp thud', '520 ms', 'cubic-bezier(.55,0,.95,.5) then (.2,.8,.3,1)', [.55, 0, .95, .5], 'Scale 2.3 to 1, ink bleed 1200 ms'],
+  ['Hammer', '1000 ms', 'cubic-bezier(.55,0,.9,.4)', [.55, 0, .9, .4], 'Two strikes at 340 and 700 ms'],
+  ['Fly home', '1300 ms', 'cubic-bezier(.5,.05,.2,1)', [.5, .05, .2, 1], 'Slips arc to the purse, ink trail']
+];
+function curve(b) { const x = v => 3 + v * 28, y = v => 31 - v * 28; return `<svg viewBox="0 0 34 34" aria-hidden="true"><rect x="3" y="3" width="28" height="28"/><path d="M${x(0)} ${y(0)} C${x(b[0])} ${y(b[1])} ${x(b[2])} ${y(b[3])} ${x(1)} ${y(1)}"/></svg>`; }
+$('#mt').innerHTML = MOT.map(m => `<tr><td>${m[0]}<br><span class="lbl sm" style="letter-spacing:.06em;text-transform:none;font-weight:400;font-size:11.5px;font-style:italic">${m[4]}</span></td><td class="mono">${m[1]}</td><td class="mono">${m[2]}</td><td class="hide-s">${curve(m[3])}</td></tr>`).join('');
+$('#bd').innerHTML = `<div>${badge('real')}<span>Preprod escrow or settlement. Always carries a tx link such as ${txLink('token-sample')}</span></div>
+  <div>${badge('sim')}<span>Simulated, no funds moved. Bid fees and the signup feed.</span></div>
+  <div>${badge('rec')}<span>Canned replay of a recorded run (DEMO_MODE=canned).</span></div>`;
+
+/* ---------- boot ---------- */
+function start() {
+  const m = /scene=(\d)/.exec(location.hash);
+  if (m) { const n = +m[1]; seek(n >= 7 ? END : S[n], false); }
+  else if (REDUCED) seek(END, false);
+  else seek(0, true);
+  requestAnimationFrame(ts => { last = ts; requestAnimationFrame(tick); });
+}
+let started = false;
+const go = () => { if (!started) { started = true; start(); } };
+if (document.fonts && document.fonts.ready) { document.fonts.ready.then(go); setTimeout(go, 1500); } else go();
+})();
+</script>
+</body>
+</html>

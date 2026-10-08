@@ -2,7 +2,8 @@
   "dependencies": {
     "next": "16.3.8",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "zod": "^4.6.5"
   },
   "name": "ad-slot-auction",
   "private": true,

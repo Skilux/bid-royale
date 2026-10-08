@@ -136,7 +136,7 @@ expect it to take longer than the refund path above.
 
 - Live on stage: lock (~2–3 min) and result hash submission are realistic as `REAL`
   with explorer links, given fast intervals.
-- Release (~41 min) and refund (~26 min) cannot happen within a 2-minute demo. Start
+- Release (~41 min) and refund (~26 min) cannot happen within a <90 s demo. Start
   those escrows **at least ~45 minutes before** the demo or recording, in parallel, as
   AGENTS.md's "lock escrows early" rule says. Show the resulting transactions as `REAL` links,
   and use `PRE-RECORDED` for any replay.
@@ -155,7 +155,7 @@ scaffold rule).
 |---|---|---|---|---|
 | **1** | **Pass the shortest allowed time windows.** Call `POST /payment` directly instead of the Python SDK, which hardcodes 12 h / 24 h. | Release 30 h → ~41 min, refund 24 h → ~26 min | Low | The supplier has ~14 min to submit its result, or the escrow goes to refund. Simulated traffic makes that easy. |
 | **2** | **Delete the Railway interval overrides** so the service's 20–30 s polling defaults apply. | ~10–15 min saved per run. It also keeps result submission clear of the T0 + 15 min cutoff, which 5-min polling can miss. | Trivial | More Blockfrost calls with ~10 escrows in flight. Check the free-tier rate limit. |
-| **3** | **Start the escrows early.** Kick off a "warm run" ≥ 50 min before the recording or judging. The live UI run still locks fresh escrows for real, on screen. Its settlement beat shows the warm run's settlement txs: `REAL`, with explorer links and their actual timestamps. Any replay is badged `PRE-RECORDED`. | Settlement looks instant on stage and stays honest | Low–Med | Needs a run ID / "attach to run" switch in the UI. For the 2-min video, a labelled time cut ("41 min later") is honest and costs nothing. |
+| **3** | **Start the escrows early.** Kick off a "warm run" ≥ 50 min before the recording or judging. The live UI run still locks fresh escrows for real, on screen. Its settlement beat shows the warm run's settlement txs: `REAL`, with explorer links and their actual timestamps. Any replay is badged `PRE-RECORDED`. | Settlement looks instant on stage and stays honest | Low–Med | Needs a run ID / "attach to run" switch in the UI. For the <90 s video, a labelled time cut ("41 min later") is honest and costs nothing. |
 | **4** | **Stagger runs.** A cron starts a full scenario every ~10–15 min during the judging window, so a run's settlement is always landing within minutes. | Covers judges who open the URL at random times | Med | Each run costs ~11 tUSDM plus ADA fees, so faucet limits matter. Only worth it if judges click through (an open organizer question). |
 | **5** | **Measure whether a refund the seller agrees to is faster** (`request-refund` → `authorize-refund`) than waiting out the timer. If it skips the `submitResultTime` + 10 min wait, the Under-gate refund and the Pass bond return could happen live. | Possibly ~26 min → a few minutes for the demo's key moment | Low to test | Not traced in the code. The 7 + 10 min cooldown may cancel the gain. Run it at Masumi checkpoint 3. |
 | **6** | **Have the Board pay forfeits from its own funds.** The Short-of-promise and Under-gate bond forfeits are already plain transfers, so the Board can send them right at the verdict and recover the money from the bond escrow later. | Forfeit txs show up in seconds | Low | The money on screen no longer comes from the escrow. It needs a clear label, and the Under-gate award refund itself must still be the escrow refund. |

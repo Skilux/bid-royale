@@ -86,7 +86,7 @@ originality 10%, honest limitations 10%.
 | Degrade path | Labelled simulated ledger (`SIMULATE_PAYMENTS`) | Demo never dies; the track rule requires labelling |
 | Models | OpenAI primary; Groq / Gemini keys as fallback | OpenAI credits per win plan, activation is a kickoff question; fallback keys pre-tested |
 | State | Upstash Redis (Vercel integration) + seeded JSON | Decided 8 Oct by Danila. Vercel instances do not share memory, so tender, bids and events need a shared store. No relational DB |
-| Voice (optional) | ElevenLabs, pre-generated | Never burn quota live |
+| Voice | ElevenLabs voiceover for the <90 s video, pre-generated, captions always on | Never burn quota live. Captions are the fallback if the voice is cut |
 
 ## Constraints the stack must respect
 
