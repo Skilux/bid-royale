@@ -1,4 +1,6 @@
-import { simulatedAdapter } from "./simulated";
+import { simulatedAdapter } from "@/lib/masumi/simulated";
+import { realAdapter } from "@/lib/masumi/real";
+import { getFlags } from "@/lib/config";
 
 /**
  * Contract shared with the real adapter (Masumi checkpoint 6):
@@ -8,9 +10,13 @@ import { simulatedAdapter } from "./simulated";
  *   settle(verdict)                  -> Receipt[]
  *   getEscrowStatus(id)              -> escrow state string
  *
- * Until the real adapter lands, every call is simulated and badged SIMULATED,
- * whatever SIMULATE_PAYMENTS says.
+ * Real only for explicit SIMULATE_PAYMENTS=false; otherwise safely simulated.
+ * Real operations without a transaction hash have badge PENDING.
+ * Real advance(receipt.id) progresses pending refund/result steps without waiting.
+ * Real receipts carry a portable polling id; settlement can accept
+ * awardEscrowId/bondEscrowId to resume across serverless invocations.
  */
 export function getAdapter() {
-  return simulatedAdapter;
+  const { simulatePayments } = getFlags();
+  return !simulatePayments && process.env.SIMULATE_PAYMENTS === "false" ? realAdapter : simulatedAdapter;
 }
