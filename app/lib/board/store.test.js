@@ -1,0 +1,105 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { createMemoryStore, createStoreFromEnv, createUpstashStore } from "./store.js";
+
+/** Minimal Upstash REST fake: GET, SET (NX, EX), DEL, RPUSH, EXPIRE, LRANGE, plus /pipeline. */
+function fakeUpstash() {
+  const data = new Map();
+  const seen = { auth: new Set(), signals: 0 };
+  const run = ([cmd, key, ...args]) => {
+    if (cmd === "GET") return { result: data.get(key) ?? null };
+    if (cmd === "SET") {
+      if (args.includes("NX") && data.has(key)) return { result: null };
+      data.set(key, args[0]);
+      return { result: "OK" };
+    }
+    if (cmd === "DEL") return { result: Number(data.delete(key)) };
+    if (cmd === "RPUSH") {
+      const list = data.get(key) ?? [];
+      list.push(args[0]);
+      data.set(key, list);
+      return { result: list.length };
+    }
+    if (cmd === "EXPIRE") return { result: 1 };
+    if (cmd === "LRANGE") return { result: (data.get(key) ?? []).slice(Number(args[0])) };
+    return { error: `unknown command ${cmd}` };
+  };
+  const fetchImpl = async (url, init) => {
+    seen.auth.add(init.headers.Authorization);
+    seen.signals += init.signal instanceof AbortSignal ? 1 : 0;
+    const body = JSON.parse(init.body);
+    const out = url.endsWith("/pipeline") ? body.map(run) : run(body);
+    return new Response(JSON.stringify(out), { status: 200 });
+  };
+  return { fetchImpl, seen };
+}
+
+for (const [label, make] of [
+  ["memory", () => createMemoryStore()],
+  ["upstash", () => createUpstashStore({ url: "https://redis.test/", token: "tok", fetchImpl: fakeUpstash().fetchImpl })],
+]) {
+  test(`${label} store: run documents round-trip`, async () => {
+    const store = make();
+    assert.equal(await store.getRun("r1"), null);
+    await store.setRun({ id: "r1", status: "in_progress", n: [1, 2] });
+    assert.deepEqual(await store.getRun("r1"), { id: "r1", status: "in_progress", n: [1, 2] });
+  });
+
+  test(`${label} store: events get contiguous seq numbers and can be read from a cursor`, async () => {
+    const store = make();
+    const seqs = [];
+    for (const name of ["a", "b", "c"]) seqs.push(await store.appendEvent("r1", { ts: "t", name, data: { name } }));
+    assert.deepEqual(seqs, [1, 2, 3]);
+    assert.deepEqual((await store.getEvents("r1")).map((e) => [e.seq, e.name]), [[1, "a"], [2, "b"], [3, "c"]]);
+    assert.deepEqual((await store.getEvents("r1", 2)).map((e) => e.seq), [3]);
+    assert.deepEqual(await store.getEvents("r1", 3), []);
+    assert.deepEqual(await store.getEvents("other"), []);
+  });
+
+  test(`${label} store: claim is exclusive until released`, async () => {
+    const store = make();
+    assert.equal(await store.claim("k", 60), true);
+    assert.equal(await store.claim("k", 60), false);
+    await store.release("k");
+    assert.equal(await store.claim("k", 60), true);
+  });
+}
+
+test("upstash store sends the bearer token and an abort signal on every call", async () => {
+  const fake = fakeUpstash();
+  const store = createUpstashStore({ url: "https://redis.test", token: "secret-token", fetchImpl: fake.fetchImpl });
+  await store.setRun({ id: "r1" });
+  await store.appendEvent("r1", { ts: "t", name: "a", data: {} });
+  assert.deepEqual([...fake.seen.auth], ["Bearer secret-token"]);
+  assert.equal(fake.seen.signals, 2);
+});
+
+test("upstash store aborts a hung request after the timeout", async () => {
+  const fetchImpl = (url, init) =>
+    new Promise((_, reject) => init.signal.addEventListener("abort", () => reject(new Error("aborted"))));
+  const store = createUpstashStore({ url: "https://redis.test", token: "t", fetchImpl, timeoutMs: 20 });
+  await assert.rejects(store.getRun("r1"), /aborted/);
+});
+
+test("upstash store surfaces HTTP and command errors", async () => {
+  const bad = createUpstashStore({
+    url: "https://redis.test",
+    token: "t",
+    fetchImpl: async () => new Response("unauthorized", { status: 401 }),
+  });
+  await assert.rejects(bad.getRun("r1"), /Upstash 401/);
+  const err = createUpstashStore({
+    url: "https://redis.test",
+    token: "t",
+    fetchImpl: async () => new Response(JSON.stringify({ error: "WRONGTYPE" }), { status: 200 }),
+  });
+  await assert.rejects(err.getRun("r1"), /WRONGTYPE/);
+});
+
+test("createStoreFromEnv: Upstash with REST env vars, shared memory store without", () => {
+  assert.equal(createStoreFromEnv({ UPSTASH_REDIS_REST_URL: "https://r", UPSTASH_REDIS_REST_TOKEN: "t" }).kind, "upstash");
+  assert.equal(createStoreFromEnv({ KV_REST_API_URL: "https://r", KV_REST_API_TOKEN: "t" }).kind, "upstash");
+  const a = createStoreFromEnv({});
+  assert.equal(a.kind, "memory");
+  assert.equal(createStoreFromEnv({ UPSTASH_REDIS_REST_URL: "https://r" }), a);
+});

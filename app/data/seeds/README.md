@@ -4,7 +4,13 @@
 
 Zero-network instant demo: discovery works before any API is wired.
 
-## Contents (plan, nothing exists yet)
+## Contents
+
+- `board-run.worked-example.json` — exists. One full simulated Board run of the worked
+  example: `{ run, events }`, the `GET /api/run/:id` body plus the SSE frames. UI agents
+  render from it without a server. See `lib/board/README.md`.
+
+## Contents (plan, nothing else exists yet)
 
 - `suppliers.json` — 4 supplier agents (TechBlog, CodePodcast, DevNewsletter,
   GamingForum): registry entry, `api_base_url`, bid price, impressions,
