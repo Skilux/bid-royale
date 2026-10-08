@@ -1,2 +1,2 @@
-masumi
+masumi==1.2.0
 python-dotenv
