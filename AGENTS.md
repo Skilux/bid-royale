@@ -144,6 +144,16 @@ The Vercel project builds with **`app/` as its root directory**. Files outside
   change the check in `app/scripts/` and say so in the issue.
 - A fresh worktree has no `node_modules`: run `npm ci` in `app/` once, or the
   hook skips lint with a warning.
+- `npm run setup:hooks` writes `core.hooksPath` to the shared `.git/config`, so
+  it enables the hook for every worktree of that clone. Worktrees get
+  `.githooks/` once they rebase onto `main`.
+- Known limits. The badge guard is grep-level: a money amount under `app/app/`
+  needs `REAL`, `SIMULATED`, `PRE-RECORDED` or a `Badge` identifier within 6
+  lines, and it can miss amounts built from other variable names. Lint ignores
+  unused function arguments, and capitalised unused names under `app/app/`
+  (core ESLint does not count JSX usage). `app/lib/agents/**` is not linted.
+- Secrets rules: only `.env.example` may be tracked; its `*_KEY`, `*_SECRET`,
+  `*_TOKEN` and `*_PASSWORD` lines must be empty or `<placeholder>`.
 
 ## Every change has a GitHub issue (mandatory)
 
