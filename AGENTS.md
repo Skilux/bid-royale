@@ -129,6 +129,22 @@ The Vercel project builds with **`app/` as its root directory**. Files outside
   push to `main` as you go — the repo is private for now (flip to public at
   code freeze) and commit history is evidence.
 
+## Every change has a GitHub issue (mandatory)
+
+No work starts or lands without a GitHub issue. This applies to every agent and
+every human.
+
+1. **Before you start, make sure the task is a GitHub issue.** If you were given
+   work that has no issue, create one first (`gh issue create`, see
+   `docs/agents/issue-tracker.md`) with a goal and a done-when.
+2. **Before you commit and push, the issue must exist and be open.** Never push
+   work that has no issue.
+3. **Mention the issue number when you merge to `main`:** in the commit message
+   (`feat(verifier): ... (#2)` or a `Refs #2` / `Closes #2` line) and in the
+   closing comment on the issue.
+4. **Close the loop:** when done-when passes, comment the result on the issue
+   (files, how to test, deviations) and close it.
+
 ## Mandatory check before merging (do not skip)
 
 Before pushing/merging any code, capability, or documentation, verify every
