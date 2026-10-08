@@ -11,9 +11,8 @@ from the Board-signed verdict (`app/lib/verifier/`) and executes it via `app/lib
   with delivered, promised and gate (5 signups per 1,000 impressions); the
   award and bond escrow ids per winner; revealed bids.
 - **Money per winner:** award (Consumer → Supplier) + bond (25% of award,
-  Supplier → Board), REAL. Bid fees (4) settle in the background,
-  SIMULATED first and REAL if time allows. 10 escrows total, 6 on the
-  critical path.
+  Supplier → Board), REAL. Bid fees (4) settle in the background, REAL
+  too (#50). 10 escrows total, 6 on the critical path.
 - **Decision per supplier:**
   - **Pass** (delivered ≥ promised): supplier submits the result, withdraws
     the full award after `unlockTime`. Board authorizes a bond refund, supplier

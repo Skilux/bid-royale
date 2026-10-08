@@ -193,7 +193,7 @@ Next: the work plan below.
 |---|---|---|---|
 | L1 | **Run the money flow on a new `Web3CardanoV2` payment source** on our 0.29.0 node. The seeded V1 source stays as a fallback. Closes D9 by choice: V2. | V2 is Masumi's current default. Its fee must be 0 (V1 takes 5% per escrow, which breaks the spec ledger). V2 allows `authorize-refund` from any state, and its cooldown is configurable. | Lane-internal |
 | L2 | **Amounts are the spec × 10, in tADA.** Awards 70 / 60 / 70, bonds 17.5 / 15 / 17.5, bid fee 2, Short-of-promise forfeit 3.75 (11.25 back to the Supplier), Consumer net −108.75 tADA. tUSDM dropped. | `transfer-funds` has a 2 ADA minimum, and small escrows risk min-UTxO errors. tUSDM on Preprod is unverified. We hold 20,000 tADA. | **Danila**: changes the numbers in `app/lib/settlement/plan.js` and on the receipt |
-| L3 | **Settlement timing for the demo is decided after the measured run** (W4–W6). Warm run + attach, video time cut, or live wait. | The 41 min / 26 min floors come from code, not measurement. | Danila, once numbers exist |
+| L3 | **Settlement timing for the demo: decided 9 Oct 2026 by Danila (#30).** One real run, recorded (#45), with a labelled time cut. No separate warm run. The judge URL replays that recording badged PRE-RECORDED with its REAL tx links. | Measured settlement is about 15 min (`docs/money-flow.md`); the 41 min / 26 min floors were derived from code. | Danila (decided) |
 | L4 | **"Hall" topology: one node, one scoped key per party, suppliers live on Vercel (#12).** All wallets sit on our Railway node. The Board's settlement engine calls Masumi with each party's wallet-scoped `ReadAndPay` key. 4 suppliers + Board register via `POST /registry` with `apiBaseUrl` on Vercel. The Python `techblog-agent` is retired. | Supplier logic already lives in #8 / #12, the Python SDK hardcodes 24 h deadlines, and `/start_job` is unused. Fewer services to keep alive overnight. | Decided by Vladimir, [ADR 0002](../adr/0002-seller-agents-on-vercel.md) |
 
 Honest limitations this adds: team-operated suppliers, operator-managed custody
@@ -304,8 +304,9 @@ W1 V2 source ─► W2 wallets + keys ─► W3 register agents ─┬─► W4 
   unique `identifierFromPurchaser` per lock.
 - `app/lib/masumi/real.js`: same contract as `simulated.js`
   (`lockBidFee`, `lockAward`, `lockBond`, `settle(verdict)`,
-  `getEscrowStatus`). Long steps return a job token. Bid fees stay SIMULATED
-  (badged) until W9 passes.
+  `getEscrowStatus`). Long steps return a job token. Bid fees were SIMULATED
+  (badged) until W9 passed; since 9 Oct they are REAL escrows (#50), with
+  `MASUMI_BID_FEES=simulated` as the labelled fallback.
 - `getAdapter()` picks real or simulated from `SIMULATE_PAYMENTS`.
 - `app/scripts/poc-masumi.mjs` + `npm run poc:masumi`: drives the adapter
   through the 3 verdict branches and prints the escrow table (tx hash, state,
@@ -317,7 +318,7 @@ W1 V2 source ─► W2 wallets + keys ─► W3 register agents ─┬─► W4 
 
 - From the measured minutes, propose warm run + attach, video time cut, or
   live wait (`docs/research/masumi-settlement-timing.md` options 3–5).
-- **Done when:** Danila has picked one and it's in `docs/plan/README.md`.
+- **Done:** Danila picked on 9 Oct 2026: one real run, recorded (#45), labelled time cut, no warm run (#30). It is in `docs/plan/README.md`.
 
 ### W9. Full scenario on Preprod (checkpoint 5)
 
@@ -342,7 +343,7 @@ W1 V2 source ─► W2 wallets + keys ─► W3 register agents ─┬─► W4 
   `unlockTime`, `externalDisputeUnlockTime`.
 - Never mark a supplier paid on HTTP 200 from `submit-result`. Paid means
   seller-side `Withdrawn`.
-- Bid fees stay SIMULATED until checkpoint 5 passes. Then REAL if time allows (D13).
+- Bid fees are REAL escrows (D13, decided 9 Oct, #50). `MASUMI_BID_FEES=simulated` is a labelled stall fallback only.
 - Every chain op surfaces a tx hash and an explorer link. Every simulated op
   carries the SIMULATED badge.
 - No keys in the repo. `ReadAndPay` keys only, never `Admin` in Vercel.

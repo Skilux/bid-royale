@@ -1,5 +1,7 @@
 # Masumi financial rails: researched setup plan
 
+> **Superseded in part, 9 Oct 2026 (#58).** There is no separate Validator agent, wallet or fee: PRD D7 stands, and "Validator" means the Board verifier inside the Tender Board (see `GLOSSARY.md`). A run has 10 escrows (3 awards, 3 bonds, 4 bid fees), not 11. Read the rest as dated research.
+
 Checked 2026-10-08. Research and proposed setup sequence only. No architecture adoption, deployment, registration, wallet creation, payment, commit or push was performed. Danila must confirm architecture-dependent implementation under AGENTS.md.
 
 Updated with the user's [setup-video transcript](sources/masumi-setup-video-transcript.md). The video demonstrates a Python SDK agent connected to a separately deployed Masumi Payment Service and its `/admin` dashboard. It does not demonstrate buyer-wallet setup using an `app.masumi.network` API key. Verified differences from the current documentation are recorded in the [video assessment](masumi-video-setup-assessment.md).

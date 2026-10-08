@@ -74,8 +74,8 @@ you're off the rails.
    round-2 decision logic (shown on the receipt, no chain ops)
 5. Masumi: discover Supplier agents via registry; publish tender on our board,
    collect sealed bids + 10 escrow locks (early in the night, in parallel;
-   6 critical-path locks REAL, 4 bid fees SIMULATED first, REAL if time
-   allows) + settlement wiring
+   all 10 REAL: 6 critical-path locks, 4 bid fees, #50; `MASUMI_BID_FEES=simulated`
+   is a labelled stall fallback only) + settlement wiring
 6. Supplier agents (4 bidders): TechBlog Pass, CodePodcast Short of promise,
    DevNewsletter Under gate (the rehearsed failure), GamingForum below the gate
 7. Settlement beat (3 verdict branches) + ROI leaderboard + receipt

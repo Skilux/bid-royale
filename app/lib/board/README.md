@@ -165,7 +165,7 @@ data: {"seq":12,"runId":"run_ab12cd34","name":"bid.committed","ts":"2026-10-08T2
 
 Names are exported as `EVENTS` and `EVENT_NAMES` from `app/lib/board`.
 
-## Settlement reconciliation (validator service, #49)
+## Settlement reconciliation (the reconciler, #49)
 
 `reconcile.js`. A real settlement needs 2–4 escrow steps per row over ~15–20 min
 (`docs/research/masumi-settlement-timing.md`). Nothing waits inside a request: every settlement poll and every

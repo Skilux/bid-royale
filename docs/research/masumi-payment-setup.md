@@ -1,5 +1,7 @@
 # Masumi financial setup for the tender flow
 
+> **Superseded in part, 9 Oct 2026 (#58).** There is no separate Validator agent, wallet or fee: PRD D7 stands, and "Validator" means the Board verifier inside the Tender Board (see `GLOSSARY.md`). A run has 10 escrows (3 awards, 3 bonds, 4 bid fees), not 11. Read the rest as dated research.
+
 Research date: 2026-10-08. Research only: no wallets created, no credentials read, no funds moved, no architecture adopted. Read the agreed `tender-flow.md` and current official Payment Service code. GitHub source inspected at commit `d569a338ca54d5be7441564770d75ebf89b71f12`; deployed service capabilities must be checked separately. A temporary public-source clone is at `/private/tmp/masumi-payment-research`.
 
 ## What to obtain first
