@@ -23,9 +23,9 @@ Paths in the diagram are relative to `app/` (the Vercel root directory), so
 │  TENDER BOARD       our service, not an agent. Tender API: publish     │
 │                     tender, invite suppliers, collect bids. Auction    │
 │                     engine: commit-reveal check, eligibility, rank,    │
-│                     fill budget. Verifier: lib/verifier, Board         │
-│                     signs verdicts. Settlement engine:                 │
-│                     lib/settlement.                                    │
+│                     fill budget. Board verifier: lib/verifier, Board   │
+│                     signs verdicts. Settlement engine: lib/settlement  │
+│                     plus the reconciler, lib/board/reconcile.js.       │
 │  lib/agents/        OpenAI Agents SDK instances: Consumer agent        │
 │                     (publishes tender, pays awards), 4 Supplier        │
 │                     agents (bid, serve, report, post bond)             │
@@ -46,8 +46,8 @@ Paths in the diagram are relative to `app/` (the Vercel root directory), so
 │ MASUMI PREPOD (Cardano)          │  │ LLM PROVIDERS                    │
 │ • Registry: discovery (read)     │  │ OpenAI (primary)                 │
 │ • Payment service: 10 escrows    │  │ Groq / Gemini keys as fallback   │
-│   (award + bond REAL; bid fee    │  └──────────────────────────────────┘
-│   SIMULATED first), lock →       │
+│   (all REAL: award, bond and     │  └──────────────────────────────────┘
+│   bid fee), lock →               │
 │   release / refund               │
 │ • Faucet: tADA                   │
 │   (amounts spec ×10, #24)        │
@@ -79,7 +79,8 @@ measured time: [`docs/money-flow.md`](money-flow.md).
    paying buyer. Each agent still exposes the MIP-003 routes on Vercel (ADR 0002, #37). GamingForum is invited like the other three; proactive
    discovery (GamingForum finds the Board itself) is pitch only.
 2. **Bidding.** Each Supplier agent decides whether to bid and pays the 2
-   bid fee (Board is seller, never returned; 4 suppliers, 8 total; SIMULATED).
+   bid fee (Board is seller, never returned; 4 suppliers, 8 total; REAL escrow
+   anchored on the bid's commit hash, #50).
    Sealed bid = commit hash `SHA-256(price, impressions, promised signups,
    salt)` before the deadline. After close, suppliers reveal bid + salt and the
    Board recomputes and rejects mismatches. Eligible only if promised per
@@ -93,10 +94,11 @@ measured time: [`docs/money-flow.md`](money-flow.md).
    touch the chain.
 4. **Delivery and verification.** Traffic serves. The NeoRack signup feed
    sends signed signup events to the Tender Board. Its verifier
-   (`app/lib/verifier`, inside the Board service, not an agent) counts verified
+   (the Board verifier, `app/lib/verifier`, inside the Board service, not an agent) counts verified
    signups per supplier (TechBlog 8 · CodePodcast 6 · DevNewsletter 0 per
    1,000). The Board signs a verdict per supplier and sends it to the
-   Consumer; its hash goes to the decision log. No Validator fee.
+   Consumer; its hash goes to the decision log. There is no separate Validator
+   agent, wallet or fee (PRD D7). A winner may post a delivery report (#51), which is context only.
 5. **Settlement**, one of 3 verdicts per supplier (delivered ≥ promised =
    Pass; delivered ≥ 5 but below promise = Short of promise; delivered < 5 =
    Under gate):
@@ -119,11 +121,13 @@ measured time: [`docs/money-flow.md`](money-flow.md).
    optimizer's decision (TechBlog 50 / CodePodcast 50 / DevNewsletter 0) —
    illustrative, no chain ops.
 
-Escrows per run: 10. Award (Consumer → Supplier) 3 and bond (Supplier →
-Board) 3 are the critical path (6 total) and must be REAL. Bid fee
-(Supplier → Board) 4 run in the background, SIMULATED first and REAL if the
-critical path passes its dry run and time allows (PRD D13). Lock early, in
-parallel.
+Escrows per run: 10, all REAL. Award (Consumer → Supplier) 3 and bond
+(Supplier → Board) 3 are the critical path (6 total). Bid fee (Supplier →
+Board) 4 run in the background (PRD D13, #50); `MASUMI_BID_FEES=simulated` is a
+labelled fallback. Lock early, in parallel. After the verdicts the reconciler
+(`app/lib/board/reconcile.js`, #49, part of the Board) advances every
+settlement escrow to its final state. Each settlement `submit-result` anchors
+`sha256(canonical delivery report + verdict hash)` (#51).
 
 Payout mechanics (remainder and forfeit as plain transfers) are a trust
 assumption on the Board.

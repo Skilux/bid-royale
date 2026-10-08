@@ -9,7 +9,7 @@ budget in a sealed-bid auction, and the Consumer pays only for verified signups.
 > Track rule: "An agent completes a transaction scenario with a visible outcome.
 > A sandbox transaction counts; a simulated payment must be labelled."
 
-Status as of 9 Oct 2026, read from `main` at `80287ee`. Nothing below claims a
+Status as of 9 Oct 2026, read from `main` at `05bf1d1`. Nothing below claims a
 deployed state: the judge URL and its `/api/health` response were not checked
 when this page was written.
 
@@ -33,7 +33,7 @@ badge is a bug. Source: [`docs/honest-limitations.md`](docs/honest-limitations.m
 | DevNewsletter's zero signups | **SIMULATED** | Scripted. The verdict mechanism is what is on show |
 | Round 2 reallocation | **SIMULATED** | Shown on the receipt, no chain operations |
 | Supplier registration, agent identifiers | **REAL** | 5 agents registered on Preprod, see [`docs/plan/lane-masumi.md`](docs/plan/lane-masumi.md) |
-| `DEMO_MODE=canned` replay | **PRE-RECORDED** | Lifeline and judge URL. Replays `app/data/canned/run.json` (`app/lib/replay`); REAL tx links from the recording stay REAL. Stand-in data until the #45 recording is swapped in |
+| `DEMO_MODE=canned` replay | **PRE-RECORDED** | Judge URL and lifeline. Replays the one real recorded run, `app/data/canned/run.json` (`app/lib/replay`), with its time cut labelled; REAL tx links from the recording stay REAL. There is no separate warm run (#30). Stand-in data until the #45 recording is swapped in |
 
 ## Honest limitations
 
@@ -44,7 +44,7 @@ here and in the UI. Full text with sources: [`docs/honest-limitations.md`](docs/
 
 - The four suppliers and the Tender Board are team-operated demonstration agents. They run in one Vercel project, and all wallets sit on our own Masumi node, whose operator can move every wallet (operator-managed custody, [ADR 0002](docs/adr/0002-seller-agents-on-vercel.md)). Third-party settlement would use the Disputed path.
 - The Board is a trust assumption. Escrows cannot split, so the Board returns bond remainders and forwards forfeits to the Consumer as plain transfers from its treasury. It also holds bonds and collects bid fees.
-- The Board both runs the auction and verifies delivery. There is no independent validator. An independent, paid validator agent is the production path. Here the check is deterministic and its inputs are on the dashboard.
+- The Board both runs the auction and verifies delivery. The Board verifier is a deterministic module inside the Board, not a separate Validator agent (PRD D7, [`GLOSSARY.md`](GLOSSARY.md)). An independent, paid validator agent is the production path. Here the check is deterministic and its inputs are on the dashboard.
 - Quotes are scripted. The commit-reveal sealed-bid mechanism is what is demonstrated.
 - Proactive supplier discovery (GamingForum finds the Board itself) is pitch only. In the build, GamingForum is invited like the other three.
 
@@ -66,8 +66,9 @@ here and in the UI. Full text with sources: [`docs/honest-limitations.md`](docs/
 
 **State of the build on `main`**
 
-- The Board run API, auction, verifier, settlement plan, supplier brains, Masumi adapter, treasury client and receipt page exist and are tested. The home page `app/app/page.js` is still a placeholder: there is no Wrapper UI with brief, tender and dashboard on `main` yet. The receipt page `/receipt` renders from the worked-example fixture or a run ID.
-- A complete simulated run (`SIMULATE_PAYMENTS=true`) finishes through the API on a local machine. Checked on 9 Oct 2026 by calling `POST /api/run` and `POST /api/run/:id/all`. No real run is checked here: see the proof table.
+- The Board run API, auction, verifier, settlement plan, supplier brains, Masumi adapter, treasury client and receipt page exist and are tested. The judge page `/` (brief, Run, walkthrough, dashboard, receipt), `/dashboard` and `/receipt` are on `main` (#43, #9). Discovery reads the Masumi registry with a seeded fallback (#44), bid fees are REAL escrows (#50), the delivery report and result hash are wired (#51), the reconciler advances settlement escrows (#49) and the evidence bundle exists (#47). The dashboard design is the dark money-flow concept `docs/design/dashboard/money-flow.html`, picked 9 Oct 2026.
+- A complete simulated run (`SIMULATE_PAYMENTS=true`) finishes through the API on a local machine. Checked on 9 Oct 2026 by calling `POST /api/run` and `POST /api/run/:id/all`. No real run is checked here: see the proof table. The one real run is recorded under #45 and replayed on the judge URL, there is no separate warm run (#30).
+- Production is set to real payments (`SIMULATE_PAYMENTS=false`) and live registry discovery (`MASUMI_REGISTRY_API_KEY` set), per Danila on 9 Oct 2026. These env values were not read from Vercel when this page was written.
 
 ## REAL transaction proof
 
@@ -113,11 +114,11 @@ recomputes the hash in the browser. Details: [`app/lib/evidence/README.md`](app/
 
 | Goes on chain (Masumi escrow) | Stays off chain (evidence store) |
 |---|---|
-| `inputHash` on each award and bond lock: SHA-256 of the action, supplier, amount and a nonce | Tender and brief, sealed bids and salts, rejected bids |
-| `submitResultHash` on the award and bond settlement: the Board's verdict hash (becomes `sha256(canonical delivery report + verdict hash)` once #51 is wired) | Signed signup events, verification reports, bot signals |
+| `inputHash` on each award and bond lock: SHA-256 of the action, supplier, amount and a nonce. On each bid-fee lock it is the sealed bid's commit hash (#50) | Tender and brief, sealed bids and salts, rejected bids |
+| `submitResultHash` on the award and bond settlement: `sha256(canonical delivery report + verdict hash)` (#51), the verdict hash alone when a run has no delivery report | Signed signup events, verification reports, bot signals |
 | Escrow ids, amounts, tx hashes (Cardano itself) | Signed verdicts, delivery reports, ledger, receipt |
 
-Not on chain today: the tender (spec) hash, the bid commit hashes (#50), the verification report
+Not on chain today: the tender (spec) hash, the verification report
 hash and the bundle hash. Raw reports, signup events and secrets never go on chain or into the repo.
 In a canned replay the bundle is restored from the recording and shown PRE-RECORDED.
 
@@ -231,17 +232,22 @@ bid-royale/
 │   ├── hosting.md       ← Vercel and Railway setup, env vars, deploy
 │   ├── services.md      ← external services: purpose, access, status
 │   ├── demo-runbook.md  ← demo script, cut order, checklists
+│   ├── api/             ← customer and supplier agent guides (docs only)
 │   ├── adr/             ← accepted decisions (0001, 0002)
 │   ├── plan/            ← lanes and live status (Masumi, Product)
 │   └── research/        ← dated reference, never authoritative
 └── app/                 ← Next.js project root = Vercel root directory
-    ├── app/             ← routes: /receipt, /api/run, /api/events, /api/agents, /api/health
+    ├── app/             ← routes: /, /dashboard, /receipt, /api/run, /api/events, /api/agents, /api/settlement/tick, /api/health
     ├── scripts/         ← check.mjs, treasury-server.mjs, poc-masumi.mjs
     ├── data/seeds/      ← worked-example run fixture, with its evidence bundle
     └── lib/
-        ├── board/           ← Tender Board run API, store, SSE, receipt
+        ├── board/           ← Tender Board run API, store, SSE, receipt, reconciler
+        ├── discovery/       ← registry discovery with seeded fallback
+        ├── delivery-report/ ← supplier delivery report, result hash
+        ├── evidence/        ← per-run evidence bundle, canonical hashes
+        ├── replay/          ← canned replay loader and pacing
         ├── auction/         ← sealed-bid engine (pure functions)
-        ├── verifier/        ← deterministic signup verification
+        ├── verifier/        ← Board verifier: deterministic signup verification
         ├── settlement/      ← verdict → pay, forfeit, refund plan
         ├── outcome-feed/    ← NeoRack signup feed, signed events
         ├── signing/         ← signing helpers

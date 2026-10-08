@@ -10,8 +10,9 @@ and it's the cheapest 10 points available.
   run: 3 awards, 3 bonds and 4 bid fees are REAL. The bid-fee escrows carry
   each sealed bid's commit hash as their input hash. A flag can fall back to
   SIMULATED (labelled) bid fees if their escrows stall.
-- Supplier agents are identified via the registry (agent identifiers,
-  service cards).
+- Supplier agents are identified via the Masumi registry (agent identifiers,
+  service cards). Discovery reads the registry and falls back to a seeded
+  registry, which the UI labels (#44).
 - The auction mechanism is real: tender → commit-reveal sealed bids →
   winners from bids → settlement against measured signups, one of 3
   verdicts (Pass, Short of promise, Under gate).
@@ -29,8 +30,10 @@ and it's the cheapest 10 points available.
 
 ## What's pre-recorded (labelled PRE-RECORDED)
 
-- `DEMO_MODE=canned` replays a recorded successful run. Used only as the
-  lifeline if live systems fail.
+- `DEMO_MODE=canned` replays the one real recorded run (#45), badged
+  PRE-RECORDED, with its time cut labelled. It is the judge URL and the
+  lifeline if live systems fail. Its REAL tx links stay REAL links. There is
+  no separate warm run (#30).
 
 ## Known simplifications (stated, not hidden)
 
@@ -41,8 +44,9 @@ and it's the cheapest 10 points available.
 - The Tender Board is a trust assumption: escrows cannot split, so the Board
   returns bond remainders and forwards forfeits to the Consumer as plain
   transfers. It also holds bonds and collects bid fees.
-- The Board both runs the auction and verifies delivery; there is no
-  independent validator. An independent, paid validator agent is the
+- The Board both runs the auction and verifies delivery. The Board verifier
+  is a deterministic module inside the Board, not a separate Validator agent
+  (PRD D7, `GLOSSARY.md`). An independent, paid validator agent is the
   production path. Tonight the check is deterministic and its inputs are on
   the dashboard.
 - The verifier checks signature, attribution and time window. It does not
@@ -67,6 +71,9 @@ and it's the cheapest 10 points available.
 - Signed signups assume the shop key is safe — a compromised shop mints
   signups.
 - On-chain data is hashes and references only; raw reports stay off-chain.
+  The result hash on a settlement is `sha256(canonical delivery report +
+  verdict hash)` (#51). The delivery report is the supplier's own claim and is
+  context only, the verdict comes from the shop's signed signups.
 - The four suppliers and the Board are team-operated demonstration agents: all
   run in one Vercel project, and all wallets sit on our own Masumi node, whose
   operator can move every wallet (operator-managed custody, ADR 0002).

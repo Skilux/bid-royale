@@ -62,11 +62,16 @@ Payment Service on Railway signs and submits; the contract holds the money.
 | 4 | Allocation | Board | Vercel | rank by price per promised signup, fill the budget (D11); GamingForum is below the gate | 70 + 60 + 70 = 200 | — | seconds | no money |
 | 5a | Award locks (3, in parallel) | Consumer → each winner | Vercel → Railway → Preprod | supplier `POST /payment` (supplier key), Consumer `POST /purchase` (Consumer key) | 70 / 60 / 70 | `FundsLocked` | 1.6–3.2 min | **PENDING** until the tx hash exists, then **REAL** + explorer link |
 | 5b | Bond locks (3, in parallel with 5a) | each winner → Board | Vercel → Railway → Preprod | Board `POST /payment` (Board key), supplier `POST /purchase` (supplier key) | 17.5 / 15 / 17.5 | `FundsLocked` | 1.6–3.2 min | **PENDING**, then **REAL** |
-| 6 | Traffic, signups, verifier | shop, Board | Vercel, off-chain | signed signup events, verifier checks signature + attribution + window; Board signs one verdict per supplier | — | unchanged | seconds | traffic **SIMULATED** |
-| 7 | Settlement per verdict | see below | Vercel `settle` + `advance` → Railway → Preprod | see below | see below | see below | see below | **REAL** (escrow and treasury, once a tx hash exists) |
+| 6 | Traffic, signups, Board verifier | shop, Board | Vercel, off-chain | signed signup events, the Board verifier (deterministic, inside the Board, no separate Validator agent) checks signature + attribution + window; Board signs one verdict per supplier. A winner may post a delivery report (#51), context only | — | unchanged | seconds | traffic **SIMULATED** |
+| 7 | Settlement per verdict, driven by the reconciler (#49) | see below | Vercel `settle` + `advance` → Railway → Preprod | see below | see below | see below | see below | **REAL** (escrow and treasury, once a tx hash exists) |
 | 8 | Receipt + ledger | Board → Consumer | Vercel | — | Consumer net −108.75 for 14 signups | all escrows terminal | — | every row badged |
 
 ### Step 7: settlement per verdict
+
+Every `submit-result` in this step carries the result hash `sha256(canonical delivery report + verdict hash)` (#51). The
+report is the supplier's delivery report, or the scripted one the Board builds when a winner posts none. If a run has no
+report, the verdict hash alone is anchored. The reconciler (`app/lib/board/reconcile.js`, #49) advances every escrow below
+until it is terminal, and the Railway treasury worker triggers it every 30 s, so no browser has to stay open.
 
 **Pass, TechBlog (delivered 8 of 7 promised)**
 
@@ -118,9 +123,11 @@ About **15 min** end to end, measured per path:
   escrows: a trust assumption on the Board, and only for a Board-signed verdict.
   Badge **PENDING** until the transfer has a tx hash, **REAL** with an explorer
   link after.
-- Bid fees are **REAL** escrows (inputHash = the bid's commit), **PENDING** until
+- Bid fees are **REAL** escrows (#50, inputHash = the bid's commit), **PENDING** until
   the lock and the Board's collection have tx hashes; **SIMULATED** only if the
   fallback flag is set. Traffic is **SIMULATED**.
-  Anything replayed in canned mode is **PRE-RECORDED**.
+  Anything replayed in canned mode is **PRE-RECORDED**. The judge URL replays
+  the one real recorded run (#45), with its time cut labelled and its REAL tx
+  links kept. There is no separate warm run (#30).
 - Awards, bonds and their settlement are **REAL** once a tx hash exists, with
   `https://preprod.cardanoscan.io/transaction/<hash>`; **PENDING** before.

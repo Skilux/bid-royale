@@ -167,7 +167,9 @@ Worked values at `R = 10`, `bidFee = 2` (computed by running `estimateWinChance`
 | `gamingforum` | passive low-baller | 20 | 5 | 10–40 | 500–1500 | 2–4 | 30, 1000, 4 |
 
 `gamingforum` clamps promised per 1,000 at 4, below the gate of 5, so it can only ever be a `lost_bid` at the current gate. Its 2 tADA bid fee is not returned.
-The recorded worked example uses a GamingForum quote of price 20 (`app/lib/board/scenario.js`, `PINNED`), not the persona's 30.
+GamingForum's price differs between two pinned sources. The persona pin is 30 (`personas.js`). It is the quote under `PERSONA_MODE=pinned`, and the fallback for the supplier-agent path (`SUPPLIER_AGENTS=local` or `http`). Under the default `PERSONA_MODE=llm` the price is chosen by the model within the persona clamp of 10–40.
+The Board's own default quotes are 20 (`app/lib/board/scenario.js`, `PINNED`, used when no supplier-agent source is set), and the stand-in recording `app/data/canned/run.json` carries 20.
+The auction result is the same either way: GamingForum promises 4 per 1,000, is below the gate and is a Lost bid. Only the number shown on its card differs (#58).
 
 ### Risk of a verdict: what the bond does to your result
 
@@ -262,7 +264,9 @@ To add, per the #53 handoff:
 ## 9. Limits to know
 
 - The built-in suppliers are team-operated demonstration agents. Nothing here is an open marketplace yet (`docs/honest-limitations.md`).
-- The Board reaches suppliers through `SUPPLIER_INVITE_URLS` (a JSON map of supplier id to agent base URL) or runs them in-process with `SUPPLIER_AGENTS=local`.
-  Discovery through the Masumi registry is not in the code on `main` (no `registry-entry-search` call under `app/lib/` or `app/app/`). It is tracked in #44.
+- The Board finds suppliers in the Masumi registry (#44, `app/lib/discovery/`, one `GET /registry` on the Payment Service node with a Read-only key) and falls back to the seeded
+  registry `app/data/seeds/suppliers.json` on a timeout, an error, a missing key or fewer than 4 confirmed agents. The run reports `registry.discovered` with `source: "live"` or `"seeded"`.
+  It then invites suppliers over HTTP (`SUPPLIER_AGENTS=http` uses the discovered `apiBaseUrl`, `SUPPLIER_INVITE_URLS` overrides it per supplier) or runs them in-process with `SUPPLIER_AGENTS=local`.
+  The registry call is not the public `registry-entry-search`. Details: `app/lib/discovery/README.md`.
 - Only the four fixed supplier ids exist. There is no route to register a new supplier.
 - The Board API that creates runs has no authentication ([customer guide](customer.md)).

@@ -13,7 +13,7 @@ Verify endpoint signatures against the live API on the night; don't trust memory
 
 | Masumi primitive | Our usage |
 |---|---|
-| Payment service (self-hosted on Railway, ADR 0001) | 6 escrows per run, all tADA (spec ×10, #24): 3 awards + 3 bonds, REAL. 4 bid fees SIMULATED (PRD D13). Settlement per verdict: every call, amount and measured time in [`docs/money-flow.md`](money-flow.md) |
+| Payment service (self-hosted on Railway, ADR 0001) | 10 escrows per run, all tADA (spec ×10, #24) and all REAL: 3 awards + 3 bonds on the critical path, 4 bid fees (PRD D13, #50). Settlement per verdict: every call, amount and measured time in [`docs/money-flow.md`](money-flow.md) |
 | Registry | Board discovers supplier agents for the tender; register OUR 4 policy-bound supplier agents (TechBlog, CodePodcast, DevNewsletter, GamingForum) so discovery is real |
 | Escrow state machine | `FundsLocked → ResultSubmitted → RefundRequested → Disputed` — surfaced in the UI ledger (full state list below) |
 | Decision logging | We send hashes (tender terms, outcome report, signed verdicts); Masumi anchors them |
@@ -119,7 +119,7 @@ Terminal states for polling: `Withdrawn`, `RefundWithdrawn`, `DisputedWithdrawn`
 
 ### Decision logging
 
-- On-chain: hashes only — `inputHash` commits the tender/bid terms (version, tender, supplier `agentIdentifier`, bid commitment, accepted bid, creative hash, verification-policy hash); `resultHash` commits the outcome manifest (escrow id, outcome, impressions/signups, policy version, evidence Merkle root, evidence URI, evaluated-at). `resultHash` is the proof used in settlement/dispute.
+- On-chain: hashes only — `inputHash` commits the tender/bid terms (version, tender, supplier `agentIdentifier`, bid commitment, accepted bid, creative hash, verification-policy hash); `resultHash` commits the outcome manifest (escrow id, outcome, impressions/signups, policy version, evidence Merkle root, evidence URI, evaluated-at). `resultHash` is the proof used in settlement/dispute. As built (#51): the hash anchored on every award and bond `submit-result` is `sha256(canonical delivery report + verdict hash)`, the verdict hash alone when a run has no delivery report. See `app/lib/delivery-report/README.md`.
 - Off-chain (evidence store): tender body, all sealed bids + salts, losing bids, creatives, impression/signup logs, user identifiers/IPs, oracle receipts, full verification trace, hash preimages. Store manifests immutably; if an object URL can change, hash the bytes and include the content hash in the anchored manifest.
 
 ### Identity / DID note
@@ -185,11 +185,11 @@ Missing `/api/v1` in base URL · `Authorization: Bearer` instead of `token` head
 Step by step, with who calls what with whose key, amounts, escrow states and
 measured preprod times: **[`docs/money-flow.md`](money-flow.md)**. In short:
 
-- 6 escrows, all tADA, locked in parallel as soon as winners are picked:
+- 6 critical-path escrows (plus the 4 bid fees below), all tADA, locked in parallel as soon as winners are picked:
   3 awards (Consumer buys from Supplier: 70 / 60 / 70) and 3 bonds (Supplier
   buys from Board: 17.5 / 15 / 17.5). Each lock is seller `POST /payment`, then
   buyer `POST /purchase`. `FundsLocked` in 1.6–3.2 min.
-- 4 bid fees of 2 tADA are SIMULATED, never returned.
+- 4 bid fees of 2 tADA are REAL escrows (#50), never returned. Each carries the sealed bid's commit hash as its `inputHash`, the Board collects it by `submit-result` plus early release. `MASUMI_BID_FEES=simulated` is a labelled fallback only.
 - Settlement uses the fast cooperative paths (`app/lib/masumi/real.js`):
   Pass and Short of promise awards by early release (13.1 min, passes through
   `Disputed`), Pass bond by cooperative return (4.7 min), Under-gate award by
