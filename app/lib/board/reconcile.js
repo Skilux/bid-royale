@@ -50,11 +50,15 @@ export async function within(ms, tasks) {
   return out;
 }
 
-/** The lock receipt ids let the adapter find the escrows in a later serverless invocation. */
+/**
+ * The lock receipt ids let the adapter find the escrows in a later serverless invocation. The delivery result hash
+ * (#51, `run.delivery`) is what settlement anchors on chain; without it the adapter uses the verdict hash.
+ */
 export function withEscrowIds(run, verdict) {
   const lockId = (action) =>
     run.ledger.find((l) => l.phase === "lock" && l.supplier === verdict.supplier && l.action === action)?.id;
-  return { ...verdict, awardEscrowId: lockId("award"), bondEscrowId: lockId("bond") };
+  const resultHash = run.delivery?.[verdict.supplier]?.resultHash;
+  return { ...verdict, awardEscrowId: lockId("award"), bondEscrowId: lockId("bond"), ...(resultHash ? { resultHash } : {}) };
 }
 
 /** What the Board did with a proposal, hashed as the bid-fee escrow's result: the commit and the auction outcome. */

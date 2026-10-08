@@ -696,3 +696,43 @@ for (const [sellerState, sellerAction, buyerState] of [
     assert.equal(mutations(calls, id).length, 0);
   });
 }
+
+const RESULT = "f".repeat(64);
+for (const verdict of verdicts) {
+  test(`${verdict.kind}: every submit-result carries the delivery result hash; the treasury gets the verdict without it`, async () => {
+    const sent = [];
+    const treasury = async (move) => (sent.push(move), { state: "TransferSent", txHash: TX });
+    const { adapter, calls, records } = fixture({ treasury });
+    const award = await adapter.lockAward({ supplier: verdict.supplier, amount: verdict.award });
+    const bond = await adapter.lockBond({ supplier: verdict.supplier, amount: verdict.bond });
+    const signed = { ...verdict, hash: "9".repeat(64) };
+    calls.length = 0;
+    await adapter.settle({ ...signed, awardEscrowId: award.id, bondEscrowId: bond.id, resultHash: RESULT });
+    const submits = calls.filter(({ path }) => path.endsWith("submit-result"));
+    const on = (lock) => submits.filter(({ body }) => body.blockchainIdentifier === lock.escrow);
+    // Pass: award only (bond refunded). Short of promise: award and bond. Under gate: bond only (award refunded).
+    assert.equal(on(award).length, verdict.kind === "under_gate" ? 0 : 1);
+    assert.equal(on(bond).length, verdict.kind === "pass" ? 0 : 1);
+    assert.ok(submits.length > 0 && submits.every(({ body }) => body.submitResultHash === RESULT));
+
+    if (verdict.kind !== "pass") {
+      records.get(bond.escrow).payment.onChainState = "Withdrawn";
+      const pending = (await adapter.settle({ ...signed, awardEscrowId: award.id, bondEscrowId: bond.id, resultHash: RESULT }));
+      for (const r of pending.filter(({ state }) => state === "TransferPending")) await adapter.advance(r.id);
+      assert.ok(sent.length > 0);
+      for (const move of sent) assert.deepEqual(move.verdict, signed, "treasury verdict is the signed one, no result hash");
+    }
+  });
+}
+
+test("without a delivery result hash (or with a malformed one) settlement anchors the verdict hash", async () => {
+  for (const resultHash of [undefined, "abc", "F".repeat(64)]) {
+    const { adapter, calls } = fixture();
+    const award = await adapter.lockAward({ supplier: "techblog", amount: 70 });
+    const bond = await adapter.lockBond({ supplier: "techblog", amount: 17.5 });
+    calls.length = 0;
+    await adapter.settle({ ...verdicts[0], hash: "9".repeat(64), awardEscrowId: award.id, bondEscrowId: bond.id, resultHash });
+    const submit = calls.find(({ path }) => path.endsWith("submit-result"));
+    assert.equal(submit.body.submitResultHash, "9".repeat(64));
+  }
+});

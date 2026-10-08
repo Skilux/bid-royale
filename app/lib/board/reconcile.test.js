@@ -328,3 +328,24 @@ test("a stuck bid fee never holds back supplier settlement; the run times out wi
   assert.equal(adapter.calls.filter((c) => c.op === "collect" && c.supplier === "devnewsletter").length, 1);
   assert.ok(!run.receipt.badges.includes("PENDING"));
 });
+
+test("settle gets each supplier's delivery result hash from run.delivery (#51), or none", async () => {
+  const adapter = scriptedAdapter({ lockAfter: 1 });
+  const { board, id, job, firstTick } = await atSettlement(adapter);
+  const run = await board.store.getRun(id);
+  assert.ok(run.delivery, "the verdicts step recorded run.delivery");
+  delete run.delivery.codepodcast;
+  await board.store.setRun(run);
+  await firstTick();
+  await board.pollSettlement(id, job);
+  const settles = adapter.calls.filter((c) => c.op === "settle");
+  assert.equal(settles.length, 3);
+  for (const { supplier, verdict } of settles) {
+    if (supplier === "codepodcast") assert.ok(!("resultHash" in verdict));
+    else {
+      assert.equal(verdict.resultHash, run.delivery[supplier].resultHash);
+      assert.match(verdict.resultHash, /^[0-9a-f]{64}$/);
+      assert.notEqual(verdict.resultHash, verdict.hash);
+    }
+  }
+});

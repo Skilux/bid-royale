@@ -20,7 +20,11 @@ Plain JS REST wrapper for the Masumi 0.29.0 V2 payment service. No chain code.
 - `lockBond({ supplier, amount }) → Promise<Receipt>`: Supplier buys from Board.
 - `settle(verdict) → Promise<Receipt[]>`: follows `planSettlement` without changing
   its amounts. Verdict fields: `supplier`, `kind`, `award`, `bond`, `promised`,
-  `delivered`, `gate`, optional Board verdict `hash` and `signature`.
+  `delivered`, `gate`, optional Board verdict `hash` and `signature`. Optional
+  `resultHash` (#51, from `run.delivery`): `sha256(canonical delivery report +
+  verdict hash)`, sent as `submitResultHash` on every `submit-result` of the
+  settlement (Pass: award; Short of promise: award and bond; Under gate: bond).
+  Without it the verdict hash is anchored. Removed before the treasury call.
 - Real `advance(id) → Promise<Receipt>`: the follow-up driver for settlement;
   reads both sides and issues at most one state-changing request per escrow.
   No loops or sleeps. Portable ids work across adapter instances. On a lock

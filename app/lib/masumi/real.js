@@ -219,12 +219,14 @@ export function createRealAdapter({ env = process.env, fetch, timeoutMs, now = D
       }
     },
     async settle(input) {
-      // Escrow ids only locate the locks; the treasury gets the signed verdict without them.
-      const { awardEscrowId, bondEscrowId, ...verdict } = input;
+      // Escrow ids only locate the locks and the delivery result hash (#51) is anchored on chain; the treasury gets the
+      // signed verdict without them.
+      const { awardEscrowId, bondEscrowId, resultHash: delivered, ...verdict } = input;
       const ids = { awardEscrowId, bondEscrowId };
       const escrow = (v, action) => escrowFor({ ...v, ...ids }, action);
       const moves = planSettlement(verdict);
-      const resultHash = verdict.hash ?? hash(verdict);
+      // Every submit-result carries sha256(delivery report + verdict hash) when the run has one, else the verdict hash.
+      const resultHash = COMMIT.test(delivered ?? "") ? delivered : verdict.hash ?? hash(verdict);
       const results = [];
       // Award and bond progress independently; no chain-confirmation loops.
       const bondProgress = moves.some((move) => move.via === "plain_transfer")
