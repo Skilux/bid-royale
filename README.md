@@ -144,6 +144,10 @@ Deploying is manual from the team MacBook with the Vercel CLI, see
 [`AGENTS.md`](AGENTS.md) and [`docs/hosting.md`](docs/hosting.md). Pushing to `main`
 does not deploy.
 
+## Use the service from an agent
+
+- Customer (consumer) agents: [`docs/api/customer.md`](docs/api/customer.md), the Board API, the definition of done, how to read and verify the receipt.
+
 ## Architecture
 
 Diagram and component contracts: [`docs/architecture.md`](docs/architecture.md).

@@ -32,6 +32,7 @@ as their own source.
 | Money flow per run: calls, keys, amounts, escrow states, measured times | `docs/money-flow.md` | link only |
 | Third-party services, access levels | `docs/services.md` | link only |
 | Honest limits of the demo | `docs/honest-limitations.md` | README links here |
+| Customer API and guide (Board routes, receipt) | `docs/api/customer.md` | link only |
 | Demo script, merge points, timings | `docs/demo-runbook.md` | AGENTS.md links here |
 | What to build, in order | `AGENTS.md` | — |
 | Build order per lane, live status | `docs/plan/lane-*.md` | — |
