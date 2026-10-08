@@ -23,16 +23,45 @@ Scope: payment logic only. No UI, agents or verifier. Rails stay Masumi's (see
 
 ## Progress
 
-Status as of 2026-10-08 ~21:35. Checkpoint 1 partly done.
+Status as of 2026-10-08 ~22:01. Checkpoint 1 partly done; V2 source created and initial wallets funded (#21).
 
 | Checkpoint 1 item | Status |
 |---|---|
 | Payment service deployed on Railway and reachable | Done. Upgraded to 0.29.0, `/api/v1/health` ok. `https://masumi-payment-service-production-5263.up.railway.app` (`/api/v1`, `/admin`, `/docs`), project `bid-royale-masumi` |
 | Base URL and key work | Admin key works on 0.29.0 (`MASUMI_ADMIN_API_KEY` in gitignored `app/.env.local`, local scripts only). Scoped `ReadAndPay` key for `techblog-agent` not re-checked since the upgrade |
-| Wallets exist and are funded | Partly. Seeded selling wallet (`…kewhxz`) and purchasing wallet (`…8cp47j`) hold 10,000 tADA each (checked on chain). Mnemonics backed up off-repo. Per-party wallets (Consumer, 4 Suppliers, Board) not created yet |
-| Contract version (D9) | Seeded source is V1 (`Web3CardanoV1`, `addr_test1wz7j4kmg2cs7yf92uat3ed4a3u97kr7axxr4avaz0lhwdsqukgwfm`, 5% fee). Decided: run on a new V2 source (L1 below); closes when W1 is done |
+| Wallets exist and are funded | Partly. Fresh V2 Consumer purchasing (400 tADA), Board selling (150 tADA), and admin (20 tADA) funded REAL and checked on chain; tx links below. Mnemonics backed up off-repo. Supplier wallets remain W2. Seeded V1 wallets used only for funding |
+| Contract version (D9) | Done (#21). New Preprod `Web3CardanoV2` source `cmuzylds0000347p4qfsw0ed3`, contract `addr_test1wzqgalcd93sfjrc5tsc4ycwx80a8lt0s3767a4g8nh45lrg044nd9`, fee 0 permille; `cooldownTime: 60000` (60 s) accepted. Status `custom_address` accepted by operator on 8 Oct: current V2 policy with our fresh admin wallet. Seeded V1 remains unchanged as fallback |
 | Asset decided (tUSDM or tADA) | Decided: tADA, spec amounts × 10 (L2 below) |
 | `GET /registry/wallet` returns a wallet | Not run yet |
+
+### V2 source wallets
+
+REAL Preprod funding (#21), 570 tADA total plus transaction fees, below the
+600 tADA cap. Mnemonics saved by the Admin helper under `v2-admin`,
+`v2-consumer-purchasing`, and `v2-board-selling` in protected off-repo storage.
+
+| Role | Address suffix (last 6) | tADA | Funding tx (REAL) |
+|---|---|---|---|
+| Consumer purchasing | p3w6p0 | 400 | [Preprod transaction](https://preprod.cardanoscan.io/transaction/9ad346c54eab9cf3470b0ce9532d91300f6a89249bb886272aa3d84b1db971e5) |
+| Board selling | h0ydnc | 150 | [Preprod transaction](https://preprod.cardanoscan.io/transaction/293af6ac60a335f5e55aaf596bfe13657edc2a1dbca9d6f71406ee7b4850ebde) |
+| Admin | h0vwhn | 20 | [Preprod transaction](https://preprod.cardanoscan.io/transaction/a3dc68b55227b2264d2cafde3ede9de8d0e236f0b26c7b7d84fd1b93df3c5dc2) |
+
+Registry policy: `67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b`.
+One admin slot, `requiredAdminSignatures: 1`. The API returned HTTP 200 for
+`cooldownTime: 60000`; its extended response does not expose cooldown.
+
+The source reports `custom_address`, not literal `in_sync`. Masumi 0.29.0's
+[status classifier](https://github.com/masumi-network/masumi-payment-service/blob/0.29.0/src/utils/v2-contract-sync.ts)
+defines this as the current registry policy with a custom payment address,
+which is expected with fresh admin wallets. The operator explicitly accepted
+this status to close D9 on 8 Oct; it is not an outdated contract.
+
+[Masumi ADR 0007](https://github.com/masumi-network/masumi-payment-service/blob/0.29.0/docs/adr/0007-v2-collateral-readiness-invariant.md)
+requires two wallet UTxOs and a collateral candidate of at least 5 ADA before
+V2 script spends. Its helper automatically submits a reserve-preparation
+transaction at first use when needed (minimum funding 7 ADA). All three wallets
+are funded above that threshold; no script spend or collateral-prep transaction
+was invoked in #21. First use may defer one scheduler tick for preparation.
 
 Done so far:
 
@@ -48,8 +77,8 @@ Done so far:
   (`Cannot find package '@masumi/payment-core'`) and the DB is already seeded,
   so the start command is `pnpm run prisma:migrate && pnpm run start` with no
   seed. Slow template polling vars removed, so the defaults apply (payment
-  and refund checks every ~30 s). Protocol fee on the payment source: 50
-  permille (5%).
+  and refund checks every ~30 s). Protocol fee on the seeded V1 payment source: 50
+  permille (5%); the new V2 source (#21) uses 0 permille.
 - **Fund transfers** go through the Payment Service, not our code:
   `POST /wallet/transfer-funds` (Admin key, min 2 ADA, queued as `Pending`,
   poll `GET /wallet/transfer-funds` for the tx hash). Use it to fund
@@ -106,9 +135,10 @@ W1 V2 source ─► W2 wallets + keys ─► W3 register agents ─┬─► W4 
   `requiredAdminSignatures: 1`, `feeRatePermille: 0`, `cooldownTime` lowered
   from the 7 min default (try 60 s, record what the contract accepts).
 - Fund collateral where V2 requires it (Masumi ADR 0007).
-- **Done when:** the source is `in_sync`, its `smartContractAddress` is
-  recorded here, mnemonics are backed up off-repo, D9 is marked closed (V2) in
-  `docs/plan/README.md`.
+- **Done when:** the source is `in_sync` or current-policy `custom_address`
+  (operator-approved exception for #21 on 8 Oct), its `smartContractAddress`
+  is recorded here, mnemonics are backed up off-repo, D9 is marked closed (V2)
+  in `docs/plan/README.md`.
 
 ### W2. Party wallets, funding, scoped keys (≈22:40)
 

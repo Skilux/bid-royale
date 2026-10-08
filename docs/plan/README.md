@@ -23,7 +23,7 @@ on 9 Oct, Prague time). Spec: Notion PRD v3.1. Rules: `AGENTS.md`.
 
 | ID | Question | Status | Owner |
 |---|---|---|---|
-| D9 | Preprod contract V1 or V2 | Open, closed by Masumi checkpoint 1 | Vladimir |
+| D9 | Preprod contract V1 or V2 | Closed 8 Oct (#21): V2, `addr_test1wzqgalcd93sfjrc5tsc4ycwx80a8lt0s3767a4g8nh45lrg044nd9`; current-policy `custom_address` accepted by operator | Vladimir |
 | D10 | Under-gate refund path A2 or request-refund | Open, closed by Masumi checkpoint 3 | Vladimir |
 | D11 | Budget fill: skip a bid that does not fit and continue | Decided 8 Oct by Danila, PRD not yet updated | Danila |
 | Payment service location | Own node on Railway, product on Vercel. Organizers did not provide a hosted instance | Decided, [ADR 0001](../adr/0001-railway-for-masumi-rails-vercel-for-product.md) | Vladimir |
