@@ -48,8 +48,8 @@ now `bid-royale`; check the project's linked repo points at it:
 2. `vercel link` in the repo (or import via dashboard from GitHub)
 3. Project → Settings → Environment Variables — add every key from
    `.env.example` (Production + Preview)
-4. Verify: push a commit → deploy goes green → open the URL from your phone
-   on cellular (proves no venue-wifi dependency)
+4. Verify: deploy by hand (see Deploy pipeline below) → open the URL from your
+   phone on cellular (proves no venue-wifi dependency)
 
 ## Environment variables
 
@@ -63,7 +63,10 @@ See `.env.example` for the full list. Rules:
 - Models: `OPENROUTER_API_KEY` only. The model list and caps live in
   `app/lib/supplier-agents/llm-config.js`, not in env vars (#40)
 - Board state: `KV_REST_API_URL`, `KV_REST_API_TOKEN` (Upstash, injected by the Vercel integration)
-- Flags: `SIMULATE_PAYMENTS` (false = real preprod), `DEMO_MODE` (live | canned)
+- Flags: `SIMULATE_PAYMENTS` (false = real preprod, the production setting), `DEMO_MODE` (live | canned)
+- Registry discovery is live when `MASUMI_REGISTRY_API_KEY` is set (Read-only key).
+  `MASUMI_REGISTRY_BASE_URL` falls back to `MASUMI_PAYMENT_BASE_URL`
+  (`app/lib/masumi/registry.js`). Without the key the Board uses the labelled seeded registry (#44).
 - Shop signing key for the NeoRack signup feed: `SHOP_SIGNING_KEY` (demo-only
   key, generated locally — it signs simulated signup events)
 
@@ -74,20 +77,27 @@ See `.env.example` for the full list. Rules:
 - **Commits:** conventional commits, lowercase, <72 chars:
   `feat(ui): tender board renders bids`, `fix(settlement): verdict uses bid quote`
 - **Lanes (merge points in `docs/demo-runbook.md`):**
-  - Lane A — Masumi/payments: API wiring, 10 escrows (6 critical-path REAL, 4 bid fees SIMULATED first), settlement, dry runs
+  - Lane A — Masumi/payments: API wiring, 10 escrows, all REAL (3 awards and 3 bonds on the critical path, 4 bid fees, #50), settlement, dry runs
   - Lane B — Wrapper UI/agents/video: UI, agent loops, SSE ledger, script, video
 - **Merge points:** escrow-lock API shape (night start), UI↔settlement
   wiring (~midnight), full run + video (~05:00 on Oct 9). The real build window is
   Oct 8 21:00 to Oct 9 07:14 (code freeze).
-- **Vercel:** both added to the Vercel project; preview deploys per push.
+- **Vercel:** both added to the Vercel project. Pushing does not deploy: Git deploys are off (`app/vercel.json`), Danila deploys by hand.
 - **GitHub:** Vladimir invited as collaborator (Settings → Collaborators)
   before Oct 8.
 
 ## Deploy pipeline
 
 ```text
-git push main ──▶ Vercel auto-deploy ──▶ public URL updates (~1–2 min)
+push to main ──▶ nothing (Git deploys off) ──▶ Danila deploys by hand with the Vercel CLI ──▶ public URL updates
 ```
+
+Pushing to `main` does not deploy. Vercel Hobby blocks Git-triggered deploys when
+the commit author is not the account owner, so `app/vercel.json` turns them off.
+Danila deploys production by hand with the Vercel CLI, from a clean copy of the
+committed HEAD. Agents never deploy. The exact steps are in `AGENTS.md`,
+"Deploying". After a deploy, quote the `/api/health` response: a green deploy is
+not proof.
 
 - The deployed URL is the demo URL. Test it from venue wifi and from a phone on
   cellular early in the build window (Oct 8 21:00 to Oct 9 07:14).

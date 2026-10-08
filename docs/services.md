@@ -11,7 +11,7 @@ need it on the night.
 | Why | Topic partner's rails; escrow + dispute primitives; 25% track relevance |
 | Access | Superseded by [ADR 0001](adr/0001-railway-for-masumi-rails-vercel-for-product.md): organizers did not provide a hosted Payment Service, so we run our own node on Railway. Registry, faucet and explorer stay Masumi's |
 | We need from organizers/partner | API base URL, API keys (ReadAndPay level minimum), faucet access for tADA (amounts are the spec ×10, #24), registry write for our 4 supplier agents |
-| Our usage | 10 escrows (tADA) per run: 6 on the critical path (3 awards, 3 bonds), REAL; 4 bid fees in the background, SIMULATED first and REAL if time allows; locked early, in parallel. Settlement per verdict (Pass, Short of promise, Under gate). Registry reads for discovery; tx hashes → cardanoscan preprod links in UI |
+| Our usage | 10 escrows (tADA) per run: all REAL: 6 on the critical path (3 awards, 3 bonds) and 4 bid fees in the background (#50; `MASUMI_BID_FEES=simulated` is a labelled stall fallback); locked early, in parallel. Settlement per verdict (Pass, Short of promise, Under gate). Registry reads for discovery; tx hashes → cardanoscan preprod links in UI |
 | Permission levels | Read (queries) / ReadAndPay (lock, submit result, request/authorize refund — **this is what we need**) / Admin (key management, not arbitration — keep out of Vercel) |
 | Gotchas | Polling is multi-minute per state transition → lock early, parallel; verify auth + reachability before Oct 8 |
 | Status | ☐ API credentials in hand · ☐ auth verified · ☐ wallets funded (Consumer, 4 suppliers, Board) · ☐ one lock → submit-result → withdraw dry run with tx hash saved · ☐ one refund dry run (Under-gate path, D9) |
