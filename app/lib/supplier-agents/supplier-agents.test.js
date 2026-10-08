@@ -4,7 +4,7 @@ import { commit, evaluateBids } from "../auction/index.js";
 import { TENDER } from "../config.js";
 import { createFixtureBoard } from "../board/worked-example.js";
 import { bidFor, InviteResponse, PERSONAS, SUPPLIER_IDS, estimateWinChance, handleRun, runSupplier } from "./index.js";
-import { createBidSource, localInvite, railwayInvite } from "./bid-source.js";
+import { createBidSource, localInvite, httpInvite } from "./bid-source.js";
 import { byPersona, failure, mockFetch, reply, submitting, toolCall } from "./mock-llm.js";
 
 const tender = { ...TENDER, audience: "technical users" };
@@ -281,13 +281,13 @@ test("bidSource: skips return no entry", async () => {
   assert.deepEqual(await createBidSource({ invite })({ tender, run: { id: "r" } }), []);
 });
 
-test("railwayInvite: posts the body to <base>/tender-invite with the secret, and aborts after its timeout", async () => {
+test("httpInvite: posts the body to <base>/tender-invite with the secret, and aborts after its timeout", async () => {
   const seen = [];
   const fetch = async (url, init) => {
     seen.push({ url, init });
     return { ok: true, status: 200, json: async () => ({ ok: 1 }) };
   };
-  const invite = railwayInvite({ urls: { techblog: "https://tb.example/" }, secret: "s3cret", fetch });
+  const invite = httpInvite({ urls: { techblog: "https://tb.example/" }, secret: "s3cret", fetch });
   assert.deepEqual(await invite(request("techblog")), { ok: 1 });
   assert.equal(seen[0].url, "https://tb.example/tender-invite");
   assert.equal(seen[0].init.headers["x-agent-secret"], "s3cret");
@@ -296,10 +296,10 @@ test("railwayInvite: posts the body to <base>/tender-invite with the secret, and
   await assert.rejects(invite(request("codepodcast")), /no invite URL/);
 
   const hang = (url, init) => new Promise((_, reject) => init.signal.addEventListener("abort", () => reject(new Error("aborted"))));
-  const slow = railwayInvite({ urls: { techblog: "https://tb.example" }, secret: "s", fetch: hang, timeoutMs: 20 });
+  const slow = httpInvite({ urls: { techblog: "https://tb.example" }, secret: "s", fetch: hang, timeoutMs: 20 });
   await assert.rejects(slow(request("techblog")), (err) => err.timeout === true);
 
-  const bad = railwayInvite({ urls: { techblog: "https://tb.example" }, secret: "s", fetch: async () => ({ ok: false, status: 502 }) });
+  const bad = httpInvite({ urls: { techblog: "https://tb.example" }, secret: "s", fetch: async () => ({ ok: false, status: 502 }) });
   await assert.rejects(bad(request("techblog")), /502/);
 });
 
@@ -334,19 +334,20 @@ test("Board rehearsal, PERSONA_MODE=pinned, in-process: worked example, Consumer
   assert.equal(run.ledger.filter((l) => l.phase === "bid_fee").length, 4);
 });
 
-test("Board rehearsal over the Railway path: tender-invite forwards to the route, secret checked, worked example", async () => {
-  const railway = async (url, init) => {
-    const supplier = new URL(url).hostname.split(".")[0];
-    assert.match(url, /\/tender-invite$/);
+test("Board rehearsal over the registered Vercel URLs: <base>/tender-invite reaches the handler, secret checked, worked example", async () => {
+  const app = "https://ad-slot-auction.example";
+  const vercel = async (url, init) => {
+    const match = new URL(url).pathname.match(/^\/api\/agents\/([^/]+)\/tender-invite$/);
+    assert.ok(match, `unexpected path ${url}`);
     const res = await handleRun({
-      request: new Request(`http://vercel/api/agents/${supplier}/run`, { method: "POST", headers: init.headers, body: init.body }),
-      name: supplier,
+      request: new Request(url, { method: "POST", headers: init.headers, body: init.body }),
+      name: match[1],
       env: { ...ENV, PERSONA_MODE: "pinned" },
     });
     return { ok: res.ok, status: res.status, json: () => res.json() };
   };
-  const urls = Object.fromEntries(SUPPLIER_IDS.map((id) => [id, `https://${id}.railway.example`]));
-  const run = await rehearse(createBidSource({ invite: railwayInvite({ urls, secret: "s3cret", fetch: railway }) }));
+  const urls = Object.fromEntries(SUPPLIER_IDS.map((id) => [id, `${app}/api/agents/${id}`]));
+  const run = await rehearse(createBidSource({ invite: httpInvite({ urls, secret: "s3cret", fetch: vercel }) }));
   assert.deepEqual(outcome(run), WORKED);
 });
 

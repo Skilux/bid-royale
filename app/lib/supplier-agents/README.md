@@ -1,12 +1,12 @@
 # `app/lib/supplier-agents/` — supplier agent brains (S11)
 
-The four supplier brains of the sealed-bid auction. Spec: `docs/agents/personas.md`. Railway seller agents
-(`app/lib/agents/techblog-agent/` and siblings) are thin payment adapters: their `/tender-invite` forwards the body to
-`POST /api/agents/<name>/run` on Vercel, which runs the brain in `brain.js`.
+The four supplier brains of the sealed-bid auction. Spec: `docs/agents/personas.md`. The agents live on Vercel
+(ADR 0002): `POST /api/agents/<name>/tender-invite` and `/run` both run the brain in `brain.js`. The Masumi
+MIP-003 routes under the same base path come from #37.
 
 ## Flow
 
-1. `POST /api/agents/<name>/run` (`handler.js`): 404 unknown name, 401 bad `x-agent-secret` (also when
+1. `POST /api/agents/<name>/tender-invite` or `/run` (`handler.js`, same handler): 404 unknown name, 401 bad `x-agent-secret` (also when
    `AGENT_SHARED_SECRET` is unset), 400 body fails `InviteRequest` or `supplier` differs from `<name>`.
 2. `runSupplier` (`brain.js`): up to 3 attempts, one model each from `OPENROUTER_MODELS` (cycled), 12 s `AbortController`
    per attempt, next model on HTTP error, timeout or zod failure.
@@ -31,8 +31,8 @@ plus `reason` and `model` when present, never `committedAt`.
 
 | Env | Effect |
 |---|---|
-| `SUPPLIER_INVITE_URLS` (JSON map supplier id to Railway base URL) | `railwayInvite`: `POST <base>/tender-invite`, header `x-agent-secret`, 45 s timeout |
-| `SUPPLIER_AGENTS=local` | `localInvite`: brains run in-process, no Railway |
+| `SUPPLIER_INVITE_URLS` (JSON map supplier id to agent base URL, e.g. `https://ad-slot-auction.vercel.app/api/agents/techblog`) | `httpInvite`: `POST <base>/tender-invite`, header `x-agent-secret`, 45 s timeout |
+| `SUPPLIER_AGENTS=local` | `localInvite`: brains run in-process, no HTTP hop |
 | neither | undefined: the Board keeps its default pinned quotes |
 
 ## Env vars

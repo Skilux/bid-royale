@@ -13,7 +13,7 @@ function secretMatches(given, expected) {
 }
 
 /**
- * `POST /api/agents/<name>/run`. 404 unknown name, 401 bad secret (also when AGENT_SHARED_SECRET is unset),
+ * `POST /api/agents/<name>/run` and `/tender-invite`. 404 unknown name, 401 bad secret (also when AGENT_SHARED_SECRET is unset),
  * 400 body fails InviteRequest, otherwise 200 with an InviteResponse (a failing brain answers with the pinned quote).
  */
 export async function handleRun({ request, name, env = process.env, fetch: fetchImpl = fetch }) {

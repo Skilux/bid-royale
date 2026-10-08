@@ -4,8 +4,8 @@ import { InviteRequest, InviteResponse } from "./schemas.js";
 
 export const INVITE_TIMEOUT_MS = 45_000;
 
-/** Invite over HTTP: Board -> Railway `POST <base>/tender-invite`. Throws on transport, status or timeout. */
-export function railwayInvite({ urls, secret, fetch: fetchImpl = fetch, timeoutMs = INVITE_TIMEOUT_MS }) {
+/** Invite over HTTP: Board -> `POST <base>/tender-invite`. Throws on transport, status or timeout. */
+export function httpInvite({ urls, secret, fetch: fetchImpl = fetch, timeoutMs = INVITE_TIMEOUT_MS }) {
   return async (request) => {
     const base = urls[request.supplier];
     if (!base) throw new Error(`no invite URL for ${request.supplier}`);
@@ -29,7 +29,7 @@ export function railwayInvite({ urls, secret, fetch: fetchImpl = fetch, timeoutM
   };
 }
 
-/** Invite in-process: skips Railway, runs the brain directly. For rehearsals and local runs. */
+/** Invite in-process: skips the HTTP hop, runs the brain directly. For rehearsals and local runs. */
 export const localInvite = (deps) => (request) => runSupplier(InviteRequest.parse(request), deps);
 
 /**
@@ -77,7 +77,7 @@ export function createBidSource({ invite, referencePrice = 1, suppliers = SUPPLI
 
 /**
  * Bid source for this environment, or undefined to keep the Board's default pinned quotes.
- * `SUPPLIER_INVITE_URLS` (JSON map supplier id -> Railway base URL) selects the Railway path,
+ * `SUPPLIER_INVITE_URLS` (JSON map supplier id -> agent base URL, e.g. `<app>/api/agents/<name>`) selects the HTTP path,
  * `SUPPLIER_AGENTS=local` runs the brains in-process.
  */
 export function bidSourceFromEnv(env = process.env, { fetch: fetchImpl = fetch } = {}) {
@@ -89,7 +89,7 @@ export function bidSourceFromEnv(env = process.env, { fetch: fetchImpl = fetch }
     } catch {
       urls = {};
     }
-    return createBidSource({ invite: railwayInvite({ urls, secret: env.AGENT_SHARED_SECRET, fetch: fetchImpl }), referencePrice });
+    return createBidSource({ invite: httpInvite({ urls, secret: env.AGENT_SHARED_SECRET, fetch: fetchImpl }), referencePrice });
   }
   if (env.SUPPLIER_AGENTS === "local") return createBidSource({ invite: localInvite({ env, fetch: fetchImpl }), referencePrice });
   return undefined;

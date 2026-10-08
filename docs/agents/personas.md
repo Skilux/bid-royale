@@ -12,7 +12,7 @@ D12 (win-chance formula) is Vladimir's call. Every line marked **needs Vladimir*
 | 3 | **D12, needs Vladimir.** The LLM proposes a quote. Code applies `winChance × margin − bidFee > 0`. First auction `R = 1.00`, operator-set. |
 | 4 | Persona seed config and clamps: table below. |
 | 5 | **OpenAI Agents SDK with tools**, max 4 turns, one agent run per supplier. Model provider is **OpenRouter** (free-tier models, `OPENROUTER_MODELS` tried in order), per `docs/hosting.md`: no OpenAI credits received. |
-| 6 | The Board reaches each brain **always through Railway** `POST <api_base_url>/tender-invite`, which forwards to Vercel `POST /api/agents/<name>/run`. |
+| 6 | The Board reaches each brain at the registered `api_base_url`: `POST <api_base_url>/tender-invite` on Vercel (ADR 0002, replaces the Railway forwarder). `SUPPLIER_AGENTS=local` runs the same brain in-process. |
 | 7 | A supplier that fails or times out bids its **pinned quote**, tagged `source: "pinned"`. |
 | 8 | A quote that fails the formula gate is an **honest skip**: no bid, no fee, the UI shows the numbers. |
 
@@ -146,21 +146,21 @@ The `price` min/max in `bidFor` keeps a skip valid: on `skip`, the agent repeats
 
 ## Route contract
 
-### Board to Railway: `POST <api_base_url>/tender-invite`
+### Board to supplier: `POST <api_base_url>/tender-invite`
 
-Called by `bidSource({ tender, suppliers, run })` for all four suppliers in parallel, one `fetch` each with an `AbortController` of 45 s. `api_base_url` comes from `SUPPLIER_INVITE_URLS` (JSON map supplier id to Railway base URL) until the registry lookup is wired. Header `x-agent-secret: $AGENT_SHARED_SECRET`. Body is `InviteRequest`. Response is `InviteResponse`. The Railway adapter is a thin forwarder: it validates the header, forwards the body to Vercel, returns the response unchanged, and uses a 40 s timeout.
+Called by `bidSource({ tender, suppliers, run })` for all four suppliers in parallel, one `fetch` each with an `AbortController` of 45 s. `api_base_url` is `https://ad-slot-auction.vercel.app/api/agents/<name>` (as registered on Masumi, ADR 0002). It comes from `SUPPLIER_INVITE_URLS` (JSON map supplier id to base URL) until the registry lookup is wired. Header `x-agent-secret: $AGENT_SHARED_SECRET`. Body is `InviteRequest`. Response is `InviteResponse`.
 
-### Railway to Vercel: `POST /api/agents/<name>/run`
+`POST /api/agents/<name>/run` is the same handler. Both routes serve `<name>` in `techblog`, `codepodcast`, `devnewsletter`, `gamingforum`. Statuses: 200 `InviteResponse` (including `skip` and `pinned`), 401 bad secret, 400 body fails `InviteRequest`, 404 unknown name. A failure inside the brain returns 200 with `source: "pinned"` and `reason` (`llm_error`, `zod`, `timeout`, `forced`). Each route sets `maxDuration = 60`.
 
-`<name>` is one of `techblog`, `codepodcast`, `devnewsletter`, `gamingforum`. Same header and body. Statuses: 200 `InviteResponse` (including `skip` and `pinned`), 401 bad secret, 400 body fails `InviteRequest`, 404 unknown name. A failure inside the brain returns 200 with `source: "pinned"` and `reason` (`llm_error`, `zod`, `timeout`, `forced`). Route sets `maxDuration = 60`.
+`action: "bid"` is the only action. Serving is scripted in the feed, so the agents compute nothing else. `action` leaves room if that changes.
 
-`action: "bid"` is the only action. Serving is scripted in the feed, so `process_job` on Railway has nothing to compute for the brain. `action` leaves room if that changes.
+The Masumi MIP-003 routes (`/availability`, `/input_schema`, `/start_job`, `/status`, issue #37) share this base path and serve `board` too. This spec does not cover them.
 
 ### What `bidSource` returns
 
 Per supplier with `decision: "bid"`: `{ supplier, price, impressions, promisedPer1000, salt, commit, source, rationale, gate }`. `commit` comes from the agent, `committedAt` is left out so the Board stamps it. Extra fields pass the auction's `validSchema`. Skipped suppliers return no entry, so they get no commit and no bid fee.
 
-If the Railway call fails or times out, `bidSource` builds the pinned quote itself (fresh salt, `commit` from `@/lib/auction`), tagged `source: "pinned"`, `reason: "invite_timeout"` or `"invite_error"`.
+If the invite call fails or times out, `bidSource` builds the pinned quote itself (fresh salt, `commit` from `@/lib/auction`), tagged `source: "pinned"`, `reason: "invite_timeout"` or `"invite_error"`.
 
 The UI shows `source`, `rationale` and `gate` per supplier. Rationale is shown at reveal, not at commit, because it quotes the price.
 
@@ -170,18 +170,18 @@ The UI shows `source`, `rationale` and `gate` per supplier. Rationale is shown a
 |---|---|---|
 | `OPENROUTER_API_KEY` | Vercel | LLM calls (already in `.env.example`) |
 | `OPENROUTER_MODELS` | Vercel | comma list of model ids, first is primary (already in `.env.example`) |
-| `AGENT_SHARED_SECRET` | Vercel and each Railway supplier | `x-agent-secret` |
+| `AGENT_SHARED_SECRET` | Vercel | `x-agent-secret` on `/run` and `/tender-invite` |
 | `REFERENCE_PRICE` | Vercel | `R`, default `1` |
 | `PERSONA_MODE` | Vercel | `llm` (default) or `pinned` |
-| `SUPPLIER_INVITE_URLS` | Vercel | JSON map supplier id to Railway base URL |
-| `AGENT_VERCEL_URL` | each Railway supplier | base URL of the Vercel app |
+| `SUPPLIER_INVITE_URLS` | Vercel | JSON map supplier id to agent base URL (`<app>/api/agents/<name>`). Set = HTTP path |
+| `SUPPLIER_AGENTS` | Vercel | `local` runs the brains in-process. Ignored when `SUPPLIER_INVITE_URLS` is set |
 
 Badge note: the agent returns no money. The bid fee is locked by the Board through `getAdapter()` and carries its own badge.
 
 ## Needs Vladimir
 
 1. **D12.** Confirm the formula, `R = 1.00` for auction 1, and that code (not the LLM) applies the gate.
-2. **`/tender-invite` on every Railway supplier.** The route sits on the critical path. Always-through-Railway means a Railway cold start or outage turns that supplier's bid into the pinned quote. Confirm the 40 s forwarder timeout and the shared secret header.
+2. **`/tender-invite` on Vercel (done in #38, ADR 0002).** The Board calling its own app over HTTP adds a cold-start risk per supplier. `SUPPLIER_AGENTS=local` avoids the hop. Confirm which one production uses.
 3. **Bid fee in REAL mode.** Today the Board locks the bid fee on the supplier's behalf. A REAL fee escrow has the supplier as buyer. Out of scope here, tracked with the Masumi lane.
 4. **Free-tier models.** Confirm the `OPENROUTER_MODELS` list and that a rehearsal of four parallel agents stays inside the free-tier rate limits.
 
@@ -195,6 +195,6 @@ Badge note: the agent returns no money. The bid fee is locked by the Board throu
 
 - Each persona returns a zod-valid bid inside its clamps, or a skip, from `POST /api/agents/<name>/run`.
 - A forced failure per supplier (an unset or bad `OPENROUTER_API_KEY`) returns the pinned quote with `source: "pinned"`.
-- `PERSONA_MODE=pinned` over the real `/tender-invite` path reproduces Consumer net -10.875 and 14 signups.
+- `PERSONA_MODE=pinned` over the `/tender-invite` path (or `SUPPLIER_AGENTS=local`) reproduces Consumer net -10.875 and 14 signups.
 - One live LLM run is recorded in the closing comment: quotes, `gate` numbers, winners, whether it matched the worked example.
 - `cd app && npm run build` and `node --test` pass.
