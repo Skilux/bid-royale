@@ -1,4 +1,5 @@
 const RUN_TTL_SECONDS = 24 * 60 * 60;
+const JOB_TTL_SECONDS = 7 * 24 * 60 * 60;
 const UPSTASH_TIMEOUT_MS = 5000;
 const PREFIX = "bidroyale";
 
@@ -12,6 +13,8 @@ const PREFIX = "bidroyale";
  * @property {(run: object) => Promise<void>} setRun
  * @property {(runId: string, event: {ts: string, name: string, data: unknown}) => Promise<number>} appendEvent  returns the seq
  * @property {(runId: string, after?: number) => Promise<{seq: number, ts: string, name: string, data: unknown}[]>} getEvents
+ * @property {(agent: string, id: string) => Promise<object | null>} getJob  Masumi agent job (MIP-003 `/start_job`)
+ * @property {(job: {agent: string, id: string}) => Promise<void>} setJob
  * @property {(key: string, ttlSeconds: number) => Promise<boolean>} claim  true if this caller got the lock
  * @property {(key: string) => Promise<void>} release
  */
@@ -21,6 +24,7 @@ export function createMemoryStore() {
   const runs = new Map();
   const events = new Map();
   const claims = new Map();
+  const jobs = new Map();
 
   return {
     kind: "memory",
@@ -40,6 +44,13 @@ export function createMemoryStore() {
     async getEvents(runId, after = 0) {
       const list = events.get(runId) ?? [];
       return list.slice(after).map((e, i) => ({ seq: after + i + 1, ...structuredClone(e) }));
+    },
+    async getJob(agent, id) {
+      const job = jobs.get(`${agent}:${id}`);
+      return job ? structuredClone(job) : null;
+    },
+    async setJob(job) {
+      jobs.set(`${job.agent}:${job.id}`, structuredClone(job));
     },
     async claim(key, ttlSeconds) {
       const until = claims.get(key);
@@ -88,6 +99,7 @@ export function createUpstashStore({ url, token, fetchImpl = fetch, timeoutMs = 
   const runKey = (id) => `${PREFIX}:run:${id}`;
   const eventsKey = (id) => `${PREFIX}:run:${id}:events`;
   const claimKey = (key) => `${PREFIX}:claim:${key}`;
+  const jobKey = (agent, id) => `${PREFIX}:masumi:job:${agent}:${id}`;
 
   return {
     kind: "upstash",
@@ -110,6 +122,13 @@ export function createUpstashStore({ url, token, fetchImpl = fetch, timeoutMs = 
     async getEvents(runId, after = 0) {
       const raw = (await command("LRANGE", eventsKey(runId), after, -1)) ?? [];
       return raw.map((r, i) => ({ seq: after + i + 1, ...JSON.parse(r) }));
+    },
+    async getJob(agent, id) {
+      const raw = await command("GET", jobKey(agent, id));
+      return raw ? JSON.parse(raw) : null;
+    },
+    async setJob(job) {
+      await command("SET", jobKey(job.agent, job.id), JSON.stringify(job), "EX", JOB_TTL_SECONDS);
     },
     async claim(key, ttlSeconds) {
       return (await command("SET", claimKey(key), "1", "NX", "EX", ttlSeconds)) === "OK";

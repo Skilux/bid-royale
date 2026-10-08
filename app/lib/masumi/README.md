@@ -67,6 +67,16 @@ clock recheck. Explicit `marginMs` overrides must also be at least two minutes.
 `createRealAdapter({ env, fetch, timeoutMs, now, marginMs, treasury })` exposes
 these injection points for testing or adjusted timing.
 
+## Agent routes (MIP-003)
+
+`agent-api.js` serves `/api/agents/<name>/availability`, `/input_schema`, `/start_job` and `/status` for
+`techblog`, `codepodcast`, `devnewsletter`, `gamingforum` and `board` (#37). Each route uses only that
+agent's `MASUMI_KEY_<NAME>` and `MASUMI_AGENT_<NAME>`, through the same `createClient`. `/start_job` creates
+payment terms (no funds move until a buyer locks) and stores the job in the Board store; `/status` maps the
+node's `onChainState` to `awaiting_payment`, `running`, `completed` or `failed`. `SIMULATE_PAYMENTS` does not
+apply: these routes always talk to the node. Nothing runs a job, so a funded job stays `running` until settlement
+submits its result. `input_hash` is sha256 of `<identifier_from_purchaser>;<key-sorted input_data JSON>`.
+
 ## Settlement and treasury
 
 Pass submits the award result and requests the bond refund using the Supplier's

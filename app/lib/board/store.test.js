@@ -56,6 +56,14 @@ for (const [label, make] of [
     assert.deepEqual(await store.getEvents("other"), []);
   });
 
+  test(`${label} store: Masumi jobs are keyed by agent and id`, async () => {
+    const store = make();
+    assert.equal(await store.getJob("techblog", "j1"), null);
+    await store.setJob({ agent: "techblog", id: "j1", blockchainIdentifier: "b1" });
+    assert.deepEqual(await store.getJob("techblog", "j1"), { agent: "techblog", id: "j1", blockchainIdentifier: "b1" });
+    assert.equal(await store.getJob("board", "j1"), null);
+  });
+
   test(`${label} store: claim is exclusive until released`, async () => {
     const store = make();
     assert.equal(await store.claim("k", 60), true);
