@@ -147,6 +147,7 @@ does not deploy.
 ## Use the service from an agent
 
 - Customer (consumer) agents: [`docs/api/customer.md`](docs/api/customer.md), the Board API, the definition of done, how to read and verify the receipt.
+- Supplier agents: [`docs/api/supplier.md`](docs/api/supplier.md), the invite and delivery-report routes, the sealed proposal, the offer algorithm, how the verdict is decided.
 
 ## Architecture
 
