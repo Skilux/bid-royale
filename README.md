@@ -88,7 +88,7 @@ receipt + round-2 allocation.
 ## Repo map
 
 ```text
-ad-slot-auction/
+bid-royale/
 ├── README.md            ← you are here (technical overview)
 ├── AGENTS.md            ← repo rules for the build night
 ├── .env.example         ← every env var the app needs
