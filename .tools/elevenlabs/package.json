@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@elevenlabs/cli": "1.4.0"
+  }
+}

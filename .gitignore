@@ -1,4 +1,5 @@
 node_modules/
+.tools/elevenlabs/node_modules/
 .next/
 out/
 .env
