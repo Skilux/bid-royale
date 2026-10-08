@@ -13,12 +13,12 @@ export const BRIEF = {
   goal: "pay per verified signup",
 };
 
-/** Pinned quotes that produce the worked example: three winners spending exactly the 20 budget. */
+/** Pinned quotes that produce the worked example: three winners spending exactly the 200 budget. */
 const PINNED = [
-  { supplier: "techblog", price: 7, impressions: 1000, promisedPer1000: 7 },
-  { supplier: "codepodcast", price: 6, impressions: 1000, promisedPer1000: 8 },
-  { supplier: "devnewsletter", price: 7, impressions: 1500, promisedPer1000: 12 },
-  { supplier: "gamingforum", price: 2, impressions: 1000, promisedPer1000: 4 },
+  { supplier: "techblog", price: 70, impressions: 1000, promisedPer1000: 7 },
+  { supplier: "codepodcast", price: 60, impressions: 1000, promisedPer1000: 8 },
+  { supplier: "devnewsletter", price: 70, impressions: 1500, promisedPer1000: 12 },
+  { supplier: "gamingforum", price: 20, impressions: 1000, promisedPer1000: 4 },
 ];
 
 /**

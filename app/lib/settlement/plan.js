@@ -7,8 +7,8 @@
  * @property {number} delivered       verified signups per 1,000 impressions
  * @property {number} promised        promised signups per 1,000 impressions
  * @property {number} gate            5 per 1,000 for the demo
- * @property {number} award           winning bid price, tUSDM
- * @property {number} bond            25% of award, tUSDM
+ * @property {number} award           winning bid price, tADA
+ * @property {number} bond            25% of award, tADA
  * @property {string} [hash]          hash of the signed verdict (decision log)
  * @property {string} [signature]     Board signature over the verdict
  *

@@ -6,9 +6,9 @@ export function getFlags() {
 }
 
 export const TENDER = {
-  budget: 20,
+  budget: 200,
   gate: 5,
   bondRate: 0.25,
-  bidFee: 0.2,
-  currency: "tUSDM",
+  bidFee: 2,
+  currency: "tADA",
 };

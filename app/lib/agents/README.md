@@ -10,10 +10,10 @@ Verifier, Settlement engine), not an agent.
 ## Contract
 
 - **Consumer agent (NeoRack):** takes the brief, publishes the tender (budget
-  20 tUSDM, gate 5 signups per 1,000 impressions, bond 25% of award), locks
+  200 tADA, gate 5 signups per 1,000 impressions, bond 25% of award), locks
   each award in escrow.
 - **Supplier agents (×4):** TechBlog, CodePodcast, DevNewsletter, GamingForum.
-  Each decides whether to bid, locks the 0.2 tUSDM bid fee, submits a sealed
+  Each decides whether to bid, locks the 2 tADA bid fee, submits a sealed
   bid as a commit hash `SHA-256(price, impressions, promised signups, salt)`,
   reveals bid plus salt after close, serves (scripted), locks its bond if it
   wins, submits the result on Pass or Short of promise.

@@ -1,4 +1,4 @@
-/** Amount with up to 4 decimals and no trailing zeros: 7, 1.75, 0.375, 10.875. */
+/** Amount with up to 4 decimals and no trailing zeros: 70, 17.5, 3.75, 108.75. */
 export function formatAmount(n) {
   if (typeof n !== "number" || !Number.isFinite(n)) return "·";
   return String(Number(n.toFixed(4)));

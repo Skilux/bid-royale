@@ -61,7 +61,7 @@ plus `reason` and `model` when present, never `committedAt`.
 
 ## Env vars
 
-`OPENROUTER_API_KEY`, `OPENROUTER_MODELS` (optional override), `AGENT_SHARED_SECRET`, `REFERENCE_PRICE` (default 1), `PERSONA_MODE`
+`OPENROUTER_API_KEY`, `OPENROUTER_MODELS` (optional override), `AGENT_SHARED_SECRET`, `REFERENCE_PRICE` (default 10), `PERSONA_MODE`
 (`pinned` forces pinned quotes), `SUPPLIER_INVITE_URLS`, `SUPPLIER_AGENTS`.
 
 ## Try it
@@ -69,10 +69,10 @@ plus `reason` and `model` when present, never `committedAt`.
 ```bash
 cd app
 node lib/supplier-agents/rehearse.js                       # one Board run, prints quotes, gates, winners
-PERSONA_MODE=pinned node lib/supplier-agents/rehearse.js   # worked example, Consumer net -10.875, 14 signups
+PERSONA_MODE=pinned node lib/supplier-agents/rehearse.js   # worked example, Consumer net -108.75, 14 signups
 curl -s -X POST localhost:3000/api/agents/techblog/run -H "x-agent-secret: $AGENT_SHARED_SECRET" \
   -H 'content-type: application/json' \
-  -d '{"runId":"r1","supplier":"techblog","tender":{"budget":20,"gate":5,"bondRate":0.25,"bidFee":0.2,"currency":"tUSDM"}}'
+  -d '{"runId":"r1","supplier":"techblog","tender":{"budget":200,"gate":5,"bondRate":0.25,"bidFee":2,"currency":"tADA"}}'
 ```
 
 Tests: `node --test lib/supplier-agents`. They never call the network.
