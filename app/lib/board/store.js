@@ -25,9 +25,17 @@ export function createMemoryStore() {
   const events = new Map();
   const claims = new Map();
   const jobs = new Map();
+  const transfers = new Map();
 
   return {
     kind: "memory",
+    async getTransfer(id) { return structuredClone(transfers.get(id) ?? null); },
+    async reserveTransfer(id, record) {
+      if (transfers.has(id)) return false;
+      transfers.set(id, structuredClone(record));
+      return true;
+    },
+    async setTransfer(id, record) { transfers.set(id, structuredClone(record)); },
     async getRun(id) {
       const run = runs.get(id);
       return run ? structuredClone(run) : null;
@@ -103,6 +111,16 @@ export function createUpstashStore({ url, token, fetchImpl = fetch, timeoutMs = 
 
   return {
     kind: "upstash",
+    async getTransfer(id) {
+      const raw = await command("GET", `treasury:transfer:${id}`);
+      return raw ? JSON.parse(raw) : null;
+    },
+    async reserveTransfer(id, record) {
+      return (await command("SET", `treasury:transfer:${id}`, JSON.stringify(record), "NX")) === "OK";
+    },
+    async setTransfer(id, record) {
+      await command("SET", `treasury:transfer:${id}`, JSON.stringify(record));
+    },
     async getRun(id) {
       const raw = await command("GET", runKey(id));
       return raw ? JSON.parse(raw) : null;
