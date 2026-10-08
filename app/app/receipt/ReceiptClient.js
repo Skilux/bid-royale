@@ -8,6 +8,7 @@ import { Chip } from "../_components/Chip";
 import { formatClock, formatAmount, formatFixed } from "../_components/format";
 import { Money } from "../_components/Money";
 import { EvidencePanel, EvidenceProvider } from "./EvidencePanel";
+import { AgentLedger } from "./Ledger";
 
 const FETCH_TIMEOUT_MS = 8000;
 const POLL_MS = 2000;
@@ -218,6 +219,18 @@ function CutLabel({ cut }) {
   return <span className="mt-[5px] inline-block rounded-full border border-dashed border-line px-3.5 py-[3px] text-[12.5px] opacity-85">{text}</span>;
 }
 
+const hashShort = (h) => (typeof h === "string" && h.length > 14 ? `${h.slice(0, 8)}…${h.slice(-6)}` : h);
+
+/** The Board's signed verdict hash for one supplier. Evidence detail is in the evidence panel. */
+function VerdictHash({ hash }) {
+  if (!hash) return null;
+  return (
+    <div className="mt-1.5 font-mono text-[11px] opacity-75" data-testid="verdict-hash">
+      Board verdict hash <span title={hash}>{hashShort(hash)}</span>
+    </div>
+  );
+}
+
 function VerdictBubble({ s }) {
   const verb =
     s.kind === "pass"
@@ -234,6 +247,7 @@ function VerdictBubble({ s }) {
           </span>
         ))}
       </div>
+      <VerdictHash hash={s.verdictHash} />
       <EvidencePanel supplier={s.supplier} />
     </div>
   );
@@ -285,6 +299,7 @@ function UnderGate({ s, shown, reduced, currency }) {
         </div>
       ) : null}
       {shown.has(`button:${s.supplier}`) ? <ExplorerButton s={s} /> : null}
+      <VerdictHash hash={s.verdictHash} />
       <EvidencePanel supplier={s.supplier} />
     </div>
   );
@@ -363,13 +378,23 @@ export function FinalReceipt({ view }) {
         <br />
         for {f.signups} verified signups.
       </div>
+      {view.pendingRows > 0 ? (
+        <p className="mt-2 rounded-md border border-dashed border-ink-3 px-3 py-1.5 text-[13px]" data-testid="pending-note">
+          {view.pendingRows} money rows are <Badge kind="PENDING" />: submitted, no transaction yet. The total is planned, not paid.
+        </p>
+      ) : null}
       {perSignup === null ? null : <p className="mt-1">About {perSignup} per signup. Ranked by cost per signup:</p>}
+      <p className="mt-1 text-[12.5px] opacity-75" data-testid="roi-formula">
+        ROI = cost per verified signup (what I paid that publisher ÷ its verified signups) and verified signups per {view.currency} (the same two numbers the other way round).
+        Lower cost ranks first. Under gate has no signups and Lost bid has no award, so they rank last.
+      </p>
       <div className="mt-3.5 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
         {view.leaderboard.map((r) => (
-          <LeaderCard key={r.supplier} r={r} />
+          <LeaderCard key={r.supplier} r={r} currency={view.currency} />
         ))}
       </div>
       <RoundTwo roundTwo={view.roundTwo} />
+      <AgentLedger ledgers={view.ledgers} currency={view.currency} />
       <div className="mt-3.5 border-t border-dashed border-line pt-2 text-[12.5px]">{tallyLine(view.tally)}</div>
     </div>
   );
@@ -382,7 +407,7 @@ const CARD = {
   lost_bid: "border-l-line opacity-60",
 };
 
-function LeaderCard({ r }) {
+function LeaderCard({ r, currency }) {
   return (
     <div className={`grid grid-cols-[34px_1fr] items-center gap-x-2.5 gap-y-0.5 rounded-[10px] border border-line border-l-[6px] px-3 py-2.5 ${CARD[r.kind] ?? ""}`}>
       <div className="row-span-2 font-display text-[26px]">{r.rank}</div>
@@ -391,13 +416,13 @@ function LeaderCard({ r }) {
       </div>
       <div className={`font-display text-[22px] leading-tight tabular-nums ${r.kind === "under_gate" ? "text-under" : ""}`}>
         {r.kind === "under_gate" ? "Refunded" : r.costPerSignup === null ? "·" : <Money amount={r.costPerSignup} badges={r.badges} />}
-        <small className="block text-xs font-normal opacity-75">{cardCaption(r)}</small>
+        <small className="block text-xs font-normal opacity-75">{cardCaption(r, currency)}</small>
       </div>
     </div>
   );
 }
 
-function cardCaption(r) {
+function cardCaption(r, currency) {
   if (r.kind === "under_gate") {
     return (
       <>
@@ -412,7 +437,7 @@ function cardCaption(r) {
       </>
     );
   }
-  return `per signup · ${r.signups} signups`;
+  return `per signup · ${r.signups} signups${r.signupsPerTada === null ? "" : ` · ${Number(r.signupsPerTada.toFixed(3))} per ${currency}`}`;
 }
 
 const BAR = ["bg-pass text-white", "bg-short text-white", "bg-cobalt text-white", "bg-ink text-white"];
@@ -424,7 +449,10 @@ function RoundTwo({ roundTwo }) {
   return (
     <>
       <p className="mt-3.5">
-        <strong>Next round, shown not executed:</strong> budget share for each publisher.
+        <strong>Next round, shown not executed:</strong> budget share for each publisher. <Badge kind="SIMULATED" />
+      </p>
+      <p className="text-[12.5px] opacity-75" data-testid="round2-rule">
+        Rule: the next budget splits equally between the publishers that were not Under gate. Illustrative, no chain operations.
       </p>
       <div className="my-1.5 flex h-[26px] overflow-hidden rounded-md text-xs font-semibold">
         {active.map((r, i) => (
@@ -449,5 +477,6 @@ function tallyLine(t) {
   } else {
     locks = `No escrow is REAL in this run, all ${t.locksTotal} are ${t.lockBadges.join(" / ") || "SIMULATED"}.`;
   }
-  return `${locks} Bid fees ${fees}. Traffic SIMULATED. Suppliers are our own agents.`;
+  const pending = t.locksPending > 0 ? ` ${t.locksPending} still PENDING.` : "";
+  return `${locks}${pending} Bid fees ${fees}. Traffic SIMULATED. Suppliers are our own agents.`;
 }
