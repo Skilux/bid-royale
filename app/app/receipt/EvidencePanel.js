@@ -6,11 +6,12 @@ import { verifyItem } from "@/lib/evidence/verify";
 import { Badge } from "../_components/Badge";
 
 const FETCH_TIMEOUT_MS = 8000;
-const GROUP_ORDER = ["setup", "auction", "traffic", "verdict", "money"];
+const GROUP_ORDER = ["setup", "auction", "traffic", "delivery", "verdict", "money"];
 const GROUP_LABEL = {
   setup: "Setup",
   auction: "Auction",
   traffic: "Signups and checks",
+  delivery: "Delivery claim",
   verdict: "Verdicts",
   money: "Money",
 };
@@ -157,7 +158,7 @@ function Row({ entry, ctx, extra }) {
 function ChainLine({ link, source }) {
   return (
     <div className="mt-1 text-[12.5px] opacity-90">
-      On the chain: the award escrow carries {link.fallback ? "this verdict hash (no delivery report was posted)" : "the delivery result hash"} as its result.{" "}
+      On the chain: the award escrow carries {link.fallback ? "this verdict hash (no delivery report was recorded)" : "the result hash, a fingerprint of the supplier's report and this verdict"} as its result.{" "}
       {link.explorerUrl ? (
         <>
           <Badge kind="REAL" />{" "}
@@ -174,6 +175,22 @@ function ChainLine({ link, source }) {
       )}
     </div>
   );
+}
+
+/** Plain-words note under a row: what a delivery claim is, and where the result hash sits on the chain. */
+function RowNote({ entry, ledger, source, hasReport }) {
+  if (entry.name.startsWith("delivery.")) {
+    return (
+      <div className="mt-1 text-[12.5px] opacity-90">
+        {entry.origin === "supplier_post" ? "Posted by the supplier agent." : "The supplier's claim, scripted in this demo."} The verdict
+        does not use it: it comes from the shop&apos;s signed signups.
+      </div>
+    );
+  }
+  const reported = hasReport(`result.${entry.supplier}`);
+  const onChainRow = entry.name.startsWith("result.") || (entry.name.startsWith("verdict.") && !reported);
+  if (!onChainRow || !ledger) return null;
+  return <ChainLine link={chainLink(ledger, entry.supplier, { hasReport: reported })} source={source} />;
 }
 
 /**
@@ -226,11 +243,7 @@ export function EvidencePanel({ supplier = null }) {
                 key={entry.name}
                 entry={entry}
                 ctx={ctx}
-                extra={
-                  entry.name.startsWith("verdict.") && ledger ? (
-                    <ChainLine link={chainLink(ledger, entry.supplier, { hasReport: hasReport(`result.${entry.supplier}`) })} source={source} />
-                  ) : null
-                }
+                extra={<RowNote entry={entry} ledger={ledger} source={source} hasReport={hasReport} />}
               />
             ))}
           </ul>

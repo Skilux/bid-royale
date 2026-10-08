@@ -1046,7 +1046,24 @@
         "supplier": "techblog",
         "share": 0.5
       }
-    ]
+    ],
+    "delivery": {
+      "devnewsletter": {
+        "reportHash": "5e6a01833db74adf32bd28c534d33d7de5d9033352aa0e5adfec0424e132dd02",
+        "resultHash": "fb661de1ff55acec2e3fef39c60f0b7e11b5d83113de8c2a2175f9e2b11ae75d",
+        "source": "scripted_demo"
+      },
+      "codepodcast": {
+        "reportHash": "06981f6c72be93e7407c051b28fc8735852ad4faf046432959df82465888706a",
+        "resultHash": "99f627e77ee1ce86a79c646b03af2be2e5bbce435569fb1c41ab5d7fa573b493",
+        "source": "scripted_demo"
+      },
+      "techblog": {
+        "reportHash": "9ca94407dcc10d93221387cdef3579dc2600a32b5cab27be5306103b93ba08f7",
+        "resultHash": "d293910f13a2d42b673e8abdc1266632fb1414ede8fe347ebe16b4541643ad28",
+        "source": "scripted_demo"
+      }
+    }
   },
   "events": [
     {
@@ -2162,6 +2179,39 @@
       "bytes": "{\"advertiser\":\"NeoRack\",\"audience\":\"technical users\",\"goal\":\"pay per verified signup\"}"
     },
     {
+      "name": "delivery.codepodcast",
+      "label": "Delivery report, CodePodcast",
+      "group": "delivery",
+      "supplier": "codepodcast",
+      "origin": "scripted_demo",
+      "step": "delivery",
+      "hash": "06981f6c72be93e7407c051b28fc8735852ad4faf046432959df82465888706a",
+      "size": 383,
+      "bytes": "{\"impressionsServed\":1000,\"runId\":\"run_worked-example\",\"servedAt\":\"2026-10-08T22:00:00.440Z\",\"sessionIds\":[\"codepodcast.0001\",\"codepodcast.0002\",\"codepodcast.0003\",\"codepodcast.0004\",\"codepodcast.0005\",\"codepodcast.0006\",\"codepodcast.9001\",\"codepodcast.9003\",\"devnewsletter.9002\"],\"supplier\":\"codepodcast\",\"window\":{\"from\":\"2026-10-08T21:00:00.440Z\",\"to\":\"2026-10-08T22:00:00.440Z\"}}"
+    },
+    {
+      "name": "delivery.devnewsletter",
+      "label": "Delivery report, DevNewsletter",
+      "group": "delivery",
+      "supplier": "devnewsletter",
+      "origin": "scripted_demo",
+      "step": "delivery",
+      "hash": "5e6a01833db74adf32bd28c534d33d7de5d9033352aa0e5adfec0424e132dd02",
+      "size": 273,
+      "bytes": "{\"impressionsServed\":1500,\"runId\":\"run_worked-example\",\"servedAt\":\"2026-10-08T22:00:00.440Z\",\"sessionIds\":[\"codepodcast.9002\",\"devnewsletter.9001\",\"devnewsletter.9003\"],\"supplier\":\"devnewsletter\",\"window\":{\"from\":\"2026-10-08T21:00:00.440Z\",\"to\":\"2026-10-08T22:00:00.440Z\"}}"
+    },
+    {
+      "name": "delivery.techblog",
+      "label": "Delivery report, TechBlog",
+      "group": "delivery",
+      "supplier": "techblog",
+      "origin": "scripted_demo",
+      "step": "delivery",
+      "hash": "9ca94407dcc10d93221387cdef3579dc2600a32b5cab27be5306103b93ba08f7",
+      "size": 388,
+      "bytes": "{\"impressionsServed\":1000,\"runId\":\"run_worked-example\",\"servedAt\":\"2026-10-08T22:00:00.440Z\",\"sessionIds\":[\"devnewsletter.9002\",\"techblog.0001\",\"techblog.0002\",\"techblog.0003\",\"techblog.0004\",\"techblog.0005\",\"techblog.0006\",\"techblog.0007\",\"techblog.0008\",\"techblog.9001\",\"techblog.9003\"],\"supplier\":\"techblog\",\"window\":{\"from\":\"2026-10-08T21:00:00.440Z\",\"to\":\"2026-10-08T22:00:00.440Z\"}}"
+    },
+    {
       "name": "keys",
       "label": "Public keys that sign",
       "group": "setup",
@@ -2191,6 +2241,39 @@
       "size": 1758,
       "bytes": "{\"badges\":[\"SIMULATED\"],\"board\":{\"bidFees\":8},\"consumer\":{\"awardsLocked\":200,\"costPerSignup\":7.767857,\"net\":-108.75,\"returned\":91.25,\"signups\":14},\"leaderboard\":[{\"award\":70,\"awardReclaimed\":0,\"bond\":17.5,\"bondForfeited\":0,\"bondReturned\":17.5,\"consumerSpend\":70,\"costPerSignup\":8.75,\"countedSignups\":8,\"delivered\":8,\"kind\":\"pass\",\"name\":\"TechBlog\",\"paidToSupplier\":70,\"promised\":7,\"rank\":1,\"supplier\":\"techblog\",\"supplierNet\":68,\"verdictHash\":\"1d923c7372999044ea43075bc4611b20570e982340c0f337d301df4c216c03df\",\"verifiedSignups\":8},{\"award\":60,\"awardReclaimed\":0,\"bond\":15,\"bondForfeited\":3.75,\"bondReturned\":11.25,\"consumerSpend\":56.25,\"costPerSignup\":9.375,\"countedSignups\":6,\"delivered\":6,\"kind\":\"short_of_promise\",\"name\":\"CodePodcast\",\"paidToSupplier\":60,\"promised\":8,\"rank\":2,\"supplier\":\"codepodcast\",\"supplierNet\":54.25,\"verdictHash\":\"ad70c18058dd3e10e6625381aa79ce448d50fc19ecf982e8ea985f871e8056fd\",\"verifiedSignups\":6},{\"award\":70,\"awardReclaimed\":70,\"bond\":17.5,\"bondForfeited\":17.5,\"bondReturned\":0,\"consumerSpend\":-17.5,\"costPerSignup\":null,\"countedSignups\":0,\"delivered\":0,\"kind\":\"under_gate\",\"name\":\"DevNewsletter\",\"paidToSupplier\":0,\"promised\":12,\"rank\":3,\"supplier\":\"devnewsletter\",\"supplierNet\":-19.5,\"verdictHash\":\"3297b1857ce7a267a3e5576ce8af2a69f6f28c8e912218e6aabd6a3d65cef855\",\"verifiedSignups\":0},{\"award\":0,\"awardReclaimed\":0,\"bond\":0,\"bondForfeited\":0,\"bondReturned\":0,\"consumerSpend\":0,\"costPerSignup\":null,\"countedSignups\":0,\"delivered\":null,\"kind\":\"lost_bid\",\"name\":\"GamingForum\",\"paidToSupplier\":0,\"promised\":4,\"rank\":4,\"supplier\":\"gamingforum\",\"supplierNet\":-2,\"verdictHash\":null,\"verifiedSignups\":0}],\"roundTwo\":[{\"share\":0,\"supplier\":\"devnewsletter\"},{\"share\":0.5,\"supplier\":\"codepodcast\"},{\"share\":0.5,\"supplier\":\"techblog\"}]}",
       "revision": 1
+    },
+    {
+      "name": "result.codepodcast",
+      "label": "Result hash, CodePodcast",
+      "group": "verdict",
+      "supplier": "codepodcast",
+      "origin": "scripted_demo",
+      "step": "verdicts",
+      "hash": "7757da02c6c1ac2c3f6071bccd3c0db6942468bea1e709118d470b5fcf2af118",
+      "size": 835,
+      "bytes": "{\"recipe\":\"sha256(UTF-8(canonical delivery report + verdict hash)), plain string concatenation, no separator, lowercase hex\",\"reportBytes\":\"{\\\"impressionsServed\\\":1000,\\\"runId\\\":\\\"run_worked-example\\\",\\\"servedAt\\\":\\\"2026-10-08T22:00:00.440Z\\\",\\\"sessionIds\\\":[\\\"codepodcast.0001\\\",\\\"codepodcast.0002\\\",\\\"codepodcast.0003\\\",\\\"codepodcast.0004\\\",\\\"codepodcast.0005\\\",\\\"codepodcast.0006\\\",\\\"codepodcast.9001\\\",\\\"codepodcast.9003\\\",\\\"devnewsletter.9002\\\"],\\\"supplier\\\":\\\"codepodcast\\\",\\\"window\\\":{\\\"from\\\":\\\"2026-10-08T21:00:00.440Z\\\",\\\"to\\\":\\\"2026-10-08T22:00:00.440Z\\\"}}\",\"reportHash\":\"06981f6c72be93e7407c051b28fc8735852ad4faf046432959df82465888706a\",\"resultHash\":\"99f627e77ee1ce86a79c646b03af2be2e5bbce435569fb1c41ab5d7fa573b493\",\"supplier\":\"codepodcast\",\"verdictHash\":\"ad70c18058dd3e10e6625381aa79ce448d50fc19ecf982e8ea985f871e8056fd\"}"
+    },
+    {
+      "name": "result.devnewsletter",
+      "label": "Result hash, DevNewsletter",
+      "group": "verdict",
+      "supplier": "devnewsletter",
+      "origin": "scripted_demo",
+      "step": "verdicts",
+      "hash": "7bdb3849d0bfb38ea060a9be5cf20d1c13f8d5a525695037d0ce6944663f8d61",
+      "size": 715,
+      "bytes": "{\"recipe\":\"sha256(UTF-8(canonical delivery report + verdict hash)), plain string concatenation, no separator, lowercase hex\",\"reportBytes\":\"{\\\"impressionsServed\\\":1500,\\\"runId\\\":\\\"run_worked-example\\\",\\\"servedAt\\\":\\\"2026-10-08T22:00:00.440Z\\\",\\\"sessionIds\\\":[\\\"codepodcast.9002\\\",\\\"devnewsletter.9001\\\",\\\"devnewsletter.9003\\\"],\\\"supplier\\\":\\\"devnewsletter\\\",\\\"window\\\":{\\\"from\\\":\\\"2026-10-08T21:00:00.440Z\\\",\\\"to\\\":\\\"2026-10-08T22:00:00.440Z\\\"}}\",\"reportHash\":\"5e6a01833db74adf32bd28c534d33d7de5d9033352aa0e5adfec0424e132dd02\",\"resultHash\":\"fb661de1ff55acec2e3fef39c60f0b7e11b5d83113de8c2a2175f9e2b11ae75d\",\"supplier\":\"devnewsletter\",\"verdictHash\":\"3297b1857ce7a267a3e5576ce8af2a69f6f28c8e912218e6aabd6a3d65cef855\"}"
+    },
+    {
+      "name": "result.techblog",
+      "label": "Result hash, TechBlog",
+      "group": "verdict",
+      "supplier": "techblog",
+      "origin": "scripted_demo",
+      "step": "verdicts",
+      "hash": "d0a7789b008f7d186d898433e29cd7de3b7ed5711e79f977a33bdba3d48f37e6",
+      "size": 841,
+      "bytes": "{\"recipe\":\"sha256(UTF-8(canonical delivery report + verdict hash)), plain string concatenation, no separator, lowercase hex\",\"reportBytes\":\"{\\\"impressionsServed\\\":1000,\\\"runId\\\":\\\"run_worked-example\\\",\\\"servedAt\\\":\\\"2026-10-08T22:00:00.440Z\\\",\\\"sessionIds\\\":[\\\"devnewsletter.9002\\\",\\\"techblog.0001\\\",\\\"techblog.0002\\\",\\\"techblog.0003\\\",\\\"techblog.0004\\\",\\\"techblog.0005\\\",\\\"techblog.0006\\\",\\\"techblog.0007\\\",\\\"techblog.0008\\\",\\\"techblog.9001\\\",\\\"techblog.9003\\\"],\\\"supplier\\\":\\\"techblog\\\",\\\"window\\\":{\\\"from\\\":\\\"2026-10-08T21:00:00.440Z\\\",\\\"to\\\":\\\"2026-10-08T22:00:00.440Z\\\"}}\",\"reportHash\":\"9ca94407dcc10d93221387cdef3579dc2600a32b5cab27be5306103b93ba08f7\",\"resultHash\":\"d293910f13a2d42b673e8abdc1266632fb1414ede8fe347ebe16b4541643ad28\",\"supplier\":\"techblog\",\"verdictHash\":\"1d923c7372999044ea43075bc4611b20570e982340c0f337d301df4c216c03df\"}"
     },
     {
       "name": "settlement",

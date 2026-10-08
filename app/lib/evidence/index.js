@@ -1,3 +1,4 @@
+import { RESULT_HASH_RECIPE, parseReport, resultHash, scriptedReport } from "../delivery-report/index.js";
 import { canonicalHash } from "../signing/canonical.js";
 import { sha256Hex } from "../signing/index.js";
 import { GROUPS, STEP_ITEMS, verdictItems, verificationItems } from "./items.js";
@@ -10,7 +11,7 @@ export const MAX_ITEM_BYTES = 256 * 1024;
 /** Item names are path segments in /api/run/<id>/evidence/<name>. */
 export const ITEM_NAME = /^[a-z0-9][a-z0-9._-]{0,63}$/;
 
-const PUBLIC_FIELDS = ["name", "label", "group", "supplier", "hash", "size", "mutable", "revision", "step"];
+const PUBLIC_FIELDS = ["name", "label", "group", "supplier", "hash", "size", "mutable", "revision", "step", "origin"];
 
 /** The listing form of an item: everything except the bytes. */
 export const manifestEntry = (item) => Object.fromEntries(PUBLIC_FIELDS.filter((k) => item[k] !== undefined).map((k) => [k, item[k]]));
@@ -46,6 +47,7 @@ export function createEvidence({ store }) {
       specs = verdictItems(run, (supplier) => reports.get(supplier));
     }
     const out = { written: [], unchanged: [], failed: [] };
+    if (step === "verdicts") out.delivery = {};
     await Promise.all(
       specs.map(async (spec) => {
         try {
@@ -64,7 +66,72 @@ export function createEvidence({ store }) {
         }
       }),
     );
+    if (step === "verdicts") await recordResults(run, out);
     return out;
+  }
+
+  /**
+   * One delivery report per winner, then the result item that binds it to the verdict (#51).
+   * A supplier that posted before this step keeps its report. Otherwise the Board records the scripted claim.
+   * The verdict never reads either.
+   */
+  async function recordResults(run, out) {
+    for (const v of run.verdicts) {
+      try {
+        let delivery = await store.getEvidence(run.id, `delivery.${v.supplier}`);
+        if (!delivery) {
+          const report = scriptedReport(run, v.supplier);
+          const checked = parseReport(report);
+          if (!checked.ok) throw new Error(`scripted report is invalid: ${checked.issues.join("; ")}`);
+          delivery = await writeDelivery(run, v.supplier, report, "scripted_demo");
+          out.written.push(delivery.name);
+        }
+        const result = resultHash(delivery.bytes, v.hash);
+        const item = sealItem({
+          name: `result.${v.supplier}`,
+          label: `Result hash, ${run.suppliers?.find((s) => s.id === v.supplier)?.name ?? v.supplier}`,
+          group: "verdict",
+          supplier: v.supplier,
+          origin: delivery.origin,
+          step: "verdicts",
+          value: {
+            supplier: v.supplier,
+            resultHash: result,
+            reportHash: delivery.hash,
+            reportBytes: delivery.bytes,
+            verdictHash: v.hash,
+            recipe: RESULT_HASH_RECIPE,
+          },
+        });
+        const put = await store.putEvidence(run.id, item);
+        if (put === "conflict") throw new Error("a different result item already exists");
+        (put === "created" ? out.written : out.unchanged).push(item.name);
+        out.delivery[v.supplier] = { reportHash: delivery.hash, resultHash: result, source: delivery.origin };
+      } catch (err) {
+        out.failed.push({ name: `result.${v.supplier}`, error: err.message });
+      }
+    }
+  }
+
+  async function writeDelivery(run, supplier, report, origin) {
+    const item = sealItem({
+      name: `delivery.${supplier}`,
+      label: `Delivery report, ${run.suppliers?.find((s) => s.id === supplier)?.name ?? supplier}`,
+      group: "delivery",
+      supplier,
+      origin,
+      step: "delivery",
+      value: report,
+    });
+    const status = await store.putEvidence(run.id, item);
+    if (status === "conflict") throw new Error("a delivery report for this supplier already exists");
+    return { ...item, status };
+  }
+
+  /** Stores a validated report a supplier posted. `status` is `created`, or `same` for the identical report again. */
+  async function submitDelivery(run, supplier, report) {
+    const { status, ...item } = await writeDelivery(run, supplier, report, "supplier_post");
+    return { status, reportHash: item.hash, size: item.size };
   }
 
   async function getItem(runId, name) {
@@ -97,5 +164,5 @@ export function createEvidence({ store }) {
     return (await getItem(runId, name))?.hash ?? null;
   }
 
-  return { recordStep, getItem, manifest, exportBundle, importBundle, hashOf };
+  return { recordStep, submitDelivery, getItem, manifest, exportBundle, importBundle, hashOf };
 }

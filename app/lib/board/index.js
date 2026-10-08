@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { commit, evaluateBids } from "../auction/index.js";
 import { TENDER, getFlags } from "../config.js";
+import { parseReport } from "../delivery-report/index.js";
 import { createEvidence } from "../evidence/index.js";
 import { generateFeed } from "../outcome-feed/index.js";
 import { publicKeyFromSecret, publicKeyHex } from "../signing/index.js";
@@ -67,6 +68,8 @@ export function createBoard({
     try {
       const out = await evidence.recordStep(run, step);
       if (out.failed.length) console.error(`evidence: ${step} items failed`, out.failed);
+      // Result hashes per supplier (#51), for the settlement step to anchor. Absent for a supplier means: use the verdict hash.
+      if (out.delivery) run.delivery = out.delivery;
     } catch (err) {
       console.error(`evidence: ${step} failed`, err);
     }
@@ -502,6 +505,29 @@ export function createBoard({
     async evidenceItem(runId, name) {
       await need(runId);
       return evidence.getItem(runId, name);
+    },
+    /**
+     * A supplier's delivery report (#51), already shaped by the route. Winners only, one report each, before the verdicts
+     * step. The report is context: the verdict is decided from the shop's signed signups alone.
+     */
+    async submitDeliveryReport(runId, supplier, body) {
+      const run = await need(runId);
+      if (run.mode === "canned") throw new BoardError(409, "run_closed", "run is canned");
+      const parsed = parseReport(body);
+      if (!parsed.ok) throw new BoardError(400, "invalid_report", "report does not match the agreed format", { issues: parsed.issues });
+      const { report } = parsed;
+      if (report.supplier !== supplier) throw new BoardError(400, "invalid_report", `report supplier ${report.supplier} does not match route ${supplier}`);
+      if (report.runId !== runId) throw new BoardError(400, "invalid_report", `report runId ${report.runId} does not match run ${runId}`);
+      if (!run.auction) throw new BoardError(409, "no_allocation_yet", "the run has no allocation yet");
+      if (!run.auction.accepted.some((a) => a.supplier === supplier)) {
+        throw new BoardError(409, "not_a_winner", `${supplier} won no award in run ${runId}`);
+      }
+      try {
+        return { runId, supplier, ...(await evidence.submitDelivery(run, supplier, report)) };
+      } catch (err) {
+        if (/already exists/.test(err.message)) throw new BoardError(409, "report_exists", "a different report for this supplier is already stored");
+        throw err;
+      }
     },
     exportEvidence: (runId) => evidence.exportBundle(runId),
     evidenceHash: (runId, name) => evidence.hashOf(runId, name),

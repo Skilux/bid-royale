@@ -14,6 +14,7 @@ export const GROUPS = {
   setup: "Setup",
   auction: "Auction",
   traffic: "Signups and checks",
+  delivery: "Delivery claim",
   verdict: "Verdicts",
   money: "Money",
 };

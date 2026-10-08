@@ -13,7 +13,9 @@ const EXPECTED = [
   "allocation",
   "signups.techblog", "signups.codepodcast", "signups.devnewsletter",
   "verification.techblog", "verification.codepodcast", "verification.devnewsletter",
+  "delivery.techblog", "delivery.codepodcast", "delivery.devnewsletter",
   "verdict.techblog", "verdict.codepodcast", "verdict.devnewsletter",
+  "result.techblog", "result.codepodcast", "result.devnewsletter",
   "ledger", "settlement", "receipt",
 ].sort();
 

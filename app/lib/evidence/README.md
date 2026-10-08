@@ -12,7 +12,9 @@ Chain gets hashes only. Evidence stays here.
 | `allocation` | allocation | ranking, accepted, rejected, budget fill, one decision per bid |
 | `signups.<supplier>` | feed | window, impressions, the supplier's signed signup events (bot signals included as context) |
 | `verification.<supplier>` | verification | received, verified, rejected by kind, rejected event ids, bot signals as context only |
+| `delivery.<supplier>` | verdicts (or when the supplier posts) | the supplier's delivery report, canonical bytes. `origin` is `supplier_post` or `scripted_demo` (#51) |
 | `verdict.<supplier>` | verdicts | the Board-signed verdict, Board public key, hash of that supplier's verification report |
+| `result.<supplier>` | verdicts | `resultHash` = sha256(canonical report + verdict hash), the report bytes, the verdict hash, the recipe. Verify redoes it |
 | `ledger`, `settlement`, `receipt` | bids, locks, every settlement tick | bid fees, locks, transfers with badge and tx hash. **Mutable**: a receipt goes PENDING then REAL |
 
 All items except the three mutable ones are write-once. The same bytes again are a no-op. Different bytes under the

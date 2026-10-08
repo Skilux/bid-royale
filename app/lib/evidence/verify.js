@@ -12,6 +12,13 @@ export const verdictPreimage = (v) => JSON.stringify([v.supplier, v.kind, v.deli
 
 /** Extra checks for items that carry a second hash inside their bytes. Each returns `{label, ok}` or null. */
 const EXTRA = {
+  async result(item, parsed) {
+    const { reportBytes, reportHash, verdictHash, resultHash } = parsed ?? {};
+    if (typeof reportBytes !== "string") return null;
+    const reportOk = (await sha256Text(reportBytes)) === reportHash;
+    const resultOk = (await sha256Text(reportBytes + verdictHash)) === resultHash;
+    return { label: "The result hash is sha256(report + verdict hash) of the stored report", ok: reportOk && resultOk };
+  },
   async verdict(item, parsed) {
     const v = parsed?.verdict;
     if (!v?.hash) return null;

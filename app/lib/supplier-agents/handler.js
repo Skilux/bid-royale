@@ -20,7 +20,7 @@ const defaultLimiter = createRateLimiter();
 
 const json = (body, status = 200) => Response.json(body, { status });
 
-function secretMatches(given, expected) {
+export function secretMatches(given, expected) {
   if (!expected || !given) return false;
   const a = Buffer.from(given);
   const b = Buffer.from(expected);
