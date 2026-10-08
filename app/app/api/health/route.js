@@ -1,6 +1,7 @@
 import { getFlags } from "@/lib/config";
 import { createStoreFromEnv } from "@/lib/board";
 import { getAdapter } from "@/lib/masumi";
+import { describeReplay } from "@/lib/replay";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,7 @@ export function GET() {
     flags: getFlags(),
     paymentAdapter: getAdapter().badge,
     boardStore: createStoreFromEnv().kind,
+    replay: describeReplay(),
     env: Object.fromEntries(ENV_KEYS.map((k) => [k, Boolean(process.env[k])])),
     time: new Date().toISOString(),
   });

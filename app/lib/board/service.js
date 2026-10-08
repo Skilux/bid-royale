@@ -1,5 +1,6 @@
 import { getFlags } from "@/lib/config";
 import { getAdapter } from "@/lib/masumi";
+import { withReplayPacing } from "@/lib/replay";
 import { bidSourceFromEnv } from "@/lib/supplier-agents";
 import { BoardError, createBoard, createStoreFromEnv } from "./index.js";
 import { getCannedReplay } from "./canned.js";
@@ -7,7 +8,7 @@ import { getCannedReplay } from "./canned.js";
 /** The Board for this request. State lives in the store, so a fresh object per call is cheap. */
 export function getBoard() {
   return createBoard({
-    store: createStoreFromEnv(),
+    store: withReplayPacing(createStoreFromEnv()),
     adapter: getAdapter(),
     flags: getFlags,
     canned: getCannedReplay(),

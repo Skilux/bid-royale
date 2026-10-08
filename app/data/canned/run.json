@@ -1,0 +1,2045 @@
+{
+  "_note": "STAND-IN: copy of data/seeds/board-run.worked-example.json (simulated worked example, throwaway keys). Replace with the real #45 recording: npm run record:canned -- <runId>, or copy it from docs/runs/2026-10-09/. See docs/demo-runbook.md, Canned replay.",
+  "run": {
+    "id": "run_worked-example",
+    "createdAt": "2026-10-08T22:00:00.000Z",
+    "mode": "live",
+    "badge": "SIMULATED",
+    "seed": 1,
+    "status": "completed",
+    "nextStep": null,
+    "steps": {
+      "tender": {
+        "status": "done",
+        "startedAt": "2026-10-08T22:00:00.000Z",
+        "finishedAt": "2026-10-08T22:00:00.000Z"
+      },
+      "bids": {
+        "status": "done",
+        "startedAt": "2026-10-08T22:00:00.040Z",
+        "finishedAt": "2026-10-08T22:00:00.230Z"
+      },
+      "allocation": {
+        "status": "done",
+        "startedAt": "2026-10-08T22:00:00.250Z",
+        "finishedAt": "2026-10-08T22:00:00.300Z"
+      },
+      "locks": {
+        "status": "done",
+        "startedAt": "2026-10-08T22:00:00.320Z",
+        "finishedAt": "2026-10-08T22:00:00.400Z"
+      },
+      "feed": {
+        "status": "done",
+        "startedAt": "2026-10-08T22:00:00.420Z",
+        "finishedAt": "2026-10-08T22:00:00.490Z"
+      },
+      "verification": {
+        "status": "done",
+        "startedAt": "2026-10-08T22:00:00.510Z",
+        "finishedAt": "2026-10-08T22:00:00.540Z"
+      },
+      "verdicts": {
+        "status": "done",
+        "startedAt": "2026-10-08T22:00:00.560Z",
+        "finishedAt": "2026-10-08T22:00:00.610Z"
+      },
+      "settlement": {
+        "status": "done",
+        "startedAt": "2026-10-08T22:00:00.630Z",
+        "finishedAt": "2026-10-08T22:00:00.760Z"
+      }
+    },
+    "brief": {
+      "advertiser": "NeoRack",
+      "audience": "technical users",
+      "goal": "pay per verified signup"
+    },
+    "tender": {
+      "budget": 200,
+      "gate": 5,
+      "bondRate": 0.25,
+      "bidFee": 2,
+      "currency": "tADA",
+      "audience": "technical users",
+      "deadline": 1791496855060
+    },
+    "suppliers": [
+      {
+        "id": "techblog",
+        "name": "TechBlog",
+        "persona": "conservative"
+      },
+      {
+        "id": "codepodcast",
+        "name": "CodePodcast",
+        "persona": "moderate"
+      },
+      {
+        "id": "devnewsletter",
+        "name": "DevNewsletter",
+        "persona": "aggressive over-promiser"
+      },
+      {
+        "id": "gamingforum",
+        "name": "GamingForum",
+        "persona": "passive low-baller"
+      }
+    ],
+    "keys": {
+      "shop": "25c0c5fb90392a7dd7476b8f8f07f3d10584c6b78d594d67a33dba6bd23e163d",
+      "board": "943a9d996aca8e821c6af3fa255cf4adf2ced70c69837fc796f5f9efeccac703"
+    },
+    "bids": [
+      {
+        "supplier": "techblog",
+        "price": 70,
+        "impressions": 1000,
+        "promisedPer1000": 7,
+        "salt": "salt-techblog",
+        "commit": "5520dde29f2232d3f4706b83973b2267763f0daec8dcf0660774c6c82288a564",
+        "committedAt": 1791496800070
+      },
+      {
+        "supplier": "codepodcast",
+        "price": 60,
+        "impressions": 1000,
+        "promisedPer1000": 8,
+        "salt": "salt-codepodcast",
+        "commit": "c9abe29dc280c1d6494464d5e2512f46d327ca6b6bcd32b97a85b9f81c026e06",
+        "committedAt": 1791496800080
+      },
+      {
+        "supplier": "devnewsletter",
+        "price": 70,
+        "impressions": 1500,
+        "promisedPer1000": 12,
+        "salt": "salt-devnewsletter",
+        "commit": "88fab11a3d07d72c9a83ce6a9e47f215e916a8dd44dba580ea03db426d763183",
+        "committedAt": 1791496800090
+      },
+      {
+        "supplier": "gamingforum",
+        "price": 20,
+        "impressions": 1000,
+        "promisedPer1000": 4,
+        "salt": "salt-gamingforum",
+        "commit": "2a1d98e0b6c62f5c4f51d09dc8d60ae59fba1c3a471ba574ff312664624af64e",
+        "committedAt": 1791496800100
+      }
+    ],
+    "auction": {
+      "ranking": [
+        {
+          "supplier": "devnewsletter",
+          "price": 70,
+          "impressions": 1500,
+          "promisedPer1000": 12,
+          "pricePerSignup": 3.888888888888889,
+          "accepted": true,
+          "award": 70,
+          "bond": 17.5
+        },
+        {
+          "supplier": "codepodcast",
+          "price": 60,
+          "impressions": 1000,
+          "promisedPer1000": 8,
+          "pricePerSignup": 7.5,
+          "accepted": true,
+          "award": 60,
+          "bond": 15
+        },
+        {
+          "supplier": "techblog",
+          "price": 70,
+          "impressions": 1000,
+          "promisedPer1000": 7,
+          "pricePerSignup": 10,
+          "accepted": true,
+          "award": 70,
+          "bond": 17.5
+        }
+      ],
+      "accepted": [
+        {
+          "supplier": "devnewsletter",
+          "price": 70,
+          "impressions": 1500,
+          "promisedPer1000": 12,
+          "pricePerSignup": 3.888888888888889,
+          "accepted": true,
+          "award": 70,
+          "bond": 17.5
+        },
+        {
+          "supplier": "codepodcast",
+          "price": 60,
+          "impressions": 1000,
+          "promisedPer1000": 8,
+          "pricePerSignup": 7.5,
+          "accepted": true,
+          "award": 60,
+          "bond": 15
+        },
+        {
+          "supplier": "techblog",
+          "price": 70,
+          "impressions": 1000,
+          "promisedPer1000": 7,
+          "pricePerSignup": 10,
+          "accepted": true,
+          "award": 70,
+          "bond": 17.5
+        }
+      ],
+      "rejected": [
+        {
+          "supplier": "gamingforum",
+          "reason": "below_gate"
+        }
+      ],
+      "totalAward": 200
+    },
+    "feed": {
+      "window": {
+        "start": "2026-10-08T21:00:00.440Z",
+        "end": "2026-10-08T22:00:00.440Z"
+      },
+      "impressions": {
+        "devnewsletter": 1500,
+        "codepodcast": 1000,
+        "techblog": 1000
+      },
+      "events": [
+        {
+          "eventId": "evt_00001",
+          "sessionId": "devnewsletter.9001",
+          "supplier": "devnewsletter",
+          "ts": "2026-10-08T21:37:37.906Z",
+          "signature": "13d7ac0115bb44af2db6003d903c3823df261b9fd1d930f5223a2557894c91932dea72c1eaa880be5e108606a71a458ec25a42927141dfecf2b6cedc9a5d9b04",
+          "signals": {
+            "asn": "AS16509",
+            "clickBurst": true
+          }
+        },
+        {
+          "eventId": "evt_00002",
+          "sessionId": "codepodcast.9002",
+          "supplier": "devnewsletter",
+          "ts": "2026-10-08T21:31:39.249Z",
+          "signature": "69359ff939c71b14785d7930db16a172cb2f4a9f4c334394824a471044c4040b3b3c899028b4536faf43ee88d7316ecf06dde6c52288910d131207abfceee30f",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00003",
+          "sessionId": "devnewsletter.9003",
+          "supplier": "devnewsletter",
+          "ts": "2026-10-08T23:00:00.440Z",
+          "signature": "5e5092b2ed72383ca587fe182ee0734f87ed99c069a68e741df292cdca4a5f2e48ce1b9b276b42b5078647b78a79087b53982a2c7b1b9ef9c8a0110e80162609",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00004",
+          "sessionId": "codepodcast.0001",
+          "supplier": "codepodcast",
+          "ts": "2026-10-08T21:16:52.412Z",
+          "signature": "b8497d11b399d962d7676d6865e636d92a4dee3a5af9a6765cd186bfe01c7954997a17ee3f6a7bd5d70355ebf6cd55e20ca642daa89f91f47ddb8fa0b554810a",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00005",
+          "sessionId": "codepodcast.0002",
+          "supplier": "codepodcast",
+          "ts": "2026-10-08T21:43:15.115Z",
+          "signature": "a944af0dab72064946dc739f7988055d2e511e89cf179e5780075d37bc237df08cbeb6b4c1a33acddc370be49f4a96f661f6fafd9178d8621d7841119fc38403",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00006",
+          "sessionId": "codepodcast.0003",
+          "supplier": "codepodcast",
+          "ts": "2026-10-08T21:59:41.802Z",
+          "signature": "9b105790ac6104403d193aa11e26cb4627147ac7eeccda76fa47260c260c39ad7a76e8a4668f8df45585a643c489843c809aebc50451327920f4edb0363b700d",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00007",
+          "sessionId": "codepodcast.0004",
+          "supplier": "codepodcast",
+          "ts": "2026-10-08T21:29:20.077Z",
+          "signature": "bff40c3a7c2187f7bf2e6ff418fab555491c3b4b9458fd52cd252acdee6993f88d2157db51b71d5afb49848b33bd40326c9bf12f0a68666b00378ffac4eccb03",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00008",
+          "sessionId": "codepodcast.0005",
+          "supplier": "codepodcast",
+          "ts": "2026-10-08T21:24:13.921Z",
+          "signature": "4fb4fd6653127c77a69ec020b02478d831b8cbb47cdc528f8dfaeddaf8ab82c517b62a9794b0e982c64a0554f8ed065f0d1fb401cb2d5a2e8d500f7fc5028202",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00009",
+          "sessionId": "codepodcast.0006",
+          "supplier": "codepodcast",
+          "ts": "2026-10-08T21:09:16.615Z",
+          "signature": "c27eac8e9ac505f70ad37e305a07c29b1e3690388adbdec96fc13dbdfb0d33309d0ce69789b729f0989c66dabce4c899fce2ab4b871b5e30aa3956e5932cd209",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00010",
+          "sessionId": "codepodcast.9001",
+          "supplier": "codepodcast",
+          "ts": "2026-10-08T21:04:02.971Z",
+          "signature": "9138c209ad33d769273afdad2869d7d49d7853b7939161bd475ca9ebec23bfb318d4052e2b9a879535eef32d889f967313b8b994228d3c14ca4b931692ad920d",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00011",
+          "sessionId": "devnewsletter.9002",
+          "supplier": "codepodcast",
+          "ts": "2026-10-08T21:46:02.028Z",
+          "signature": "608617ecfc817bf3a4babc775d868c7808d30519da8a88a17fcb8706cb98c2d5498f44bc2d63f59e797bdf0500129869bb2409fcce1ff117f2f5840a14cd6004",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00012",
+          "sessionId": "codepodcast.9003",
+          "supplier": "codepodcast",
+          "ts": "2026-10-08T23:00:00.440Z",
+          "signature": "a93402dddb4d40eea069358cc17e48ee13c8e6ddab1bad3064eed157075c548820d35b639e7ea930d6708f353fcb2f752262aa8730f05c5ca9f6385e313f9d0c",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00013",
+          "sessionId": "techblog.0001",
+          "supplier": "techblog",
+          "ts": "2026-10-08T21:02:34.266Z",
+          "signature": "439318f1e73476f2dde253cfafcb73527610966ed7ef18f07fc8626ee43a2a47aec623456b3c447b79ab57398066870e59fe72b7048329e67e1915f03e5f1409",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00014",
+          "sessionId": "techblog.0002",
+          "supplier": "techblog",
+          "ts": "2026-10-08T21:35:25.816Z",
+          "signature": "a3a17b5968363246607b4a04acfbce12e58802b87f8e79852bef1e22f467bca565f0e32c5c9dff0df2341e378ed18f93a344ee0c3e57ccf450ecd3232f5e1402",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00015",
+          "sessionId": "techblog.0003",
+          "supplier": "techblog",
+          "ts": "2026-10-08T21:17:41.971Z",
+          "signature": "3b4a03a4fd38aee51ba82f4bed404e385cef952f7e38b5acaef805333851e99ebf3e329156e2571c555019ee2c86b0fbe8cf11b15ce29096e288bcc442c46e0f",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00016",
+          "sessionId": "techblog.0004",
+          "supplier": "techblog",
+          "ts": "2026-10-08T21:39:29.706Z",
+          "signature": "660501ba92cc0bf9d1a36b8af1540a3bae40a301da748a1ffdc09358672aaf1482085e76b124f271c50170e21889c000e9ad17ebfab9db3000363728d18bea0a",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00017",
+          "sessionId": "techblog.0005",
+          "supplier": "techblog",
+          "ts": "2026-10-08T21:45:30.834Z",
+          "signature": "d45d4c99980f87876a0da3f973d33c6c530d6d06bcffda7f406e7f265e446d9a28be921dc5e4622b55008573390db71da7d37b0b83f5a019597e59eaa9407e08",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00018",
+          "sessionId": "techblog.0006",
+          "supplier": "techblog",
+          "ts": "2026-10-08T21:43:15.851Z",
+          "signature": "5d3b0baf416317d880e02c91f87cfd64b70f6d7f06efe6c3ea49faf7115d78dc9eb9fae8f4bfd51780db332f09b6c4de2122074928f0bdd71a0a33f8a6a55b0c",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00019",
+          "sessionId": "techblog.0007",
+          "supplier": "techblog",
+          "ts": "2026-10-08T21:46:13.929Z",
+          "signature": "dcacdb54a1a9b59da423811b62b0bacb2e440677ec09606e3fac2aed6016b229894dba20df0e632bbd541f93ded4933e937e181e299af3658dacc57657bc5904",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00020",
+          "sessionId": "techblog.0008",
+          "supplier": "techblog",
+          "ts": "2026-10-08T21:14:22.039Z",
+          "signature": "ed19d66d8b5233cded05e86caf68aea39207214744777b12a9c9fcd23c45a1b2f57f4ea06e7712e02102cdaff5f884e5e98ed4bba1528a1e4a0a6b533d6c3606",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00021",
+          "sessionId": "techblog.9001",
+          "supplier": "techblog",
+          "ts": "2026-10-08T21:09:12.215Z",
+          "signature": "9b425424ff9a57bef7af1b2e7acee3646f3e2acc545d5da5896ff25b964ea62e07ffe197dd3daee4447321f52c03e19a930ccbca7c798ad6a1e019b47eb73e0b",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00022",
+          "sessionId": "devnewsletter.9002",
+          "supplier": "techblog",
+          "ts": "2026-10-08T21:24:47.949Z",
+          "signature": "249675e63c8117edbd5cf0dd863442f57f130e06c9eeec0d370d4a3a36809c7aaf0dccff2a4540228ce61c92b618d5d18780bc4d7b7d2861caa428537c14540c",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00023",
+          "sessionId": "techblog.9003",
+          "supplier": "techblog",
+          "ts": "2026-10-08T23:00:00.440Z",
+          "signature": "7799a5e8cd1e0da6b9be32e34e847d4f1aeffaf7ebdfb1bba9e0833813ac564069003d6929c5e4b6b8923ebeea3f40f1b3e50f762bd3bffd888ce2363fa93106",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        }
+      ]
+    },
+    "verification": {
+      "verified": {
+        "codepodcast": 6,
+        "techblog": 8
+      },
+      "rejections": [
+        {
+          "eventId": "evt_00001",
+          "supplier": "devnewsletter",
+          "reason": "bad_signature"
+        },
+        {
+          "eventId": "evt_00002",
+          "supplier": "devnewsletter",
+          "reason": "wrong_attribution"
+        },
+        {
+          "eventId": "evt_00003",
+          "supplier": "devnewsletter",
+          "reason": "outside_window"
+        },
+        {
+          "eventId": "evt_00010",
+          "supplier": "codepodcast",
+          "reason": "bad_signature"
+        },
+        {
+          "eventId": "evt_00011",
+          "supplier": "codepodcast",
+          "reason": "wrong_attribution"
+        },
+        {
+          "eventId": "evt_00012",
+          "supplier": "codepodcast",
+          "reason": "outside_window"
+        },
+        {
+          "eventId": "evt_00021",
+          "supplier": "techblog",
+          "reason": "bad_signature"
+        },
+        {
+          "eventId": "evt_00022",
+          "supplier": "techblog",
+          "reason": "wrong_attribution"
+        },
+        {
+          "eventId": "evt_00023",
+          "supplier": "techblog",
+          "reason": "outside_window"
+        }
+      ],
+      "perSupplier": [
+        {
+          "supplier": "devnewsletter",
+          "received": 3,
+          "verified": 0,
+          "rejected": {
+            "bad_signature": 1,
+            "wrong_attribution": 1,
+            "outside_window": 1
+          }
+        },
+        {
+          "supplier": "codepodcast",
+          "received": 9,
+          "verified": 6,
+          "rejected": {
+            "bad_signature": 1,
+            "wrong_attribution": 1,
+            "outside_window": 1
+          }
+        },
+        {
+          "supplier": "techblog",
+          "received": 11,
+          "verified": 8,
+          "rejected": {
+            "bad_signature": 1,
+            "wrong_attribution": 1,
+            "outside_window": 1
+          }
+        }
+      ]
+    },
+    "verdicts": [
+      {
+        "supplier": "devnewsletter",
+        "kind": "under_gate",
+        "delivered": 0,
+        "promised": 12,
+        "gate": 5,
+        "award": 70,
+        "bond": 17.5,
+        "hash": "3297b1857ce7a267a3e5576ce8af2a69f6f28c8e912218e6aabd6a3d65cef855",
+        "signature": "ccc0684d529216bb7816bc062098b01c25e22b1fafb7ee0a7388dd9447ae1743a4509e767a8a21f717298b635245c5b0f2b7b14c8ae0de54f67252ead033250c"
+      },
+      {
+        "supplier": "codepodcast",
+        "kind": "short_of_promise",
+        "delivered": 6,
+        "promised": 8,
+        "gate": 5,
+        "award": 60,
+        "bond": 15,
+        "hash": "ad70c18058dd3e10e6625381aa79ce448d50fc19ecf982e8ea985f871e8056fd",
+        "signature": "97f29d935da2e241ecb32a3528f2556ed3a3b84e84e042e36bb64b0e7550ca42e28df75889b378ec1753c49281302c7d0477c2cda64c019914cc7d7e0c4cc002"
+      },
+      {
+        "supplier": "techblog",
+        "kind": "pass",
+        "delivered": 8,
+        "promised": 7,
+        "gate": 5,
+        "award": 70,
+        "bond": 17.5,
+        "hash": "1d923c7372999044ea43075bc4611b20570e982340c0f337d301df4c216c03df",
+        "signature": "be1eae888ee63a145f4a4466f36dd01ab35f239df35a987d2580a5c8e8aaf93ecd071352be1ba0be132b239b16bc555613530eb6357039a1671ff8b57a36ee0b"
+      }
+    ],
+    "settlement": {
+      "job": "job_worked-example",
+      "status": "done",
+      "phase": "settled",
+      "startedAt": "2026-10-08T22:00:00.640Z",
+      "deadline": "2026-10-08T22:40:00.640Z",
+      "reconcileUntil": "2026-10-09T01:00:00.640Z",
+      "settled": [
+        "devnewsletter",
+        "codepodcast",
+        "techblog"
+      ],
+      "transfers": [
+        {
+          "id": "sim_fa964d3e392795135f46fe00d0e82cf9e67403859d3848f3b5a4603c",
+          "badge": "SIMULATED",
+          "action": "award_reclaim",
+          "amount": 70,
+          "from": "devnewsletter",
+          "to": "consumer",
+          "txHash": "sim_fa964d3e392795135f46fe00d0e82cf9e67403859d3848f3b5a4603c",
+          "explorerUrl": null,
+          "state": "Withdrawn",
+          "supplier": "devnewsletter",
+          "verdict": "under_gate"
+        },
+        {
+          "id": "sim_c1c7bb9003e2b18cc69ddc8d899eb1e3f5e9849a45c1b0b50118de63",
+          "badge": "SIMULATED",
+          "action": "bond_forfeit",
+          "amount": 17.5,
+          "from": "board",
+          "to": "consumer",
+          "txHash": "sim_c1c7bb9003e2b18cc69ddc8d899eb1e3f5e9849a45c1b0b50118de63",
+          "explorerUrl": null,
+          "state": "TransferSent",
+          "supplier": "devnewsletter",
+          "verdict": "under_gate"
+        },
+        {
+          "id": "sim_cf669b3aca93df2ea9b6f9c06e9ad7e0e5073ac072854d6b4a501d97",
+          "badge": "SIMULATED",
+          "action": "award_release",
+          "amount": 60,
+          "from": "consumer",
+          "to": "codepodcast",
+          "txHash": "sim_cf669b3aca93df2ea9b6f9c06e9ad7e0e5073ac072854d6b4a501d97",
+          "explorerUrl": null,
+          "state": "Withdrawn",
+          "supplier": "codepodcast",
+          "verdict": "short_of_promise"
+        },
+        {
+          "id": "sim_41363181e72214637607ab7978486697ec96d80822ffd37b7219282d",
+          "badge": "SIMULATED",
+          "action": "bond_return",
+          "amount": 11.25,
+          "from": "board",
+          "to": "codepodcast",
+          "txHash": "sim_41363181e72214637607ab7978486697ec96d80822ffd37b7219282d",
+          "explorerUrl": null,
+          "state": "TransferSent",
+          "supplier": "codepodcast",
+          "verdict": "short_of_promise"
+        },
+        {
+          "id": "sim_e9a77fac0a3089d173a23a987dfc80638ce93c0e9823f89d47cc2f33",
+          "badge": "SIMULATED",
+          "action": "bond_forfeit",
+          "amount": 3.75,
+          "from": "board",
+          "to": "consumer",
+          "txHash": "sim_e9a77fac0a3089d173a23a987dfc80638ce93c0e9823f89d47cc2f33",
+          "explorerUrl": null,
+          "state": "TransferSent",
+          "supplier": "codepodcast",
+          "verdict": "short_of_promise"
+        },
+        {
+          "id": "sim_66a8127cefbe138a2b6eaad4623538e03d95209d956c8dc972d5e893",
+          "badge": "SIMULATED",
+          "action": "award_release",
+          "amount": 70,
+          "from": "consumer",
+          "to": "techblog",
+          "txHash": "sim_66a8127cefbe138a2b6eaad4623538e03d95209d956c8dc972d5e893",
+          "explorerUrl": null,
+          "state": "Withdrawn",
+          "supplier": "techblog",
+          "verdict": "pass"
+        },
+        {
+          "id": "sim_1b2a7325c0118ee88a50dd2311923e12bc1950b6fb4f27c1502dc2ce",
+          "badge": "SIMULATED",
+          "action": "bond_return",
+          "amount": 17.5,
+          "from": "board",
+          "to": "techblog",
+          "txHash": "sim_1b2a7325c0118ee88a50dd2311923e12bc1950b6fb4f27c1502dc2ce",
+          "explorerUrl": null,
+          "state": "Withdrawn",
+          "supplier": "techblog",
+          "verdict": "pass"
+        }
+      ],
+      "pending": 0,
+      "ticks": 1,
+      "lastTickAt": "2026-10-08T22:00:00.740Z",
+      "finishedAt": "2026-10-08T22:00:00.750Z"
+    },
+    "ledger": [
+      {
+        "id": "sim_927eb35648e339b4b0cd6db45b2ed9e01c937377d6204a4cdf831c17",
+        "badge": "SIMULATED",
+        "action": "bid_fee",
+        "amount": 2,
+        "from": "techblog",
+        "to": "board",
+        "txHash": "sim_927eb35648e339b4b0cd6db45b2ed9e01c937377d6204a4cdf831c17",
+        "explorerUrl": null,
+        "state": "FundsLocked",
+        "phase": "bid_fee",
+        "supplier": "techblog"
+      },
+      {
+        "id": "sim_23265bec2318c3894eff624941eb30f272831f0d6361e78b5f4387bc",
+        "badge": "SIMULATED",
+        "action": "bid_fee",
+        "amount": 2,
+        "from": "codepodcast",
+        "to": "board",
+        "txHash": "sim_23265bec2318c3894eff624941eb30f272831f0d6361e78b5f4387bc",
+        "explorerUrl": null,
+        "state": "FundsLocked",
+        "phase": "bid_fee",
+        "supplier": "codepodcast"
+      },
+      {
+        "id": "sim_b2d9f8e8f5509fbc8975f2133ab43f97e1e8a20eee9bd88907808ea4",
+        "badge": "SIMULATED",
+        "action": "bid_fee",
+        "amount": 2,
+        "from": "devnewsletter",
+        "to": "board",
+        "txHash": "sim_b2d9f8e8f5509fbc8975f2133ab43f97e1e8a20eee9bd88907808ea4",
+        "explorerUrl": null,
+        "state": "FundsLocked",
+        "phase": "bid_fee",
+        "supplier": "devnewsletter"
+      },
+      {
+        "id": "sim_183fae4657b78e5d87515eb69f17c6b7392ce9e7fe48ca3f3b6300eb",
+        "badge": "SIMULATED",
+        "action": "bid_fee",
+        "amount": 2,
+        "from": "gamingforum",
+        "to": "board",
+        "txHash": "sim_183fae4657b78e5d87515eb69f17c6b7392ce9e7fe48ca3f3b6300eb",
+        "explorerUrl": null,
+        "state": "FundsLocked",
+        "phase": "bid_fee",
+        "supplier": "gamingforum"
+      },
+      {
+        "id": "sim_bcddf7a250e747d5bb549263bdf421f9ad98023deac0abd2e5eaeab2",
+        "badge": "SIMULATED",
+        "action": "award",
+        "amount": 70,
+        "from": "consumer",
+        "to": "devnewsletter",
+        "txHash": "sim_bcddf7a250e747d5bb549263bdf421f9ad98023deac0abd2e5eaeab2",
+        "explorerUrl": null,
+        "state": "FundsLocked",
+        "phase": "lock",
+        "supplier": "devnewsletter"
+      },
+      {
+        "id": "sim_251282d5bcc85c5a945af7d95577ffe93a1a21fd770060f0253a1276",
+        "badge": "SIMULATED",
+        "action": "bond",
+        "amount": 17.5,
+        "from": "devnewsletter",
+        "to": "board",
+        "txHash": "sim_251282d5bcc85c5a945af7d95577ffe93a1a21fd770060f0253a1276",
+        "explorerUrl": null,
+        "state": "FundsLocked",
+        "phase": "lock",
+        "supplier": "devnewsletter"
+      },
+      {
+        "id": "sim_624a346c3a013332082c7b3bb8fbee44e9fcc9cb34c6733b0d7c61be",
+        "badge": "SIMULATED",
+        "action": "award",
+        "amount": 60,
+        "from": "consumer",
+        "to": "codepodcast",
+        "txHash": "sim_624a346c3a013332082c7b3bb8fbee44e9fcc9cb34c6733b0d7c61be",
+        "explorerUrl": null,
+        "state": "FundsLocked",
+        "phase": "lock",
+        "supplier": "codepodcast"
+      },
+      {
+        "id": "sim_188703c2c7a583246616d2fb669640ab719b3a50c5e02a4195fbc18c",
+        "badge": "SIMULATED",
+        "action": "bond",
+        "amount": 15,
+        "from": "codepodcast",
+        "to": "board",
+        "txHash": "sim_188703c2c7a583246616d2fb669640ab719b3a50c5e02a4195fbc18c",
+        "explorerUrl": null,
+        "state": "FundsLocked",
+        "phase": "lock",
+        "supplier": "codepodcast"
+      },
+      {
+        "id": "sim_76fc67a76dbb9d60b500a76717e5720d29dbda2d91e48499e7948cb8",
+        "badge": "SIMULATED",
+        "action": "award",
+        "amount": 70,
+        "from": "consumer",
+        "to": "techblog",
+        "txHash": "sim_76fc67a76dbb9d60b500a76717e5720d29dbda2d91e48499e7948cb8",
+        "explorerUrl": null,
+        "state": "FundsLocked",
+        "phase": "lock",
+        "supplier": "techblog"
+      },
+      {
+        "id": "sim_7381ab638c72014b11066b5f611dd1e09b2b0f5a4069484efda75710",
+        "badge": "SIMULATED",
+        "action": "bond",
+        "amount": 17.5,
+        "from": "techblog",
+        "to": "board",
+        "txHash": "sim_7381ab638c72014b11066b5f611dd1e09b2b0f5a4069484efda75710",
+        "explorerUrl": null,
+        "state": "FundsLocked",
+        "phase": "lock",
+        "supplier": "techblog"
+      },
+      {
+        "id": "sim_fa964d3e392795135f46fe00d0e82cf9e67403859d3848f3b5a4603c",
+        "badge": "SIMULATED",
+        "action": "award_reclaim",
+        "amount": 70,
+        "from": "devnewsletter",
+        "to": "consumer",
+        "txHash": "sim_fa964d3e392795135f46fe00d0e82cf9e67403859d3848f3b5a4603c",
+        "explorerUrl": null,
+        "state": "Withdrawn",
+        "phase": "settlement",
+        "supplier": "devnewsletter"
+      },
+      {
+        "id": "sim_c1c7bb9003e2b18cc69ddc8d899eb1e3f5e9849a45c1b0b50118de63",
+        "badge": "SIMULATED",
+        "action": "bond_forfeit",
+        "amount": 17.5,
+        "from": "board",
+        "to": "consumer",
+        "txHash": "sim_c1c7bb9003e2b18cc69ddc8d899eb1e3f5e9849a45c1b0b50118de63",
+        "explorerUrl": null,
+        "state": "TransferSent",
+        "phase": "settlement",
+        "supplier": "devnewsletter"
+      },
+      {
+        "id": "sim_cf669b3aca93df2ea9b6f9c06e9ad7e0e5073ac072854d6b4a501d97",
+        "badge": "SIMULATED",
+        "action": "award_release",
+        "amount": 60,
+        "from": "consumer",
+        "to": "codepodcast",
+        "txHash": "sim_cf669b3aca93df2ea9b6f9c06e9ad7e0e5073ac072854d6b4a501d97",
+        "explorerUrl": null,
+        "state": "Withdrawn",
+        "phase": "settlement",
+        "supplier": "codepodcast"
+      },
+      {
+        "id": "sim_41363181e72214637607ab7978486697ec96d80822ffd37b7219282d",
+        "badge": "SIMULATED",
+        "action": "bond_return",
+        "amount": 11.25,
+        "from": "board",
+        "to": "codepodcast",
+        "txHash": "sim_41363181e72214637607ab7978486697ec96d80822ffd37b7219282d",
+        "explorerUrl": null,
+        "state": "TransferSent",
+        "phase": "settlement",
+        "supplier": "codepodcast"
+      },
+      {
+        "id": "sim_e9a77fac0a3089d173a23a987dfc80638ce93c0e9823f89d47cc2f33",
+        "badge": "SIMULATED",
+        "action": "bond_forfeit",
+        "amount": 3.75,
+        "from": "board",
+        "to": "consumer",
+        "txHash": "sim_e9a77fac0a3089d173a23a987dfc80638ce93c0e9823f89d47cc2f33",
+        "explorerUrl": null,
+        "state": "TransferSent",
+        "phase": "settlement",
+        "supplier": "codepodcast"
+      },
+      {
+        "id": "sim_66a8127cefbe138a2b6eaad4623538e03d95209d956c8dc972d5e893",
+        "badge": "SIMULATED",
+        "action": "award_release",
+        "amount": 70,
+        "from": "consumer",
+        "to": "techblog",
+        "txHash": "sim_66a8127cefbe138a2b6eaad4623538e03d95209d956c8dc972d5e893",
+        "explorerUrl": null,
+        "state": "Withdrawn",
+        "phase": "settlement",
+        "supplier": "techblog"
+      },
+      {
+        "id": "sim_1b2a7325c0118ee88a50dd2311923e12bc1950b6fb4f27c1502dc2ce",
+        "badge": "SIMULATED",
+        "action": "bond_return",
+        "amount": 17.5,
+        "from": "board",
+        "to": "techblog",
+        "txHash": "sim_1b2a7325c0118ee88a50dd2311923e12bc1950b6fb4f27c1502dc2ce",
+        "explorerUrl": null,
+        "state": "Withdrawn",
+        "phase": "settlement",
+        "supplier": "techblog"
+      }
+    ],
+    "receipt": {
+      "consumer": {
+        "awardsLocked": 200,
+        "returned": 91.25,
+        "net": -108.75,
+        "signups": 14,
+        "costPerSignup": 7.767857
+      },
+      "board": {
+        "bidFees": 8
+      },
+      "leaderboard": [
+        {
+          "rank": 1,
+          "supplier": "techblog",
+          "name": "TechBlog",
+          "kind": "pass",
+          "promised": 7,
+          "delivered": 8,
+          "verifiedSignups": 8,
+          "countedSignups": 8,
+          "award": 70,
+          "paidToSupplier": 70,
+          "awardReclaimed": 0,
+          "bond": 17.5,
+          "bondReturned": 17.5,
+          "bondForfeited": 0,
+          "consumerSpend": 70,
+          "costPerSignup": 8.75,
+          "supplierNet": 68,
+          "verdictHash": "1d923c7372999044ea43075bc4611b20570e982340c0f337d301df4c216c03df"
+        },
+        {
+          "rank": 2,
+          "supplier": "codepodcast",
+          "name": "CodePodcast",
+          "kind": "short_of_promise",
+          "promised": 8,
+          "delivered": 6,
+          "verifiedSignups": 6,
+          "countedSignups": 6,
+          "award": 60,
+          "paidToSupplier": 60,
+          "awardReclaimed": 0,
+          "bond": 15,
+          "bondReturned": 11.25,
+          "bondForfeited": 3.75,
+          "consumerSpend": 56.25,
+          "costPerSignup": 9.375,
+          "supplierNet": 54.25,
+          "verdictHash": "ad70c18058dd3e10e6625381aa79ce448d50fc19ecf982e8ea985f871e8056fd"
+        },
+        {
+          "rank": 3,
+          "supplier": "devnewsletter",
+          "name": "DevNewsletter",
+          "kind": "under_gate",
+          "promised": 12,
+          "delivered": 0,
+          "verifiedSignups": 0,
+          "countedSignups": 0,
+          "award": 70,
+          "paidToSupplier": 0,
+          "awardReclaimed": 70,
+          "bond": 17.5,
+          "bondReturned": 0,
+          "bondForfeited": 17.5,
+          "consumerSpend": -17.5,
+          "costPerSignup": null,
+          "supplierNet": -19.5,
+          "verdictHash": "3297b1857ce7a267a3e5576ce8af2a69f6f28c8e912218e6aabd6a3d65cef855"
+        },
+        {
+          "rank": 4,
+          "supplier": "gamingforum",
+          "name": "GamingForum",
+          "kind": "lost_bid",
+          "promised": 4,
+          "delivered": null,
+          "verifiedSignups": 0,
+          "countedSignups": 0,
+          "award": 0,
+          "paidToSupplier": 0,
+          "awardReclaimed": 0,
+          "bond": 0,
+          "bondReturned": 0,
+          "bondForfeited": 0,
+          "consumerSpend": 0,
+          "costPerSignup": null,
+          "supplierNet": -2,
+          "verdictHash": null
+        }
+      ],
+      "badges": [
+        "SIMULATED"
+      ],
+      "roundTwo": [
+        {
+          "supplier": "devnewsletter",
+          "share": 0
+        },
+        {
+          "supplier": "codepodcast",
+          "share": 0.5
+        },
+        {
+          "supplier": "techblog",
+          "share": 0.5
+        }
+      ]
+    },
+    "roundTwo": [
+      {
+        "supplier": "devnewsletter",
+        "share": 0
+      },
+      {
+        "supplier": "codepodcast",
+        "share": 0.5
+      },
+      {
+        "supplier": "techblog",
+        "share": 0.5
+      }
+    ]
+  },
+  "events": [
+    {
+      "ts": "2026-10-08T22:00:00.010Z",
+      "name": "run.created",
+      "data": {
+        "runId": "run_worked-example",
+        "mode": "live",
+        "badge": "SIMULATED",
+        "keys": {
+          "shop": "25c0c5fb90392a7dd7476b8f8f07f3d10584c6b78d594d67a33dba6bd23e163d",
+          "board": "943a9d996aca8e821c6af3fa255cf4adf2ced70c69837fc796f5f9efeccac703"
+        }
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.020Z",
+      "name": "tender.published",
+      "data": {
+        "tender": {
+          "budget": 200,
+          "gate": 5,
+          "bondRate": 0.25,
+          "bidFee": 2,
+          "currency": "tADA",
+          "audience": "technical users"
+        },
+        "brief": {
+          "advertiser": "NeoRack",
+          "audience": "technical users",
+          "goal": "pay per verified signup"
+        },
+        "suppliers": [
+          {
+            "id": "techblog",
+            "name": "TechBlog",
+            "persona": "conservative"
+          },
+          {
+            "id": "codepodcast",
+            "name": "CodePodcast",
+            "persona": "moderate"
+          },
+          {
+            "id": "devnewsletter",
+            "name": "DevNewsletter",
+            "persona": "aggressive over-promiser"
+          },
+          {
+            "id": "gamingforum",
+            "name": "GamingForum",
+            "persona": "passive low-baller"
+          }
+        ]
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.030Z",
+      "name": "step.completed",
+      "data": {
+        "step": "tender"
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.050Z",
+      "name": "step.started",
+      "data": {
+        "step": "bids"
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.110Z",
+      "name": "bid.committed",
+      "data": {
+        "supplier": "techblog",
+        "commit": "5520dde29f2232d3f4706b83973b2267763f0daec8dcf0660774c6c82288a564",
+        "committedAt": 1791496800070
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.120Z",
+      "name": "bid.committed",
+      "data": {
+        "supplier": "codepodcast",
+        "commit": "c9abe29dc280c1d6494464d5e2512f46d327ca6b6bcd32b97a85b9f81c026e06",
+        "committedAt": 1791496800080
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.130Z",
+      "name": "bid.committed",
+      "data": {
+        "supplier": "devnewsletter",
+        "commit": "88fab11a3d07d72c9a83ce6a9e47f215e916a8dd44dba580ea03db426d763183",
+        "committedAt": 1791496800090
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.140Z",
+      "name": "bid.committed",
+      "data": {
+        "supplier": "gamingforum",
+        "commit": "2a1d98e0b6c62f5c4f51d09dc8d60ae59fba1c3a471ba574ff312664624af64e",
+        "committedAt": 1791496800100
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.150Z",
+      "name": "bid.fee_locked",
+      "data": {
+        "supplier": "techblog",
+        "receipt": {
+          "id": "sim_927eb35648e339b4b0cd6db45b2ed9e01c937377d6204a4cdf831c17",
+          "badge": "SIMULATED",
+          "action": "bid_fee",
+          "amount": 2,
+          "from": "techblog",
+          "to": "board",
+          "txHash": "sim_927eb35648e339b4b0cd6db45b2ed9e01c937377d6204a4cdf831c17",
+          "explorerUrl": null,
+          "state": "FundsLocked"
+        }
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.160Z",
+      "name": "bid.fee_locked",
+      "data": {
+        "supplier": "codepodcast",
+        "receipt": {
+          "id": "sim_23265bec2318c3894eff624941eb30f272831f0d6361e78b5f4387bc",
+          "badge": "SIMULATED",
+          "action": "bid_fee",
+          "amount": 2,
+          "from": "codepodcast",
+          "to": "board",
+          "txHash": "sim_23265bec2318c3894eff624941eb30f272831f0d6361e78b5f4387bc",
+          "explorerUrl": null,
+          "state": "FundsLocked"
+        }
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.170Z",
+      "name": "bid.fee_locked",
+      "data": {
+        "supplier": "devnewsletter",
+        "receipt": {
+          "id": "sim_b2d9f8e8f5509fbc8975f2133ab43f97e1e8a20eee9bd88907808ea4",
+          "badge": "SIMULATED",
+          "action": "bid_fee",
+          "amount": 2,
+          "from": "devnewsletter",
+          "to": "board",
+          "txHash": "sim_b2d9f8e8f5509fbc8975f2133ab43f97e1e8a20eee9bd88907808ea4",
+          "explorerUrl": null,
+          "state": "FundsLocked"
+        }
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.180Z",
+      "name": "bid.fee_locked",
+      "data": {
+        "supplier": "gamingforum",
+        "receipt": {
+          "id": "sim_183fae4657b78e5d87515eb69f17c6b7392ce9e7fe48ca3f3b6300eb",
+          "badge": "SIMULATED",
+          "action": "bid_fee",
+          "amount": 2,
+          "from": "gamingforum",
+          "to": "board",
+          "txHash": "sim_183fae4657b78e5d87515eb69f17c6b7392ce9e7fe48ca3f3b6300eb",
+          "explorerUrl": null,
+          "state": "FundsLocked"
+        }
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.190Z",
+      "name": "bid.revealed",
+      "data": {
+        "supplier": "techblog",
+        "price": 70,
+        "impressions": 1000,
+        "promisedPer1000": 7,
+        "salt": "salt-techblog"
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.200Z",
+      "name": "bid.revealed",
+      "data": {
+        "supplier": "codepodcast",
+        "price": 60,
+        "impressions": 1000,
+        "promisedPer1000": 8,
+        "salt": "salt-codepodcast"
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.210Z",
+      "name": "bid.revealed",
+      "data": {
+        "supplier": "devnewsletter",
+        "price": 70,
+        "impressions": 1500,
+        "promisedPer1000": 12,
+        "salt": "salt-devnewsletter"
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.220Z",
+      "name": "bid.revealed",
+      "data": {
+        "supplier": "gamingforum",
+        "price": 20,
+        "impressions": 1000,
+        "promisedPer1000": 4,
+        "salt": "salt-gamingforum"
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.240Z",
+      "name": "step.completed",
+      "data": {
+        "step": "bids"
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.260Z",
+      "name": "step.started",
+      "data": {
+        "step": "allocation"
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.270Z",
+      "name": "bid.rejected",
+      "data": {
+        "supplier": "gamingforum",
+        "reason": "below_gate"
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.280Z",
+      "name": "auction.ranked",
+      "data": {
+        "ranking": [
+          {
+            "supplier": "devnewsletter",
+            "price": 70,
+            "impressions": 1500,
+            "promisedPer1000": 12,
+            "pricePerSignup": 3.888888888888889,
+            "accepted": true,
+            "award": 70,
+            "bond": 17.5
+          },
+          {
+            "supplier": "codepodcast",
+            "price": 60,
+            "impressions": 1000,
+            "promisedPer1000": 8,
+            "pricePerSignup": 7.5,
+            "accepted": true,
+            "award": 60,
+            "bond": 15
+          },
+          {
+            "supplier": "techblog",
+            "price": 70,
+            "impressions": 1000,
+            "promisedPer1000": 7,
+            "pricePerSignup": 10,
+            "accepted": true,
+            "award": 70,
+            "bond": 17.5
+          }
+        ]
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.290Z",
+      "name": "allocation.decided",
+      "data": {
+        "accepted": [
+          {
+            "supplier": "devnewsletter",
+            "price": 70,
+            "impressions": 1500,
+            "promisedPer1000": 12,
+            "pricePerSignup": 3.888888888888889,
+            "accepted": true,
+            "award": 70,
+            "bond": 17.5
+          },
+          {
+            "supplier": "codepodcast",
+            "price": 60,
+            "impressions": 1000,
+            "promisedPer1000": 8,
+            "pricePerSignup": 7.5,
+            "accepted": true,
+            "award": 60,
+            "bond": 15
+          },
+          {
+            "supplier": "techblog",
+            "price": 70,
+            "impressions": 1000,
+            "promisedPer1000": 7,
+            "pricePerSignup": 10,
+            "accepted": true,
+            "award": 70,
+            "bond": 17.5
+          }
+        ],
+        "rejected": [
+          {
+            "supplier": "gamingforum",
+            "reason": "below_gate"
+          }
+        ],
+        "totalAward": 200,
+        "budget": 200
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.310Z",
+      "name": "step.completed",
+      "data": {
+        "step": "allocation"
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.330Z",
+      "name": "step.started",
+      "data": {
+        "step": "locks"
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.340Z",
+      "name": "escrow.locked",
+      "data": {
+        "supplier": "devnewsletter",
+        "kind": "award",
+        "receipt": {
+          "id": "sim_bcddf7a250e747d5bb549263bdf421f9ad98023deac0abd2e5eaeab2",
+          "badge": "SIMULATED",
+          "action": "award",
+          "amount": 70,
+          "from": "consumer",
+          "to": "devnewsletter",
+          "txHash": "sim_bcddf7a250e747d5bb549263bdf421f9ad98023deac0abd2e5eaeab2",
+          "explorerUrl": null,
+          "state": "FundsLocked"
+        }
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.350Z",
+      "name": "escrow.locked",
+      "data": {
+        "supplier": "devnewsletter",
+        "kind": "bond",
+        "receipt": {
+          "id": "sim_251282d5bcc85c5a945af7d95577ffe93a1a21fd770060f0253a1276",
+          "badge": "SIMULATED",
+          "action": "bond",
+          "amount": 17.5,
+          "from": "devnewsletter",
+          "to": "board",
+          "txHash": "sim_251282d5bcc85c5a945af7d95577ffe93a1a21fd770060f0253a1276",
+          "explorerUrl": null,
+          "state": "FundsLocked"
+        }
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.360Z",
+      "name": "escrow.locked",
+      "data": {
+        "supplier": "codepodcast",
+        "kind": "award",
+        "receipt": {
+          "id": "sim_624a346c3a013332082c7b3bb8fbee44e9fcc9cb34c6733b0d7c61be",
+          "badge": "SIMULATED",
+          "action": "award",
+          "amount": 60,
+          "from": "consumer",
+          "to": "codepodcast",
+          "txHash": "sim_624a346c3a013332082c7b3bb8fbee44e9fcc9cb34c6733b0d7c61be",
+          "explorerUrl": null,
+          "state": "FundsLocked"
+        }
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.370Z",
+      "name": "escrow.locked",
+      "data": {
+        "supplier": "codepodcast",
+        "kind": "bond",
+        "receipt": {
+          "id": "sim_188703c2c7a583246616d2fb669640ab719b3a50c5e02a4195fbc18c",
+          "badge": "SIMULATED",
+          "action": "bond",
+          "amount": 15,
+          "from": "codepodcast",
+          "to": "board",
+          "txHash": "sim_188703c2c7a583246616d2fb669640ab719b3a50c5e02a4195fbc18c",
+          "explorerUrl": null,
+          "state": "FundsLocked"
+        }
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.380Z",
+      "name": "escrow.locked",
+      "data": {
+        "supplier": "techblog",
+        "kind": "award",
+        "receipt": {
+          "id": "sim_76fc67a76dbb9d60b500a76717e5720d29dbda2d91e48499e7948cb8",
+          "badge": "SIMULATED",
+          "action": "award",
+          "amount": 70,
+          "from": "consumer",
+          "to": "techblog",
+          "txHash": "sim_76fc67a76dbb9d60b500a76717e5720d29dbda2d91e48499e7948cb8",
+          "explorerUrl": null,
+          "state": "FundsLocked"
+        }
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.390Z",
+      "name": "escrow.locked",
+      "data": {
+        "supplier": "techblog",
+        "kind": "bond",
+        "receipt": {
+          "id": "sim_7381ab638c72014b11066b5f611dd1e09b2b0f5a4069484efda75710",
+          "badge": "SIMULATED",
+          "action": "bond",
+          "amount": 17.5,
+          "from": "techblog",
+          "to": "board",
+          "txHash": "sim_7381ab638c72014b11066b5f611dd1e09b2b0f5a4069484efda75710",
+          "explorerUrl": null,
+          "state": "FundsLocked"
+        }
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.410Z",
+      "name": "step.completed",
+      "data": {
+        "step": "locks"
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.430Z",
+      "name": "step.started",
+      "data": {
+        "step": "feed"
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.450Z",
+      "name": "feed.served",
+      "data": {
+        "supplier": "devnewsletter",
+        "impressions": 1500,
+        "signupsReceived": 3,
+        "flaggedBySignals": 1
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.460Z",
+      "name": "feed.served",
+      "data": {
+        "supplier": "codepodcast",
+        "impressions": 1000,
+        "signupsReceived": 9,
+        "flaggedBySignals": 0
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.470Z",
+      "name": "feed.served",
+      "data": {
+        "supplier": "techblog",
+        "impressions": 1000,
+        "signupsReceived": 11,
+        "flaggedBySignals": 0
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.480Z",
+      "name": "feed.generated",
+      "data": {
+        "window": {
+          "start": "2026-10-08T21:00:00.440Z",
+          "end": "2026-10-08T22:00:00.440Z"
+        },
+        "impressions": {
+          "devnewsletter": 1500,
+          "codepodcast": 1000,
+          "techblog": 1000
+        },
+        "signupsReceived": 23
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.500Z",
+      "name": "step.completed",
+      "data": {
+        "step": "feed"
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.520Z",
+      "name": "step.started",
+      "data": {
+        "step": "verification"
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.530Z",
+      "name": "verification.completed",
+      "data": {
+        "verified": {
+          "codepodcast": 6,
+          "techblog": 8
+        },
+        "rejections": [
+          {
+            "eventId": "evt_00001",
+            "supplier": "devnewsletter",
+            "reason": "bad_signature"
+          },
+          {
+            "eventId": "evt_00002",
+            "supplier": "devnewsletter",
+            "reason": "wrong_attribution"
+          },
+          {
+            "eventId": "evt_00003",
+            "supplier": "devnewsletter",
+            "reason": "outside_window"
+          },
+          {
+            "eventId": "evt_00010",
+            "supplier": "codepodcast",
+            "reason": "bad_signature"
+          },
+          {
+            "eventId": "evt_00011",
+            "supplier": "codepodcast",
+            "reason": "wrong_attribution"
+          },
+          {
+            "eventId": "evt_00012",
+            "supplier": "codepodcast",
+            "reason": "outside_window"
+          },
+          {
+            "eventId": "evt_00021",
+            "supplier": "techblog",
+            "reason": "bad_signature"
+          },
+          {
+            "eventId": "evt_00022",
+            "supplier": "techblog",
+            "reason": "wrong_attribution"
+          },
+          {
+            "eventId": "evt_00023",
+            "supplier": "techblog",
+            "reason": "outside_window"
+          }
+        ],
+        "perSupplier": [
+          {
+            "supplier": "devnewsletter",
+            "received": 3,
+            "verified": 0,
+            "rejected": {
+              "bad_signature": 1,
+              "wrong_attribution": 1,
+              "outside_window": 1
+            }
+          },
+          {
+            "supplier": "codepodcast",
+            "received": 9,
+            "verified": 6,
+            "rejected": {
+              "bad_signature": 1,
+              "wrong_attribution": 1,
+              "outside_window": 1
+            }
+          },
+          {
+            "supplier": "techblog",
+            "received": 11,
+            "verified": 8,
+            "rejected": {
+              "bad_signature": 1,
+              "wrong_attribution": 1,
+              "outside_window": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.550Z",
+      "name": "step.completed",
+      "data": {
+        "step": "verification"
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.570Z",
+      "name": "step.started",
+      "data": {
+        "step": "verdicts"
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.580Z",
+      "name": "verdict.signed",
+      "data": {
+        "supplier": "devnewsletter",
+        "kind": "under_gate",
+        "delivered": 0,
+        "promised": 12,
+        "gate": 5,
+        "award": 70,
+        "bond": 17.5,
+        "hash": "3297b1857ce7a267a3e5576ce8af2a69f6f28c8e912218e6aabd6a3d65cef855",
+        "signature": "ccc0684d529216bb7816bc062098b01c25e22b1fafb7ee0a7388dd9447ae1743a4509e767a8a21f717298b635245c5b0f2b7b14c8ae0de54f67252ead033250c"
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.590Z",
+      "name": "verdict.signed",
+      "data": {
+        "supplier": "codepodcast",
+        "kind": "short_of_promise",
+        "delivered": 6,
+        "promised": 8,
+        "gate": 5,
+        "award": 60,
+        "bond": 15,
+        "hash": "ad70c18058dd3e10e6625381aa79ce448d50fc19ecf982e8ea985f871e8056fd",
+        "signature": "97f29d935da2e241ecb32a3528f2556ed3a3b84e84e042e36bb64b0e7550ca42e28df75889b378ec1753c49281302c7d0477c2cda64c019914cc7d7e0c4cc002"
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.600Z",
+      "name": "verdict.signed",
+      "data": {
+        "supplier": "techblog",
+        "kind": "pass",
+        "delivered": 8,
+        "promised": 7,
+        "gate": 5,
+        "award": 70,
+        "bond": 17.5,
+        "hash": "1d923c7372999044ea43075bc4611b20570e982340c0f337d301df4c216c03df",
+        "signature": "be1eae888ee63a145f4a4466f36dd01ab35f239df35a987d2580a5c8e8aaf93ecd071352be1ba0be132b239b16bc555613530eb6357039a1671ff8b57a36ee0b"
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.620Z",
+      "name": "step.completed",
+      "data": {
+        "step": "verdicts"
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.650Z",
+      "name": "step.started",
+      "data": {
+        "step": "settlement"
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.660Z",
+      "name": "settlement.started",
+      "data": {
+        "job": "job_worked-example"
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.670Z",
+      "name": "settlement.transfer",
+      "data": {
+        "supplier": "devnewsletter",
+        "verdict": "under_gate",
+        "receipt": {
+          "id": "sim_fa964d3e392795135f46fe00d0e82cf9e67403859d3848f3b5a4603c",
+          "badge": "SIMULATED",
+          "action": "award_reclaim",
+          "amount": 70,
+          "from": "devnewsletter",
+          "to": "consumer",
+          "txHash": "sim_fa964d3e392795135f46fe00d0e82cf9e67403859d3848f3b5a4603c",
+          "explorerUrl": null,
+          "state": "Withdrawn"
+        }
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.680Z",
+      "name": "settlement.transfer",
+      "data": {
+        "supplier": "devnewsletter",
+        "verdict": "under_gate",
+        "receipt": {
+          "id": "sim_c1c7bb9003e2b18cc69ddc8d899eb1e3f5e9849a45c1b0b50118de63",
+          "badge": "SIMULATED",
+          "action": "bond_forfeit",
+          "amount": 17.5,
+          "from": "board",
+          "to": "consumer",
+          "txHash": "sim_c1c7bb9003e2b18cc69ddc8d899eb1e3f5e9849a45c1b0b50118de63",
+          "explorerUrl": null,
+          "state": "TransferSent"
+        }
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.690Z",
+      "name": "settlement.transfer",
+      "data": {
+        "supplier": "codepodcast",
+        "verdict": "short_of_promise",
+        "receipt": {
+          "id": "sim_cf669b3aca93df2ea9b6f9c06e9ad7e0e5073ac072854d6b4a501d97",
+          "badge": "SIMULATED",
+          "action": "award_release",
+          "amount": 60,
+          "from": "consumer",
+          "to": "codepodcast",
+          "txHash": "sim_cf669b3aca93df2ea9b6f9c06e9ad7e0e5073ac072854d6b4a501d97",
+          "explorerUrl": null,
+          "state": "Withdrawn"
+        }
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.700Z",
+      "name": "settlement.transfer",
+      "data": {
+        "supplier": "codepodcast",
+        "verdict": "short_of_promise",
+        "receipt": {
+          "id": "sim_41363181e72214637607ab7978486697ec96d80822ffd37b7219282d",
+          "badge": "SIMULATED",
+          "action": "bond_return",
+          "amount": 11.25,
+          "from": "board",
+          "to": "codepodcast",
+          "txHash": "sim_41363181e72214637607ab7978486697ec96d80822ffd37b7219282d",
+          "explorerUrl": null,
+          "state": "TransferSent"
+        }
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.710Z",
+      "name": "settlement.transfer",
+      "data": {
+        "supplier": "codepodcast",
+        "verdict": "short_of_promise",
+        "receipt": {
+          "id": "sim_e9a77fac0a3089d173a23a987dfc80638ce93c0e9823f89d47cc2f33",
+          "badge": "SIMULATED",
+          "action": "bond_forfeit",
+          "amount": 3.75,
+          "from": "board",
+          "to": "consumer",
+          "txHash": "sim_e9a77fac0a3089d173a23a987dfc80638ce93c0e9823f89d47cc2f33",
+          "explorerUrl": null,
+          "state": "TransferSent"
+        }
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.720Z",
+      "name": "settlement.transfer",
+      "data": {
+        "supplier": "techblog",
+        "verdict": "pass",
+        "receipt": {
+          "id": "sim_66a8127cefbe138a2b6eaad4623538e03d95209d956c8dc972d5e893",
+          "badge": "SIMULATED",
+          "action": "award_release",
+          "amount": 70,
+          "from": "consumer",
+          "to": "techblog",
+          "txHash": "sim_66a8127cefbe138a2b6eaad4623538e03d95209d956c8dc972d5e893",
+          "explorerUrl": null,
+          "state": "Withdrawn"
+        }
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.730Z",
+      "name": "settlement.transfer",
+      "data": {
+        "supplier": "techblog",
+        "verdict": "pass",
+        "receipt": {
+          "id": "sim_1b2a7325c0118ee88a50dd2311923e12bc1950b6fb4f27c1502dc2ce",
+          "badge": "SIMULATED",
+          "action": "bond_return",
+          "amount": 17.5,
+          "from": "board",
+          "to": "techblog",
+          "txHash": "sim_1b2a7325c0118ee88a50dd2311923e12bc1950b6fb4f27c1502dc2ce",
+          "explorerUrl": null,
+          "state": "Withdrawn"
+        }
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.770Z",
+      "name": "settlement.completed",
+      "data": {
+        "job": "job_worked-example",
+        "transfers": 7
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.780Z",
+      "name": "step.completed",
+      "data": {
+        "step": "settlement"
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.790Z",
+      "name": "receipt.ready",
+      "data": {
+        "receipt": {
+          "consumer": {
+            "awardsLocked": 200,
+            "returned": 91.25,
+            "net": -108.75,
+            "signups": 14,
+            "costPerSignup": 7.767857
+          },
+          "board": {
+            "bidFees": 8
+          },
+          "leaderboard": [
+            {
+              "rank": 1,
+              "supplier": "techblog",
+              "name": "TechBlog",
+              "kind": "pass",
+              "promised": 7,
+              "delivered": 8,
+              "verifiedSignups": 8,
+              "countedSignups": 8,
+              "award": 70,
+              "paidToSupplier": 70,
+              "awardReclaimed": 0,
+              "bond": 17.5,
+              "bondReturned": 17.5,
+              "bondForfeited": 0,
+              "consumerSpend": 70,
+              "costPerSignup": 8.75,
+              "supplierNet": 68,
+              "verdictHash": "1d923c7372999044ea43075bc4611b20570e982340c0f337d301df4c216c03df"
+            },
+            {
+              "rank": 2,
+              "supplier": "codepodcast",
+              "name": "CodePodcast",
+              "kind": "short_of_promise",
+              "promised": 8,
+              "delivered": 6,
+              "verifiedSignups": 6,
+              "countedSignups": 6,
+              "award": 60,
+              "paidToSupplier": 60,
+              "awardReclaimed": 0,
+              "bond": 15,
+              "bondReturned": 11.25,
+              "bondForfeited": 3.75,
+              "consumerSpend": 56.25,
+              "costPerSignup": 9.375,
+              "supplierNet": 54.25,
+              "verdictHash": "ad70c18058dd3e10e6625381aa79ce448d50fc19ecf982e8ea985f871e8056fd"
+            },
+            {
+              "rank": 3,
+              "supplier": "devnewsletter",
+              "name": "DevNewsletter",
+              "kind": "under_gate",
+              "promised": 12,
+              "delivered": 0,
+              "verifiedSignups": 0,
+              "countedSignups": 0,
+              "award": 70,
+              "paidToSupplier": 0,
+              "awardReclaimed": 70,
+              "bond": 17.5,
+              "bondReturned": 0,
+              "bondForfeited": 17.5,
+              "consumerSpend": -17.5,
+              "costPerSignup": null,
+              "supplierNet": -19.5,
+              "verdictHash": "3297b1857ce7a267a3e5576ce8af2a69f6f28c8e912218e6aabd6a3d65cef855"
+            },
+            {
+              "rank": 4,
+              "supplier": "gamingforum",
+              "name": "GamingForum",
+              "kind": "lost_bid",
+              "promised": 4,
+              "delivered": null,
+              "verifiedSignups": 0,
+              "countedSignups": 0,
+              "award": 0,
+              "paidToSupplier": 0,
+              "awardReclaimed": 0,
+              "bond": 0,
+              "bondReturned": 0,
+              "bondForfeited": 0,
+              "consumerSpend": 0,
+              "costPerSignup": null,
+              "supplierNet": -2,
+              "verdictHash": null
+            }
+          ],
+          "badges": [
+            "SIMULATED"
+          ],
+          "roundTwo": [
+            {
+              "supplier": "devnewsletter",
+              "share": 0
+            },
+            {
+              "supplier": "codepodcast",
+              "share": 0.5
+            },
+            {
+              "supplier": "techblog",
+              "share": 0.5
+            }
+          ]
+        }
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.800Z",
+      "name": "round2.decided",
+      "data": {
+        "allocations": [
+          {
+            "supplier": "devnewsletter",
+            "share": 0
+          },
+          {
+            "supplier": "codepodcast",
+            "share": 0.5
+          },
+          {
+            "supplier": "techblog",
+            "share": 0.5
+          }
+        ]
+      }
+    },
+    {
+      "ts": "2026-10-08T22:00:00.810Z",
+      "name": "run.completed",
+      "data": {
+        "runId": "run_worked-example",
+        "net": -108.75,
+        "signups": 14,
+        "badges": [
+          "SIMULATED"
+        ]
+      }
+    }
+  ]
+}

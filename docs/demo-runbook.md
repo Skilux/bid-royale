@@ -119,6 +119,35 @@ Challenge to mechanism (for the README and the pitch):
   lean on the labelled simulated ledger + canned replay (no second rail —
   Masumi-only by team decision)
 
+## Canned replay (`DEMO_MODE=canned`)
+
+The judge URL replays one recorded run, badged PRE-RECORDED. The REAL preprod tx
+links from the recording stay REAL links with their recorded timestamps. Code:
+`app/lib/replay/`. Recording: `app/data/canned/run.json`.
+
+| Env var | Values | Effect |
+|---|---|---|
+| `DEMO_MODE` | `canned` or `live` (default) | `canned`: `POST /api/run` loads the recording and the SSE stream replays it. `live`: a real run. A failing live step degrades to the replay and emits `mode.degraded`. |
+| `REPLAY_SPEED` | `fast` (default), `normal`, `instant` | `fast`: whole stream in 25 s or less, 0.35 s pause before each step. `normal`: recorded timing, 1x. `instant`: no delay, for tests. |
+| `REPLAY_RECORDING` | file path, optional | Replays that file instead of `app/data/canned/run.json`. Relative paths start in `app/`. |
+
+Check after a deploy: `/api/health` shows `flags.demoMode: "canned"` and `replay.ok: true`
+with `replay.recordedRunId`, `replay.events` and `replay.realTransfers`.
+
+**Swap in the real #45 recording (no code change):**
+
+1. Take the run from the deployed app: `cd app && BOARD_URL=https://<deployment> npm run record:canned -- <runId>`.
+   It writes `app/data/canned/run.json`. Or copy the file Vladimir saved in
+   `docs/runs/2026-10-09/` to `app/data/canned/run.json` (shape: `{ run, events }`).
+2. Open the file and check there are no secrets. Tx hashes are public.
+3. Run `cd app && npm run check`. Then start `DEMO_MODE=canned npm run dev` and open
+   `localhost:3000/api/health`. Expect `replay.ok: true` and `replay.realTransfers` above 0.
+4. Commit, push to `main`, tell Danila to deploy.
+
+The loader rejects a recording that has no `run.created` first, no `run.completed` last,
+an unknown event name or a run status other than `completed`. A `REAL` badge without a
+real tx hash is shown as PRE-RECORDED. A `PENDING` row stays PENDING.
+
 ## Cut order (agreed in advance, cut top-down)
 
 1. ElevenLabs voiceover → captions + text narrative

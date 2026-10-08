@@ -83,7 +83,8 @@ export function createBoard({
     await store.setRun(run);
     if (cause) await emit(runId, EVENTS.modeDegraded, { mode: "canned", ...cause });
     for (const event of transcript.events) await store.appendEvent(runId, event);
-    return run;
+    // Read back through the store: a paced replay shows only what is due, like a live run.
+    return (await store.getRun(runId)) ?? run;
   }
 
   /** Creates a run and publishes the tender. In DEMO_MODE=canned with a replay installed, loads the replay instead. */
