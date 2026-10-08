@@ -23,13 +23,13 @@ Scope: payment logic only. No UI, agents or verifier. Rails stay Masumi's (see
 
 ## Progress
 
-Status as of 2026-10-08 ~22:01. Checkpoint 1 partly done; V2 source created and initial wallets funded (#21).
+Status as of 2026-10-08 ~22:08. V2 source created (#21); all ten party wallets funded and six scoped keys tested (#26). Registry check remains W3.
 
 | Checkpoint 1 item | Status |
 |---|---|
 | Payment service deployed on Railway and reachable | Done. Upgraded to 0.29.0, `/api/v1/health` ok. `https://masumi-payment-service-production-5263.up.railway.app` (`/api/v1`, `/admin`, `/docs`), project `bid-royale-masumi` |
-| Base URL and key work | Admin key works on 0.29.0 (`MASUMI_ADMIN_API_KEY` in gitignored `app/.env.local`, local scripts only). Scoped `ReadAndPay` key for `techblog-agent` not re-checked since the upgrade |
-| Wallets exist and are funded | Partly. Fresh V2 Consumer purchasing (400 tADA), Board selling (150 tADA), and admin (20 tADA) funded REAL and checked on chain; tx links below. Mnemonics backed up off-repo. Supplier wallets remain W2. Seeded V1 wallets used only for funding |
+| Base URL and key work | Admin key works on 0.29.0 (`MASUMI_ADMIN_API_KEY` in gitignored `app/.env.local`, local scripts only). Six new Preprod wallet-scoped `ReadAndPay` party keys created and tested (#26), including `key-techblog`; details below |
+| Wallets exist and are funded | Done (#21, #26). Ten V2 party wallets: Consumer purchasing 400 tADA, Board selling 150 tADA, four Suppliers each purchasing 60 and selling 20 tADA; admin 20 tADA separately. REAL balances checked on chain; tx links below. Mnemonics backed up off-repo. Seeded V1 wallets used only for funding |
 | Contract version (D9) | Done (#21). New Preprod `Web3CardanoV2` source `cmuzylds0000347p4qfsw0ed3`, contract `addr_test1wzqgalcd93sfjrc5tsc4ycwx80a8lt0s3767a4g8nh45lrg044nd9`, fee 0 permille; `cooldownTime: 60000` (60 s) accepted. Status `custom_address` accepted by operator on 8 Oct: current V2 policy with our fresh admin wallet. Seeded V1 remains unchanged as fallback |
 | Asset decided (tUSDM or tADA) | Decided: tADA, spec amounts × 10 (L2 below) |
 | `GET /registry/wallet` returns a wallet | Not run yet |
@@ -37,14 +37,25 @@ Status as of 2026-10-08 ~22:01. Checkpoint 1 partly done; V2 source created and 
 ### V2 source wallets
 
 REAL Preprod funding (#21), 570 tADA total plus transaction fees, below the
-600 tADA cap. Mnemonics saved by the Admin helper under `v2-admin`,
-`v2-consumer-purchasing`, and `v2-board-selling` in protected off-repo storage.
+600 tADA cap. #26 adds 320 tADA plus transaction fees, below its 400 tADA cap.
+All funding balances in the table were confirmed on chain. Mnemonics saved by
+the Admin helper under `v2-admin`, `v2-consumer-purchasing`, `v2-board-selling`,
+and `v2-<supplier>-purchasing` / `v2-<supplier>-selling` in protected off-repo
+storage.
 
 | Role | Address suffix (last 6) | tADA | Funding tx (REAL) |
 |---|---|---|---|
 | Consumer purchasing | p3w6p0 | 400 | [Preprod transaction](https://preprod.cardanoscan.io/transaction/9ad346c54eab9cf3470b0ce9532d91300f6a89249bb886272aa3d84b1db971e5) |
 | Board selling | h0ydnc | 150 | [Preprod transaction](https://preprod.cardanoscan.io/transaction/293af6ac60a335f5e55aaf596bfe13657edc2a1dbca9d6f71406ee7b4850ebde) |
 | Admin | h0vwhn | 20 | [Preprod transaction](https://preprod.cardanoscan.io/transaction/a3dc68b55227b2264d2cafde3ede9de8d0e236f0b26c7b7d84fd1b93df3c5dc2) |
+| TechBlog purchasing | 2ke9r8 | 60 | [Preprod transaction](https://preprod.cardanoscan.io/transaction/b197d0649b61afee43befaef1de20eb1255a5e7ffc408441eef7d47ae13ea7f3) |
+| TechBlog selling | s3lh2d | 20 | [Preprod transaction](https://preprod.cardanoscan.io/transaction/fb0f19b915c123bc0d4782dab163d15c16a7bf3370c5ac60016115ae24d930a8) |
+| CodePodcast purchasing | k5ung2 | 60 | [Preprod transaction](https://preprod.cardanoscan.io/transaction/40909a228fffe3bce38f88aa112ff1b264723a0729f3e81009acd0f2e8523f5c) |
+| CodePodcast selling | mhc2yn | 20 | [Preprod transaction](https://preprod.cardanoscan.io/transaction/919cf05dbecf0f79315949cb2049240b6ad472de1cb19fb3f4aca101f202ec30) |
+| DevNewsletter purchasing | xh22lg | 60 | [Preprod transaction](https://preprod.cardanoscan.io/transaction/2780923cc0e7ea37052355672f2ae1920edfc56bd12d496a68fbeb900fc6b38e) |
+| DevNewsletter selling | 4mvm9y | 20 | [Preprod transaction](https://preprod.cardanoscan.io/transaction/993cf61dc77422b8970e3e0ef04e96091200da6074ece1344444c4d8a6c9e3b0) |
+| GamingForum purchasing | c5aaas | 60 | [Preprod transaction](https://preprod.cardanoscan.io/transaction/3880c6534784038c4bf5d1bdce14c5b050e7e773527492b73694807d2c85354b) |
+| GamingForum selling | s8kj8x | 20 | [Preprod transaction](https://preprod.cardanoscan.io/transaction/36ece361e06d716fd45b6a8565838d7d48e9a6fb12cf024cab51354d4f8cf130) |
 
 Registry policy: `67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b`.
 One admin slot, `requiredAdminSignatures: 1`. The API returned HTTP 200 for
@@ -59,9 +70,37 @@ this status to close D9 on 8 Oct; it is not an outdated contract.
 [Masumi ADR 0007](https://github.com/masumi-network/masumi-payment-service/blob/0.29.0/docs/adr/0007-v2-collateral-readiness-invariant.md)
 requires two wallet UTxOs and a collateral candidate of at least 5 ADA before
 V2 script spends. Its helper automatically submits a reserve-preparation
-transaction at first use when needed (minimum funding 7 ADA). All three wallets
-are funded above that threshold; no script spend or collateral-prep transaction
+transaction at first use when needed (minimum funding 7 ADA). The three initial
+#21 wallets are funded above that threshold; no script spend or collateral-prep transaction
 was invoked in #21. First use may defer one scheduler tick for preparation.
+
+### Party keys
+
+Six active `ReadAndPay` keys (#26), each with `canRead: true`, `canPay: true`,
+`canAdmin: false`, `NetworkLimit: [Preprod]`, `walletScopeEnabled: true`, and
+`usageLimited: false`. Values are saved only by the Admin helper in protected
+off-repo storage; the labels below identify them without exposing tokens.
+
+| Party | Key label | Scoped wallet roles | Scope-test result |
+|---|---|---|---|
+| Consumer | `key-consumer` | Consumer purchasing | Own read 200; Board hidden (200, empty list); direct Board read 401 |
+| Board | `key-board` | Board selling | Own read 200 |
+| TechBlog | `key-techblog` | TechBlog selling + purchasing | Both own reads 200; Consumer hidden (200, empty list); direct Consumer read 401 |
+| CodePodcast | `key-codepodcast` | CodePodcast selling + purchasing | Both own reads 200 |
+| DevNewsletter | `key-devnewsletter` | DevNewsletter selling + purchasing | Both own reads 200 |
+| GamingForum | `key-gamingforum` | GamingForum selling + purchasing | Both own reads 200 |
+
+Positive tests used `GET /wallet/list?walletType=<type>&searchQuery=<wallet id>`
+with each party key: every owned wallet was returned, with the expected ID.
+The same query targeting another party returned `Wallets: []` for TechBlog →
+Consumer and Consumer → Board. These are HTTP 200 responses with scope-filtered
+results, not HTTP authorization errors. Direct `GET /wallet` returned 401
+`Unauthorized, admin access required` even for Consumer's own wallet, so that
+endpoint's 401 alone does not prove wallet isolation.
+
+On V2, only the key that created a payment (or Admin) may later call
+`submit-result` / `authorize-refund`. Keep exactly one seller key per party,
+covering its selling wallet; reuse it throughout the payment lifecycle.
 
 Done so far:
 
