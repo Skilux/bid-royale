@@ -14,7 +14,14 @@ Plain JS REST wrapper for the Masumi 0.29.0 V2 payment service. No chain code.
   `delivered`, `gate`, optional Board verdict `hash` and `signature`.
 - Real `advance(id) → Promise<Receipt>`: the follow-up driver for settlement;
   reads both sides and issues at most one state-changing request per escrow.
-  No loops or sleeps. Portable ids work across adapter instances.
+  No loops or sleeps. Portable ids work across adapter instances. On a lock
+  receipt id it confirms the lock instead: buyer-side read, REAL with the lock
+  tx once the escrow is `FundsLocked` (or later). The Board's reconciler
+  (`app/lib/board/reconcile.js`, #49) is the caller: it ticks every PENDING row.
+- Real receipts also carry `escrow`: the blockchain identifier of the escrow the
+  receipt drives (the bond for plain transfers), so a caller steps one escrow
+  at a time. `settle` strips `awardEscrowId`/`bondEscrowId` before the verdict
+  reaches the treasury.
 - `getEscrowStatus(id) → Promise<string>`: resolve the seller-side payment by
   blockchain identifier; returns its on-chain state, queued action, or `Error`.
 
@@ -33,9 +40,10 @@ caller or silently creating simulated money. Bid fees retain SIMULATED receipts.
 The real receipt `id` is a portable job token containing only public escrow
 references and party names, never credentials. Save the award/bond lock ids and
 pass `awardEscrowId` and `bondEscrowId` on the verdict when resuming settlement
-in another serverless invocation. Within one adapter instance the latest lock
-per supplier/kind is available as a convenience. There is no confirmation loop;
-callers poll `getEscrowStatus`. No HTTP route or shared store is added here.
+in another serverless invocation (the Board does this from its ledger). Within
+one adapter instance the latest lock per supplier/kind is available as a
+convenience. There is no confirmation loop here; the Board's reconciler calls
+`advance` on each poll. No HTTP route or shared store is added here.
 
 ## Configuration and API
 

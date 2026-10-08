@@ -61,3 +61,11 @@ requests have a size cap and a 30-second request timeout.
 Tests use injected fetch/store and an in-process HTTP handler, with no network.
 Live REAL proof requires an operator-run funded preprod trial; this ticket
 implements and proves the path offline without moving funds or deploying.
+
+## Settlement trigger (#49)
+
+With `SETTLEMENT_TICK_URL` set (the Board's `/api/settlement/tick`), the worker
+POSTs it every 30 s, one call at a time, 55 s abort. The route is public and
+needs no keys; it advances each run with settlement work left by one bounded
+tick, so a real run finishes with no browser open. Logs only ticks that did work
+or failed. `startTickLoop` is exported for tests.

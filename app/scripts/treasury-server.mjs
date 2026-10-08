@@ -52,11 +52,37 @@ export function createHandler(config) {
   };
 }
 
+/**
+ * Settlement trigger (#49): calls the Board's public tick route every `intervalMs`, so a real settlement finishes
+ * with no browser open. Never overlaps itself; each call aborts after `timeoutMs`. Returns a stop function.
+ */
+export function startTickLoop({ url, intervalMs = 30000, timeoutMs = 55000, fetch: fetchImpl = globalThis.fetch,
+  log = console.log } = {}) {
+  let timer;
+  let stopped = false;
+  const once = async () => {
+    const controller = new AbortController();
+    const abort = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetchImpl(url, { method: "POST", signal: controller.signal });
+      const body = await response.json().catch(() => null);
+      const runs = body?.runs ?? [];
+      if (!response.ok || runs.length) log(JSON.stringify({ tick: response.status, runs }));
+    } catch (error) {
+      log(JSON.stringify({ tick: "error", error: controller.signal.aborted ? "timeout" : error.message }));
+    } finally { clearTimeout(abort); }
+    if (!stopped) timer = setTimeout(once, intervalMs);
+  };
+  timer = setTimeout(once, 0);
+  return () => { stopped = true; clearTimeout(timer); };
+}
+
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
     const server = createServer(createHandler(loadConfig()));
     server.requestTimeout = 30000;
     server.headersTimeout = 10000;
     server.listen(Number(process.env.PORT ?? 3000), "0.0.0.0");
+    if (process.env.SETTLEMENT_TICK_URL) startTickLoop({ url: process.env.SETTLEMENT_TICK_URL });
   } catch (error) { console.error(error.message); process.exitCode = 1; }
 }

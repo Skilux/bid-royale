@@ -11,7 +11,7 @@ const { createMemoryStore, createUpstashStore } = await import("@/lib/board/stor
 const { createClient } = await import("@/lib/masumi/client");
 const { executeTransfer, authorizeTransfer, getTransferStatus } = await import("@/lib/treasury");
 const { createTreasuryClient } = await import("@/lib/masumi/treasury-client");
-const { createHandler, loadConfig } = await import("../../scripts/treasury-server.mjs");
+const { createHandler, loadConfig, startTickLoop } = await import("../../scripts/treasury-server.mjs");
 const secret = "offline treasury fixture";
 const boardPublicKey = publicKeyHex(publicKeyFromSecret(secret));
 const verdict = buildVerdict({ supplier: "codepodcast", verified: 6, impressions: 1000, promised: 8, award: 60, signingSecret: secret });
@@ -174,4 +174,33 @@ test("Vercel client matches flattened adapter hook, contains no Admin env refere
     const result = await createTreasuryClient({ env, fetch: fetchImpl, timeoutMs: 5 })({ id: "r", verdict, ...moves[0] });
     assert.equal(result.state, "TransferPending"); assert.ok(result.error); assert.equal(result.txHash, null);
   }
+});
+
+test("tick loop posts to the tick route, never overlaps, logs only work or errors, and stops", async () => {
+  let inFlight = 0;
+  let maxInFlight = 0;
+  const calls = [];
+  const logs = [];
+  const fetch = async (url, init) => {
+    calls.push({ url, method: init.method, signal: init.signal instanceof AbortSignal });
+    inFlight++;
+    maxInFlight = Math.max(maxInFlight, inFlight);
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    inFlight--;
+    if (calls.length === 2) throw new Error("socket hang up");
+    const runs = calls.length === 3 ? [{ runId: "run_a", phase: "settling", pending: 4 }] : [];
+    return new Response(JSON.stringify({ runs }), { status: 200 });
+  };
+  const stop = startTickLoop({ url: "https://board.test/api/settlement/tick", intervalMs: 1, fetch, log: (l) => logs.push(JSON.parse(l)) });
+  while (calls.length < 4) await new Promise((resolve) => setTimeout(resolve, 2));
+  stop();
+  const seen = calls.length;
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  assert.ok(calls.length <= seen + 1, "stops after the call in flight");
+  assert.equal(maxInFlight, 1);
+  assert.ok(calls.every((c) => c.url === "https://board.test/api/settlement/tick" && c.method === "POST" && c.signal));
+  assert.deepEqual(logs.slice(0, 2), [
+    { tick: "error", error: "socket hang up" },
+    { tick: 200, runs: [{ runId: "run_a", phase: "settling", pending: 4 }] },
+  ]);
 });
