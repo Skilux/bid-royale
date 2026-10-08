@@ -119,6 +119,24 @@ Challenge to mechanism (for the README and the pitch):
   lean on the labelled simulated ledger + canned replay (no second rail —
   Masumi-only by team decision)
 
+## Modes and env changes
+
+Two flags decide what a run does. `SIMULATE_PAYMENTS` picks the payment rail, `DEMO_MODE` picks live or replay.
+
+| Situation | `SIMULATE_PAYMENTS` | `DEMO_MODE` | Result |
+|---|---|---|---|
+| Rehearsals, tests, any run that is not the recorded one | `true` | `live` | Live run, labelled SIMULATED ledger, no tADA spent |
+| Recorded real run (#45), the only run that uses real escrows | `false` | `live` | Live run, REAL preprod escrows and txs |
+| Judge URL after #13 | any | `canned` | Run button replays the recording, badged PRE-RECORDED, REAL tx links kept |
+
+Rules:
+
+1. Rehearse with `SIMULATE_PAYMENTS=true` and `DEMO_MODE=live`. Never rehearse with `false`.
+2. Set `SIMULATE_PAYMENTS=false` only for the recorded run #45. Set it back to `true` right after.
+3. After #13 and the #45 recording are in, the judge URL runs with `DEMO_MODE=canned`.
+4. Every env change needs a redeploy. A new value reaches the site only after the next deploy, and only Danila deploys.
+5. After each deploy, open `/api/health` and check `flags.simulatePayments`, `flags.demoMode`, `paymentAdapter` and the `env` block. `env` shows true or false per variable, never values. Do not start a run until the flags match the row above.
+
 ## Canned replay (`DEMO_MODE=canned`)
 
 The judge URL replays one recorded run, badged PRE-RECORDED. The REAL preprod tx
