@@ -1,4 +1,5 @@
 import { consumerNet, planSettlement } from "../settlement/plan.js";
+import { buildLedgers } from "./ledger.js";
 
 const round = (n) => Math.round(n * 1e6) / 1e6;
 const sum = (list, pick = (x) => x.amount) => round(list.reduce((t, x) => t + pick(x), 0));
@@ -15,13 +16,13 @@ export const KIND_LABEL = {
 
 /**
  * Badge for one money entry, derived from the transfer and the run mode.
- * REAL needs a badge of REAL and a real tx hash (the simulated adapter prefixes `sim_`).
+ * REAL needs a badge of REAL and a 64-hex tx hash (the simulated adapter prefixes `sim_`).
  * A canned replay shows PRE-RECORDED for everything that is not a real tx. Anything else is SIMULATED.
  * PENDING (a real operation submitted, no tx yet, #49) stays PENDING: it is never money moved.
  */
 export function deriveBadge(entry, { mode = "live" } = {}) {
   const hash = entry?.txHash;
-  const hasHash = typeof hash === "string" && hash.length > 0 && !hash.startsWith("sim_");
+  const hasHash = typeof hash === "string" && /^[0-9a-f]{64}$/i.test(hash);
   if (entry?.badge === "REAL" && hasHash) return "REAL";
   if (entry?.badge === "PENDING") return "PENDING";
   if (entry?.badge === "PRE-RECORDED" || mode === "canned") return "PRE-RECORDED";
@@ -110,6 +111,7 @@ export function buildReceiptView(run) {
         bondReturned: lb?.bondReturned ?? sumPlanned("bond_return"),
         bondForfeited: lb?.bondForfeited ?? sumPlanned("bond_forfeit"),
         transfers: transfersFor(v.supplier),
+        verdictHash: v.hash ?? lb?.verdictHash ?? null,
         at: transferTime(run, v.supplier),
       };
     });
@@ -153,6 +155,8 @@ export function buildReceiptView(run) {
       kind: r.kind,
       kindLabel: KIND_LABEL[r.kind] ?? r.kind,
       costPerSignup: r.costPerSignup,
+      signupsPerTada: r.consumerSpend > 0 && r.countedSignups > 0 ? round(r.countedSignups / r.consumerSpend) : null,
+      verdictHash: r.verdictHash ?? null,
       signups: r.countedSignups,
       refunded: r.kind === "under_gate" ? returned : null,
       refundBadges,
@@ -173,6 +177,7 @@ export function buildReceiptView(run) {
     .sort((a, b) => b.share - a.share || rankOf(a.supplier) - rankOf(b.supplier));
 
   const realLocks = locks.filter((l) => l.badge === "REAL").length;
+  const pendingRows = ledger.filter((l) => l.badge === "PENDING").length;
   const lockMinutes = gapMinutes(run?.steps?.locks?.finishedAt, run?.steps?.settlement?.startedAt);
 
   return {
@@ -202,9 +207,12 @@ export function buildReceiptView(run) {
     tally: {
       locksTotal: locks.length,
       locksReal: realLocks,
+      locksPending: locks.filter((l) => l.badge === "PENDING").length,
       lockBadges: uniqueBadges(locks.map((l) => l.badge)),
       bidFeeBadges: uniqueBadges(bidFees.map((l) => l.badge)),
     },
+    pendingRows,
+    ledgers: buildLedgers({ ledger, suppliers: run?.suppliers ?? [], nameOf }),
   };
 }
 

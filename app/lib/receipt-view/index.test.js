@@ -45,6 +45,7 @@ test("worked example: net -108.75 for 14 verified signups, every badge SIMULATED
   assert.deepEqual(view.tally, {
     locksTotal: 6,
     locksReal: 0,
+    locksPending: 0,
     lockBadges: ["SIMULATED"],
     bidFeeBadges: ["SIMULATED"],
   });
@@ -156,4 +157,55 @@ test("timeline: lock, cut, three verdicts with the under-gate slip, then the fin
     "button:devnewsletter",
     "final",
   ]);
+});
+
+test("REAL needs a 64-hex hash: a short or non-hex hash is not REAL", () => {
+  assert.equal(deriveBadge({ badge: "REAL", txHash: "abc123" }), "SIMULATED");
+  assert.equal(deriveBadge({ badge: "REAL", txHash: "g".repeat(64) }), "SIMULATED");
+  assert.equal(deriveBadge({ badge: "REAL", txHash: "A".repeat(64) }), "REAL");
+});
+
+test("PENDING stays PENDING, in a live run and in a replay", () => {
+  assert.equal(deriveBadge({ badge: "PENDING", txHash: null }), "PENDING");
+  assert.equal(deriveBadge({ badge: "PENDING", txHash: null }, { mode: "canned" }), "PENDING");
+});
+
+test("ledgers: one per agent, the nets add up to 0, the Consumer net is the receipt net", () => {
+  const view = buildReceiptView({ ...fixture.run, events: fixture.events });
+  assert.deepEqual(view.ledgers.map((l) => l.id), ["consumer", "board", "techblog", "codepodcast", "devnewsletter", "gamingforum"]);
+  const net = Object.fromEntries(view.ledgers.map((l) => [l.id, l.net]));
+  assert.equal(net.consumer, -108.75);
+  assert.equal(net.board, 8);
+  assert.equal(net.techblog, 68);
+  assert.equal(net.codepodcast, 54.25);
+  assert.equal(net.devnewsletter, -19.5);
+  assert.equal(net.gamingforum, -2);
+  assert.equal(Math.round(Object.values(net).reduce((t, n) => t + n, 0) * 1e6) / 1e6, 0);
+  const lb = new Map(fixture.run.receipt.leaderboard.map((r) => [r.supplier, r.supplierNet]));
+  for (const id of ["techblog", "codepodcast", "devnewsletter", "gamingforum"]) assert.equal(net[id], lb.get(id), `${id} supplier net`);
+});
+
+test("ledgers: a PENDING row is listed but not in the balance", () => {
+  const run = clone();
+  const row = run.ledger.find((l) => l.phase === "settlement" && l.action === "award_release" && l.supplier === "techblog");
+  Object.assign(row, { badge: "PENDING", txHash: null });
+  const view = buildReceiptView({ ...run, events: fixture.events });
+  const tb = view.ledgers.find((l) => l.id === "techblog");
+  assert.equal(tb.pendingCount, 1);
+  assert.equal(tb.net, -2);
+  assert.equal(tb.rows.filter((r) => r.pending).length, 1);
+  assert.equal(view.pendingRows, 1);
+  assert.ok(tb.rows.find((r) => r.pending).balance === null);
+});
+
+test("leaderboard: signups per tADA and the verdict hash come from the run, Lost bid has none", () => {
+  const view = buildReceiptView({ ...fixture.run, events: fixture.events });
+  const tb = view.leaderboard.find((r) => r.supplier === "techblog");
+  assert.equal(tb.signupsPerTada, Math.round((8 / 70) * 1e6) / 1e6);
+  assert.match(tb.verdictHash, /^[0-9a-f]{64}$/);
+  const gf = view.leaderboard.find((r) => r.supplier === "gamingforum");
+  assert.equal(gf.signupsPerTada, null);
+  assert.equal(gf.verdictHash, null);
+  assert.equal(view.leaderboard.at(-1).kind, "lost_bid");
+  assert.ok(view.settled.every((s) => /^[0-9a-f]{64}$/.test(s.verdictHash)));
 });
