@@ -391,10 +391,15 @@ test("llm config: defaults live in llm-config.js, OPENROUTER_MODELS only overrid
   assert.ok(LLM_CONFIG.maxCallsPerInvite <= LLM_CONFIG.maxAttempts * LLM_CONFIG.maxTurns);
 });
 
+test("every default model fits under the price ceiling and the list has no duplicates", () => {
+  assert.equal(new Set(LLM_CONFIG.models).size, LLM_CONFIG.models.length);
+  for (const m of ["xiaomi/mimo-v2.6-flash", "openai/gpt-6-luna", "deepseek/deepseek-v4.1-flash", "z-ai/glm-5.3-flash"]) assert.ok(LLM_CONFIG.models.includes(m), m);
+});
+
 test("default models are used when OPENROUTER_MODELS is unset", async () => {
   const fetch = mockFetch(() => failure(503));
   await brain("techblog", fetch, { OPENROUTER_API_KEY: "k" });
-  assert.deepEqual(fetch.calls.map((c) => c.body.model), LLM_CONFIG.models);
+  assert.deepEqual(fetch.calls.map((c) => c.body.model), LLM_CONFIG.models.slice(0, LLM_CONFIG.maxAttempts));
 });
 
 test("budget: the call cap stops the run and pins the quote with reason budget", async () => {

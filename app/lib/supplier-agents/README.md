@@ -26,7 +26,7 @@ The one place that defines the models and every cap. `OPENROUTER_MODELS` only ov
 
 | Guard | Default | Effect |
 |---|---|---|
-| `models` | claude-haiku-5.5, gpt-oss-120b, qwen3.7-flash | tried in order, one per attempt |
+| `models` | claude-haiku-5.5, mimo-v2.6-flash, gpt-6-luna, deepseek-v4.1-flash, glm-5.3-flash, gpt-oss-120b, qwen3.7-flash | tried in order, one per attempt, only the first 3 are reached per invite, the rest are reserve |
 | `maxOutputTokens` | 800 | `max_tokens` on every call |
 | `maxInputChars` | 8,000 | call refused before sending, quote pinned (`reason: "budget"`) |
 | `historyEntries` | 5 | past results in the prompt. The route schema also bounds every string and `history` to 20 rows |
