@@ -12,3 +12,7 @@ out/
 .venv/
 __pycache__/
 .vercel
+
+# Written by `next dev` (agent rules); not ours
+app/AGENTS.md
+app/CLAUDE.md
