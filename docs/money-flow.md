@@ -13,7 +13,7 @@ projection unless it says so.
 | Platform | Role |
 |---|---|
 | Vercel (`https://ad-slot-auction.vercel.app`) | UI, Tender Board (auction, verifier, settlement), the 4 supplier brains, MIP-003 agent routes `/api/agents/<name>/…` (#37), Masumi REST client with one wallet-scoped ReadAndPay key per party |
-| Railway | Masumi Payment Service 0.29.0 + Postgres: holds all wallets, signs and submits transactions, runs the background loops. Treasury worker (Admin key) for plain transfers (#29, not deployed yet: #42) |
+| Railway | Masumi Payment Service 0.29.0 + Postgres: holds all wallets, signs and submits transactions, runs the background loops. Treasury worker (Admin key) for plain transfers (#29), deployed 8 Oct at `https://treasury-worker-production-cce6.up.railway.app` |
 | Cardano Preprod | V2 escrow contract `addr_test1wzqgalcd93sfjrc5tsc4ycwx80a8lt0s3767a4g8nh45lrg044nd9` holds locked tADA; registry entries for the 5 agents |
 | Upstash Redis | Board state, agent job state, treasury dedupe |
 
@@ -63,7 +63,7 @@ Payment Service on Railway signs and submits; the contract holds the money.
 | 5a | Award locks (3, in parallel) | Consumer → each winner | Vercel → Railway → Preprod | supplier `POST /payment` (supplier key), Consumer `POST /purchase` (Consumer key) | 70 / 60 / 70 | `FundsLocked` | 1.6–3.2 min | **PENDING** until the tx hash exists, then **REAL** + explorer link |
 | 5b | Bond locks (3, in parallel with 5a) | each winner → Board | Vercel → Railway → Preprod | Board `POST /payment` (Board key), supplier `POST /purchase` (supplier key) | 17.5 / 15 / 17.5 | `FundsLocked` | 1.6–3.2 min | **PENDING**, then **REAL** |
 | 6 | Traffic, signups, verifier | shop, Board | Vercel, off-chain | signed signup events, verifier checks signature + attribution + window; Board signs one verdict per supplier | — | unchanged | seconds | traffic **SIMULATED** |
-| 7 | Settlement per verdict | see below | Vercel `settle` + `advance` → Railway → Preprod | see below | see below | see below | see below | **REAL** (escrow), **PENDING** (treasury, until #42) |
+| 7 | Settlement per verdict | see below | Vercel `settle` + `advance` → Railway → Preprod | see below | see below | see below | see below | **REAL** (escrow and treasury, once a tx hash exists) |
 | 8 | Receipt + ledger | Board → Consumer | Vercel | — | Consumer net −108.75 for 14 signups | all escrows terminal | — | every row badged |
 
 ### Step 7: settlement per verdict
@@ -104,7 +104,7 @@ About **15 min** end to end, measured per path:
 - Settlement: the longest step is the early release, ~13 min. Everything else
   (bond return 4.7 min, cooperative refund 5.9 min) runs in parallel inside it.
 - Treasury transfers start once a bond is `Withdrawn`; their time is not
-  measured yet (#42).
+  measured yet (next full run, #31).
 - Slow timer paths stay as automatic fallbacks: release after the unlock time
   **45.5 min**, refund after the submit-result deadline (A2) **27.8 min**.
 
@@ -115,8 +115,8 @@ About **15 min** end to end, measured per path:
   real dispute. The explorer shows it, so we say it.
 - Treasury transfers (forfeits, bond remainder) are plain transfers, not
   escrows: a trust assumption on the Board, and only for a Board-signed verdict.
-  Badge **PENDING** until the worker is deployed (#42), **REAL** with a tx hash
-  after.
+  Badge **PENDING** until the transfer has a tx hash, **REAL** with an explorer
+  link after.
 - Bid fees are **SIMULATED** (labelled ledger rows). Traffic is **SIMULATED**.
   Anything replayed in canned mode is **PRE-RECORDED**.
 - Awards, bonds and their settlement are **REAL** once a tx hash exists, with
