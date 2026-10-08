@@ -1,0 +1,89 @@
+<style>
+#tender-concept { --paper:light-dark(#fafaf8,#161916); --ink:light-dark(#202a23,#edf2ed); --line:light-dark(#d9dfd9,#39433b); --soft:light-dark(#edf2ec,#242e26); --brand:light-dark(#24573c,#a1d9b4); color:var(--ink); background:var(--paper); border:1px solid var(--line); border-radius:12px; font:14px/1.5 system-ui,sans-serif; overflow-wrap:anywhere; }
+#tender-concept * { box-sizing:border-box; }
+#tender-concept header { padding:20px 24px; border-bottom:1px solid var(--line); padding-right:110px; }
+#tender-concept h2 { font-size:24px; font-weight:500; margin:0 0 10px; }
+#tender-concept h3 { font-size:16px; font-weight:500; margin:0 0 12px; }
+#tender-concept p { margin:10px 0; }
+#tender-concept .tc-meta { font-size:12px; opacity:.8; }
+#tender-concept nav { display:flex; flex-wrap:wrap; gap:8px; padding:16px 24px; }
+#tender-concept button { font:inherit; color:var(--ink); background:var(--paper); border:1px solid var(--line); padding:9px 14px; border-radius:7px; }
+#tender-concept button[aria-pressed=true], #tender-concept .tc-primary { background:var(--brand); color:light-dark(#fff,#16231a); border-color:var(--brand); }
+#tender-concept .tc-layout { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,2.1fr); gap:24px; padding:8px 24px 24px; }
+#tender-concept aside { border-right:1px solid var(--line); padding-right:24px; }
+#tender-concept .tc-message { background:var(--soft); padding:14px; border-radius:8px; margin-bottom:16px; }
+#tender-concept .tc-badge { display:inline-block; font-size:11px; font-weight:500; border:1px solid var(--line); border-radius:4px; padding:2px 5px; }
+#tender-concept dl { display:grid; grid-template-columns:1fr 1.3fr; gap:10px; margin:16px 0; }
+#tender-concept dt { opacity:.8; } #tender-concept dd { margin:0; }
+#tender-concept .tc-agents { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+#tender-concept article { border:1px solid var(--line); padding:14px; border-radius:8px; }
+#tender-concept .tc-proof { border-top:1px solid var(--line); margin-top:18px; padding-top:14px; }
+#tender-concept .tc-total { font-size:24px; font-weight:500; }
+#tender-concept .tc-events { padding-left:20px; } #tender-concept .tc-events li { margin:8px 0; }
+#tender-concept [hidden] { display:none; }
+@media(max-width:720px) { #tender-concept .tc-layout { grid-template-columns:1fr; } #tender-concept aside { border-right:0; border-bottom:1px solid var(--line); padding:0 0 14px; } #tender-concept .tc-agents { grid-template-columns:1fr; } }
+</style>
+<div id="tender-concept">
+  <header><strong>Tender / Campaign workspace</strong><div class="tc-meta">UI CONCEPT · simulated campaign and payments</div></header>
+  <nav aria-label="Preview campaign stages">
+    <button type="button" data-stage="0" aria-pressed="true">Brief</button>
+    <button type="button" data-stage="1" aria-pressed="false">Tender &amp; bids</button>
+    <button type="button" data-stage="2" aria-pressed="false">Delivery &amp; proof</button>
+    <button type="button" data-stage="3" aria-pressed="false">Settlement</button>
+  </nav>
+  <div class="tc-layout">
+    <aside>
+      <h3>Your campaign agent</h3>
+      <div class="tc-message">“Run an ad campaign for my developer tool. Budget: €20 <span class="tc-badge">SIMULATED</span>. Reach developers. Pay only for verified purchases.”</div>
+      <p id="tc-agent-message" aria-live="polite">I’ve drafted the contract. Review the outcome and refund terms before I publish it.</p>
+      <div class="tc-proof"><span class="tc-meta">AGENT ACTIVITY</span><ol id="tc-events" class="tc-events"><li>Extracted audience and budget</li><li>Defined a completed checkout as the outcome</li><li>Drafted payment conditions</li></ol></div>
+    </aside>
+    <main>
+      <section data-panel="0">
+        <h2>Here’s the job I’ll tender</h2>
+        <dl><dt>Audience</dt><dd>Developers</dd><dt>Budget cap</dt><dd>€20 <span class="tc-badge">SIMULATED</span></dd><dt>Delivery</dt><dd>Publisher ad placements and attributed visits to the demo shop</dd><dt>Payment rule</dt><dd>Meet the accepted bid quote and ≥5 verified purchases per 1,000 impressions</dd><dt>Verification</dt><dd>Valid shop signature, publisher attribution, campaign window</dd><dt>Failure</dt><dd>Refund the publisher’s escrow</dd></dl>
+        <button type="button" class="tc-primary" data-next="1">Approve &amp; publish tender</button>
+      </section>
+      <section data-panel="1" hidden>
+        <h2>Three bids. One controlled trial.</h2>
+        <p class="tc-meta">Bids revealed after close · illustrative quotes per 1,000 impressions</p>
+        <div class="tc-agents"><article><h3>TechBlog</h3><p>Technical article placement</p><p>Promises 8 purchases</p><p>€6 <span class="tc-badge">SIMULATED</span></p></article><article><h3>CodePodcast</h3><p>Episode sponsor placement</p><p>Promises 6 purchases</p><p>€6 <span class="tc-badge">SIMULATED</span></p></article><article><h3>DevNewsletter</h3><p>Newsletter placement</p><p>Promises 12 purchases</p><p>€6 <span class="tc-badge">SIMULATED</span></p></article></div>
+        <p class="tc-proof">Allocate a small trial to all three. Their claims become measurable contract terms; the next allocation uses verified results.</p>
+        <p>Trial escrow total: €18 <span class="tc-badge">SIMULATED</span> · Unallocated: €2 <span class="tc-badge">SIMULATED</span></p>
+        <button type="button" class="tc-primary" data-next="2">Preview campaign delivery</button>
+      </section>
+      <section data-panel="2" hidden>
+        <h2>Traffic is arriving. Which agent delivers?</h2>
+        <p class="tc-meta">SIMULATED shop traffic · end-of-trial snapshot · 1,000 impressions each</p>
+        <div class="tc-agents"><article><h3>TechBlog</h3><p>Placement delivered</p><div class="tc-total">8 verified</div><p>Quote met · gate passed</p><details><summary>Inspect delivery evidence</summary><p>Sponsored placement → attributed session → signed checkout. Signature, attribution and window checks passed.</p></details></article><article><h3>CodePodcast</h3><p>Placement delivered</p><div class="tc-total">6 verified</div><p>Quote met · gate passed</p><details><summary>Inspect delivery evidence</summary><p>Episode placement → attributed session → signed checkout. Signature, attribution and window checks passed.</p></details></article><article><h3>DevNewsletter</h3><p>Traffic reported</p><div class="tc-total">0 verified</div><p>Quote missed · gate failed</p><details><summary>Inspect delivery evidence</summary><p>No qualifying signed checkouts. Click bursts are context; payment depends on verified outcomes.</p></details></article></div>
+        <div class="tc-proof">Verification complete. Two publishers satisfied their contracts; one did not.</div>
+        <p><button type="button" class="tc-primary" data-next="3">Preview payment resolution</button></p>
+      </section>
+      <section data-panel="3" hidden>
+        <h2>The failed delivery was refunded.</h2>
+        <div class="tc-agents"><article><h3>TechBlog</h3><div class="tc-total">€6 paid</div><span class="tc-badge">SIMULATED</span><p>8 verified purchases</p></article><article><h3>CodePodcast</h3><div class="tc-total">€6 paid</div><span class="tc-badge">SIMULATED</span><p>6 verified purchases</p></article><article><h3>DevNewsletter</h3><div class="tc-total">€6 refunded</div><span class="tc-badge">SIMULATED</span><p>0 verified purchases</p></article></div>
+        <p class="tc-proof">14 verified purchases · €12 spent <span class="tc-badge">SIMULATED</span> · €8 available <span class="tc-badge">SIMULATED</span></p>
+        <h3>Next campaign recommendation</h3><p>TechBlog has the lowest observed cost per verified purchase. Keep CodePodcast eligible; give DevNewsletter no budget. Recommendation only—no additional payment.</p>
+        <details><summary>Receipt and verification report</summary><p>Each publisher’s accepted quote, verified count, verdict and settlement reference belong here. A real preprod run would include confirmed explorer links; this concept performs no transactions.</p></details>
+      </section>
+    </main>
+  </div>
+</div>
+<script>
+(() => {
+ const root=document.getElementById('tender-concept');
+ const messages=['I’ve drafted the contract. Review the outcome and refund terms before I publish it.','Three valid bids received. I’m comparing promises through a bounded trial before recommending the next allocation.','The strongest promise produced zero verified purchases. The contract determines the payment decision.','Two contracts passed. The failing publisher’s refund is complete in this simulated preview. TechBlog delivered the best observed cost per purchase.'];
+ const events=[['Extracted audience and budget','Defined a completed checkout as the outcome','Drafted payment conditions'],['Published tender','Received three sealed bids','Revealed bids after close','Allocated three trial escrows'],['Publishers delivered placements','Attributed demo-shop sessions','Verified signed checkout events','Compared results with contract terms'],['Released two payments','Requested policy-authorized refund','Confirmed simulated refund','Prepared receipt and next allocation']];
+ function show(stage,save){
+   stage=Number(stage); if(!Number.isInteger(stage)||stage<0||stage>3) stage=0;
+   root.querySelectorAll('[data-panel]').forEach(p=>p.hidden=Number(p.dataset.panel)!==stage);
+   root.querySelectorAll('[data-stage]').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.stage)===stage)));
+   root.querySelector('#tc-agent-message').textContent=messages[stage];
+   root.querySelector('#tc-events').replaceChildren(...events[stage].map(t=>{const li=document.createElement('li');li.textContent=t;return li;}));
+   if(save&&window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{previewStage:stage},privateContent:null}).catch(()=>{});
+ }
+ root.addEventListener('click',e=>{const b=e.target.closest('button');if(b?.dataset.stage!==undefined)show(b.dataset.stage,true);else if(b?.dataset.next!==undefined)show(b.dataset.next,true);});
+ show(window.openai?.widgetState?.modelContent?.previewStage??0,false);
+ window.addEventListener('openai:set_globals',e=>{const stage=e.detail?.globals?.widgetState?.modelContent?.previewStage;if(stage!==undefined)show(stage,false);});
+})();
+</script>

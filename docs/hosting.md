@@ -2,15 +2,35 @@
 
 ## The whole production footprint
 
-One Vercel app. That's it. Masumi is hosted by the partner; the LLM is an API;
-the chain is Cardano preprod. Nothing of ours runs on a laptop or a VPS.
+Vercel for the product, Railway for the Masumi rails — see
+[ADR 0001](adr/0001-railway-for-masumi-rails-vercel-for-product.md). The organizers
+did not provide a hosted Payment Service, and the Payment Service and Python SDK
+agents need always-on processes, which Vercel functions can't provide. The LLM is
+an API; the chain is Cardano preprod. Nothing runs on a laptop.
 
 ```text
-Internet ──▶ Vercel URL (Next.js 16 Wrapper UI + Tender Board, server-side API routes)
-                 ├──▶ Masumi hosted preprod API (escrow + registry)
+Internet ──▶ Vercel URL (Next.js 16 Wrapper UI + Tender Board, harness, agent brains,
+                 │        verifier, server-side API routes)
+                 ├──▶ Railway: Masumi Payment Service + Postgres (ReadAndPay key only)
                  ├──▶ OpenAI (primary) / Groq / Gemini (LLM fallback)
                  └──▶ cardanoscan preprod (proof links, read-only)
+
+Buyers / registry ──▶ Railway: Python SDK seller agents (one service each)
+                          ├──▶ Railway Payment Service (payment requests, lock monitoring)
+                          └──▶ Vercel POST /api/agents/<name>/run (actual work)
 ```
+
+## Railway setup
+
+- Plan: Hobby ($5/month). Trial caps at 5 services; we need Payment Service +
+  Postgres + up to 6 seller agents.
+- Payment Service from the official Masumi Railway template (Payment Service +
+  Postgres). Env: `ENCRYPTION_KEY`, `ADMIN_KEY`, `BLOCKFROST_API_KEY_PREPROD`.
+  Public domain enabled; admin UI at `/admin`, Swagger at `/docs`.
+- Admin key lives only in Railway env vars. Vercel and agents get scoped
+  ReadAndPay, Preprod-only keys.
+- One Railway service per Python seller agent (`lib/agents/<name>`, `masumi run`),
+  each with its own public domain — that domain is what gets registered.
 
 ## Vercel setup (do before Oct 8)
 

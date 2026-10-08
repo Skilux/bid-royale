@@ -82,7 +82,7 @@ originality 10%, honest limitations 10%.
 |---|---|---|
 | Frontend + hosting | Next.js 16 (App Router), Tailwind, Vercel | `app/` already scaffolded (plain JS, no Tailwind yet), Vercel linked |
 | Agent runtime | OpenAI Agents SDK (primary) | Native to OpenAI; final call at kickoff once the credit form is known — fallbacks: Vercel AI SDK v7, raw OpenAI function calling |
-| Payment rail | Masumi hosted preprod (Cardano), tUSDM (availability on preprod unverified; fallback tADA with scaled amounts) — ONLY | Topic partner's rails; escrow + dispute primitives; hosted preprod access per win plan, no Docker/VPS needed; credit activation is a kickoff question |
+| Payment rail | Masumi preprod (Cardano), tUSDM (availability on preprod unverified; fallback tADA with scaled amounts) — ONLY | Topic partner's rails; escrow + dispute primitives; self-hosted official Payment Service + Python SDK seller agents on Railway, product on Vercel — see [ADR 0001](docs/adr/0001-railway-for-masumi-rails-vercel-for-product.md) |
 | Degrade path | Labelled simulated ledger (`SIMULATE_PAYMENTS`) | Demo never dies; the track rule requires labelling |
 | Models | OpenAI primary; Groq / Gemini keys as fallback | OpenAI credits per win plan, activation is a kickoff question; fallback keys pre-tested |
 | State | In-memory + seeded JSON | No DB |
