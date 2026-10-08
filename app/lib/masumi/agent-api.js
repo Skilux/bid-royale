@@ -79,8 +79,8 @@ export function startJob(name, request, { env = process.env, fetch, timeoutMs, s
   return guard(name, async () => {
     const body = await request.json().catch(() => null);
     const identifier = body?.identifier_from_purchaser;
-    if (typeof identifier !== "string" || identifier.length < 14 || identifier.length > 26) {
-      return fail(400, "identifier_from_purchaser must be a string of 14 to 26 characters");
+    if (typeof identifier !== "string" || !/^(?:[0-9a-fA-F]{2}){7,13}$/.test(identifier)) {
+      return fail(400, "identifier_from_purchaser must be a hex string of 14 to 26 characters");
     }
     const invalid = validateInput(name, body.input_data);
     if (invalid) return fail(400, invalid);

@@ -99,6 +99,8 @@ test("start_job rejects malformed bodies with 400 and never calls the node", asy
     "not json",
     {},
     { identifier_from_purchaser: "short", input_data: { impressions: 1000 } },
+    { identifier_from_purchaser: "not-a-hex-string-ok", input_data: { impressions: 1000 } },
+    { identifier_from_purchaser: "abcdef0123456789abc", input_data: { impressions: 1000 } },
     { identifier_from_purchaser: PURCHASER },
     { identifier_from_purchaser: PURCHASER, input_data: [] },
     { identifier_from_purchaser: PURCHASER, input_data: { impressions: "1000" } },
