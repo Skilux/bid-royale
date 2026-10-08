@@ -201,7 +201,28 @@ Consumer → TechBlog, minimum deadlines + 2 min margin. Times are UTC.
 | Lock requested (`/payment` + `/purchase`) | 20:31:45 | 20:32:28 |
 | `FundsLocked` (seen by seller) | 20:34:57 (**3.2 min**) | 20:35:11 (**2.7 min**) |
 | Result submitted → `ResultSubmitted` | — | 20:35:19 → 20:36:42 (**1.4 min**) |
-| Terminal | `RefundWithdrawn` 20:59:36 (**27.8 min** after lock request) | pending |
+| Terminal | `RefundWithdrawn` 20:59:36 (**27.8 min** after lock request) | `Withdrawn` 21:17:57 (**45.5 min** after lock request) |
+
+### Fast (cooperative) paths, measured
+
+Three more 5 tADA escrows, locks requested together at 21:13:40 UTC; each step
+fired as soon as the chain allowed (driver polls every 15 s). Minutes are from
+the lock request.
+
+| Path | Demo case | Steps (who) | Terminal | vs slow path |
+|---|---|---|---|---|
+| Bond return | Pass: bond back | buyer `request-refund` (TechBlog) → seller `authorize-refund` (Board) → buyer collects | `RefundWithdrawn` **4.7 min** | — |
+| Cooperative refund | Under gate: award back | buyer `request-refund` (Consumer) → seller `authorize-refund` (TechBlog) → buyer collects | `RefundWithdrawn` **5.9 min** | 27.8 min (A2) |
+| Early release | Pass: supplier paid | seller `submit-result` → buyer `request-refund` (`Disputed`) → buyer `cancel-refund-request` (`WithdrawAuthorized`) → seller collects | `Withdrawn` **13.1 min** | 45.5 min |
+
+- Locks reached `FundsLocked` in **1.6 min**; the two award locks shared one transaction.
+- Every call was accepted on the first attempt; no cooldown rejections (cooldown 60 s).
+- Early release: ~7.4 min of the 13.1 are the buyer's wait between `cancel-refund-request`
+  (3.9 min) and `WithdrawAuthorized` (11.3 min), the request validity window + cooldown
+  #20 derived. Everything else is ~1–1.5 min per transaction.
+- On-chain, the early release passes through `Disputed`; the buyer then authorizes the
+  withdrawal. Legitimate V2 flow, but visible on the explorer: say so in the demo.
+- Driver: `bin/fast-paths.mjs` in the orchestration state dir; raw log `logs/fast-paths.jsonl`.
 
 - Agent registration (`POST /registry` → `RegistrationConfirmed`): **6.5 min**.
 - A2 works: the buyer's money came back with no seller signature and no refund
