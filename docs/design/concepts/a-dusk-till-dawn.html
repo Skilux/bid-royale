@@ -1,0 +1,816 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Concept A · Dusk Till Dawn · Ad Slot Auction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;1,700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --night:#0b0908; --night-2:#151110; --panel:rgba(18,13,12,.74); --panel-solid:#151110;
+  --cream:#eee6d8; --muted:rgba(238,230,216,.66); --faint:rgba(238,230,216,.38); --ghost:rgba(238,230,216,.14);
+  --line:rgba(242,228,201,.13); --line-strong:rgba(242,228,201,.28);
+  --blood:#cf352e; --ember:#ed4b43; --wine:#24100f; --amber:#e7a84b; --dawn:#ffd9a0; --verified:#72c99a;
+  --ease:cubic-bezier(.22,1,.36,1); --ease-io:cubic-bezier(.65,0,.35,1);
+  --d-fast:180ms; --d-base:420ms; --d-slow:900ms;
+  --f-display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --f-serif:"Instrument Serif",Georgia,"Times New Roman",serif;
+  --f-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --dawn-p:0;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--night);color:var(--cream);font:13px/1.45 var(--f-mono);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:inherit}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- frame + sky ---------- */
+.frame{position:relative;width:min(1280px,100%);height:800px;margin:0 auto;overflow:hidden;isolation:isolate;border-bottom:1px solid var(--line)}
+.sky,.sky>*{position:absolute;inset:0;pointer-events:none}
+.sky{z-index:-1;background:var(--night)}
+.sky-night{background:radial-gradient(60% 55% at 78% 18%,rgba(207,53,46,.30),transparent 70%),radial-gradient(90% 60% at 50% 110%,rgba(89,21,19,.55),transparent 70%),linear-gradient(#0b0908,#120c0b)}
+.sky-dawn{opacity:var(--dawn-p);background:radial-gradient(70% 60% at 50% 112%,rgba(255,217,160,.42),rgba(231,168,75,.22) 40%,transparent 72%),linear-gradient(180deg,#0b0908 0%,#1d0f0c 45%,#4a1d12 78%,#8a4a22 100%)}
+.moon{inset:auto;width:420px;height:420px;right:-60px;top:-120px;border-radius:50%;
+  background:radial-gradient(circle at 38% 36%,#ff8a5c 0%,#cf352e 38%,#591513 70%,transparent 72%);
+  filter:blur(.4px);box-shadow:0 0 160px 40px rgba(207,53,46,.22);opacity:.5}
+.sun{inset:auto;left:50%;bottom:0;width:560px;height:560px;margin-left:-280px;border-radius:50%;
+  background:radial-gradient(circle,#fff6ea 0%,#ffd9a0 22%,#f39a4c 46%,rgba(207,53,46,.0) 70%);opacity:.0;transform:translateY(80%)}
+.horizon{inset:auto 0 0 0;height:180px;background:linear-gradient(transparent,rgba(11,9,8,.85))}
+.grain{opacity:.16;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.vignette{background:radial-gradient(120% 90% at 50% 40%,transparent 55%,rgba(0,0,0,.65))}
+.redflash{opacity:0;background:radial-gradient(100% 80% at 70% 60%,rgba(237,75,67,.0) 30%,rgba(237,75,67,.38))}
+
+/* ---------- top bar ---------- */
+.top{height:52px;display:flex;align-items:center;gap:18px;padding:0 24px;border-bottom:1px solid var(--line);background:linear-gradient(rgba(11,9,8,.7),rgba(11,9,8,.25));backdrop-filter:blur(6px)}
+.brand{display:flex;align-items:baseline;gap:6px;white-space:nowrap}
+.brand b{font:800 22px/1 var(--f-display);letter-spacing:.04em;text-transform:uppercase}
+.brand em{font:italic 22px/1 var(--f-serif);color:var(--ember)}
+.meta{color:var(--muted);font-size:11px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta b{color:var(--cream);font-weight:600}
+.spacer{flex:1}
+.ctrl{display:flex;gap:8px;align-items:center}
+.btn{border:1px solid var(--line-strong);background:rgba(238,230,216,.04);padding:6px 12px;border-radius:999px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;transition:background var(--d-fast),border-color var(--d-fast)}
+.btn:hover{background:rgba(238,230,216,.1);border-color:var(--cream)}
+.btn.primary{background:var(--cream);color:var(--night);border-color:var(--cream)}
+.clock{font:600 12px var(--f-mono);color:var(--muted);min-width:64px;text-align:right}
+
+.progress{position:relative;height:3px;background:var(--ghost)}
+.progress i{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(90deg,var(--blood),var(--ember) 40%,var(--amber) 80%,var(--dawn))}
+.progress .lbl{position:absolute;top:6px;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint)}
+
+/* ---------- layout ---------- */
+.grid{display:grid;grid-template-columns:168px minmax(0,1fr) 262px;gap:20px;padding:18px 24px 0;height:calc(800px - 55px)}
+
+/* rail */
+.rail{position:relative;padding-top:4px}
+.rail ol{list-style:none;margin:0;padding:0 0 0 18px;position:relative}
+.rail ol::before{content:"";position:absolute;left:4px;top:8px;bottom:8px;width:1px;background:var(--line-strong)}
+.rail .fill{position:absolute;left:4px;top:8px;width:1px;height:0;background:linear-gradient(var(--ember),var(--amber));box-shadow:0 0 8px var(--ember)}
+.rail li{position:relative;margin:0 0 4px}
+.rail button{all:unset;cursor:pointer;display:block;padding:8px 6px;border-radius:6px;width:100%;transition:background var(--d-fast)}
+.rail button:hover{background:rgba(238,230,216,.05)}
+.rail li::before{content:"";position:absolute;left:-18px;top:14px;width:9px;height:9px;border-radius:50%;background:var(--night);border:1px solid var(--line-strong);transition:all var(--d-base) var(--ease)}
+.rail li.done::before{background:var(--ember);border-color:var(--ember)}
+.rail li.on::before{background:var(--dawn);border-color:var(--dawn);box-shadow:0 0 0 4px rgba(255,217,160,.15),0 0 14px var(--amber)}
+.rail .n{display:block;font-size:10px;color:var(--faint);letter-spacing:.14em}
+.rail .t{display:block;font:600 17px/1.1 var(--f-display);letter-spacing:.03em;text-transform:uppercase;color:var(--muted);transition:color var(--d-base)}
+.rail li.on .t{color:var(--cream)}
+.rail .foot{position:absolute;bottom:34px;left:0;right:0;font-size:10px;color:var(--faint);line-height:1.6}
+.rail .foot b{color:var(--muted);font-weight:500}
+
+/* stage */
+.stage{position:relative;display:flex;flex-direction:column;gap:12px;min-width:0}
+.head{height:80px}
+.kicker{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--ember)}
+.head h1{margin:2px 0 2px;font:800 44px/1 var(--f-display);text-transform:uppercase;letter-spacing:.01em;transition:opacity 220ms var(--ease),transform 420ms var(--ease),filter 220ms}
+.head h1 em{font:italic 400 46px/1 var(--f-serif);text-transform:none;color:var(--dawn);letter-spacing:0;padding:0 .08em}
+.head p{margin:0;color:var(--muted);font-size:12px;transition:opacity 220ms}
+.head.swap h1{opacity:0;transform:translateY(10px);filter:blur(6px)}
+.head.swap p{opacity:0}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;backdrop-filter:blur(10px) saturate(1.1);-webkit-backdrop-filter:blur(10px)}
+.label{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+
+.row1{display:grid;grid-template-columns:1.35fr 1fr;gap:12px;height:124px}
+.brief{padding:12px 16px;display:flex;flex-direction:column;gap:6px}
+.quote{font:italic 21px/1.12 var(--f-serif);color:var(--cream);min-height:47px}
+.caret{display:inline-block;width:2px;height:20px;background:var(--ember);vertical-align:-3px;margin-left:2px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.terms{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:10px;letter-spacing:.06em;padding:3px 8px;border:1px solid var(--line-strong);border-radius:999px;color:var(--muted);opacity:0;transform:translateY(6px);transition:all var(--d-base) var(--ease)}
+.chip.on{opacity:1;transform:none}
+.chip b{color:var(--cream);font-weight:600}
+.chip.pub{border-color:rgba(255,217,160,.5);color:var(--dawn)}
+
+.wallet{padding:12px 16px;display:grid;grid-template-columns:1fr auto;grid-template-rows:auto 1fr auto;gap:2px 12px;position:relative;transition:box-shadow var(--d-slow) var(--ease),border-color var(--d-slow)}
+.wallet.glow{border-color:rgba(255,217,160,.55);box-shadow:0 0 0 1px rgba(255,217,160,.25),0 0 40px rgba(231,168,75,.25)}
+.wallet .big{font:700 40px/1 var(--f-display);letter-spacing:.01em}
+.wallet .big small{font:500 13px var(--f-mono);color:var(--muted);margin-left:6px}
+.wallet .side{grid-row:1/4;grid-column:2;display:flex;flex-direction:column;justify-content:space-between;text-align:right;font-size:11px;color:var(--muted)}
+.wallet .side b{display:block;font:700 20px/1 var(--f-display);color:var(--cream)}
+.wallet .sub{font-size:10.5px;color:var(--muted);display:flex;gap:8px;align-items:center}
+
+.budget{height:34px;display:flex;align-items:center;gap:12px}
+.bar{position:relative;flex:1;height:10px;border-radius:999px;background:var(--ghost);overflow:hidden;display:flex}
+.seg{height:100%;width:0;transition:width 600ms var(--ease);border-right:2px solid var(--night)}
+.seg.s0{background:var(--ember)} .seg.s1{background:#e8743f} .seg.s2{background:var(--amber)}
+.budget .val{min-width:150px;text-align:right;font-size:11px;color:var(--muted)}
+.budget .val b{color:var(--cream)}
+
+.feed{height:24px;display:flex;align-items:center;gap:10px;padding:0 12px;border:1px dashed var(--line-strong);border-radius:999px;font-size:10.5px;color:var(--muted);opacity:.28;transition:opacity var(--d-base)}
+.feed.on{opacity:1}
+.live{width:7px;height:7px;border-radius:50%;background:var(--verified);box-shadow:0 0 0 0 rgba(114,201,154,.6);animation:ping 1.6s infinite}
+@keyframes ping{70%{box-shadow:0 0 0 7px rgba(114,201,154,0)}100%{box-shadow:0 0 0 0 rgba(114,201,154,0)}}
+
+/* lanes */
+.lanes{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;flex:1;min-height:0;padding-bottom:16px}
+.lane{position:relative;overflow:hidden;display:flex;flex-direction:column;padding:10px 12px;gap:6px;opacity:0;transform:translateY(24px) scale(.98);
+  transition:opacity 600ms var(--ease),transform 900ms var(--ease),border-color 600ms,background 600ms,filter 600ms}
+.lane.arrived{opacity:1;transform:translateX(calc(var(--d,0) * (100% + 12px)))}
+.lane.lost{opacity:.42;filter:saturate(.3)}
+.lane .hd{display:flex;align-items:center;gap:8px}
+.mono{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:700 12px var(--f-display);letter-spacing:.04em;border:1px solid var(--line-strong);background:rgba(238,230,216,.04);flex:none}
+.lane .nm{font:700 17px/1 var(--f-display);text-transform:uppercase;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lane .ps{font-size:9.5px;color:var(--faint);letter-spacing:.06em}
+.rank{margin-left:auto;font:800 22px/1 var(--f-display);color:var(--dawn);opacity:0;transform:scale(.6);transition:all var(--d-base) var(--ease)}
+.lane.ranked .rank{opacity:1;transform:none}
+.sec{border-top:1px solid var(--line);padding-top:7px;transition:opacity var(--d-base)}
+.sec .label{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+
+.seal{position:relative;height:54px}
+.seal .hash,.seal .plain{position:absolute;inset:0;transition:opacity 500ms var(--ease),transform 600ms var(--ease),filter 500ms}
+.hash{font:500 10px/13px var(--f-mono);color:var(--faint);word-break:break-all;letter-spacing:.06em}
+.hash .k{color:var(--ember)}
+.plain{opacity:0;transform:translateY(8px);filter:blur(4px);font-size:11px;color:var(--muted)}
+.plain b{color:var(--cream);font-weight:600}
+.plain .pps{font:700 18px/1 var(--f-display);color:var(--cream);margin-top:2px}
+.plain .pps small{font:400 10px var(--f-mono);color:var(--faint);margin-left:4px}
+.lane.revealed .hash{opacity:0;transform:translateY(-8px);filter:blur(4px)}
+.lane.revealed .plain{opacity:1;transform:none;filter:none}
+.match{color:var(--verified);font-size:9.5px}
+
+.money{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.lock{padding:5px 7px;border-radius:7px;border:1px solid var(--line);background:rgba(238,230,216,.03);transition:all 500ms var(--ease)}
+.lock .v{font:700 16px/1.1 var(--f-display)}
+.lock .l{font-size:9px;color:var(--faint);letter-spacing:.1em;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center;gap:4px}
+.lock .tx{display:block;font-size:9.5px;color:var(--faint);text-decoration:none;opacity:0;transition:opacity 400ms}
+.lock.on{border-color:rgba(231,168,75,.55);background:rgba(231,168,75,.08);box-shadow:inset 0 0 0 1px rgba(231,168,75,.1)}
+.lock.on .tx{opacity:1}
+.lock.on .tx:hover{color:var(--cream)}
+.lock.flash{animation:lockflash 700ms var(--ease)}
+@keyframes lockflash{0%{box-shadow:0 0 0 0 rgba(255,217,160,.7)}100%{box-shadow:0 0 0 10px rgba(255,217,160,0)}}
+
+.deliv .imp{display:flex;justify-content:space-between;font-size:10px;color:var(--muted)}
+.thin{height:3px;border-radius:2px;background:var(--ghost);margin:3px 0 6px;overflow:hidden}
+.thin i{display:block;height:100%;width:0;background:var(--cream);opacity:.6}
+.su{display:flex;align-items:baseline;gap:6px}
+.su .c{font:800 34px/1 var(--f-display);color:var(--verified);transition:color var(--d-base)}
+.su .p{font-size:10px;color:var(--faint)}
+.lane.zero .su .c{color:var(--faint)}
+.gauge{position:relative;height:6px;border-radius:3px;background:var(--ghost);margin:7px 0 14px}
+.gauge i{position:absolute;inset:0 auto 0 0;border-radius:3px;background:var(--verified);width:0;transition:width 300ms var(--ease)}
+.gauge .tick{position:absolute;top:-4px;width:1px;height:14px;background:var(--cream)}
+.gauge .tick.gate{background:var(--ember)}
+.gauge .tick span{position:absolute;top:15px;left:-10px;font-size:8.5px;color:var(--faint);white-space:nowrap}
+.lane.pulse-warn{animation:warn 1.4s var(--ease-io) infinite}
+@keyframes warn{50%{border-color:rgba(237,75,67,.5);box-shadow:0 0 22px rgba(237,75,67,.18)}}
+
+.verdict{min-height:58px}
+.vchip{display:inline-flex;align-items:center;gap:6px;font:700 13px/1 var(--f-display);text-transform:uppercase;letter-spacing:.08em;padding:5px 9px;border-radius:6px;opacity:0;transform:scale(1.5) rotate(-4deg);transition:all 380ms cubic-bezier(.3,1.6,.5,1)}
+.vchip::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.lane.verdicted .vchip{opacity:1;transform:none}
+.v-pass{color:var(--verified);background:rgba(114,201,154,.12);border:1px solid rgba(114,201,154,.45)}
+.v-short{color:var(--amber);background:rgba(231,168,75,.12);border:1px solid rgba(231,168,75,.45)}
+.v-under{color:#fff3ee;background:var(--ember);border:1px solid var(--ember);box-shadow:0 0 24px rgba(237,75,67,.55)}
+.v-lost{color:var(--muted);background:rgba(238,230,216,.06);border:1px solid var(--line-strong)}
+.vline{font-size:10px;color:var(--muted);margin-top:5px;opacity:0;transition:opacity 500ms 250ms}
+.vline b{color:var(--cream);font-weight:600}
+.lane.verdicted .vline{opacity:1}
+.lane.under{border-color:rgba(237,75,67,.75);background:linear-gradient(rgba(89,21,19,.55),rgba(18,13,12,.85));animation:shake 520ms var(--ease)}
+@keyframes shake{20%{transform:translateX(calc(var(--d,0) * (100% + 12px) - 6px))}40%{transform:translateX(calc(var(--d,0) * (100% + 12px) + 5px))}60%{transform:translateX(calc(var(--d,0) * (100% + 12px) - 3px))}}
+.crack{position:absolute;inset:0;pointer-events:none;opacity:0}
+.crack path{fill:none;stroke:var(--ember);stroke-width:1.4;stroke-dasharray:420;stroke-dashoffset:420;transition:stroke-dashoffset 700ms var(--ease)}
+.lane.under .crack{opacity:1}
+.lane.under .crack path{stroke-dashoffset:0}
+.stamp{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%) rotate(-12deg) scale(1.8);opacity:0;pointer-events:none;
+  font:800 22px/1 var(--f-display);letter-spacing:.1em;text-transform:uppercase;padding:6px 10px;border:2px solid currentColor;border-radius:6px;white-space:nowrap;transition:all 360ms cubic-bezier(.3,1.5,.5,1)}
+.stamp.lostst{color:var(--muted)}
+.stamp.underst{color:var(--ember);background:rgba(11,9,8,.7)}
+.lane.lost .stamp.lostst,.lane.under .stamp.underst{opacity:1;transform:translate(-50%,-50%) rotate(-12deg) scale(1)}
+
+/* badges */
+.b{display:inline-flex;align-items:center;gap:4px;font:600 8.5px/1 var(--f-mono);letter-spacing:.12em;padding:3px 5px;border-radius:4px;white-space:nowrap;text-transform:uppercase;vertical-align:middle}
+.b::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor}
+.b-real{color:var(--verified);border:1px solid rgba(114,201,154,.5);background:rgba(114,201,154,.08)}
+.b-sim{color:var(--amber);border:1px dashed rgba(231,168,75,.6)}
+.b-pre{color:var(--cream);border:1px solid var(--line-strong);background:rgba(238,230,216,.06)}
+.b-pre::before{border-radius:1px}
+
+/* ledger */
+.ledger{display:flex;flex-direction:column;min-height:0;padding:12px 0 16px}
+.ledger .card{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.ledger h3{margin:0;padding:12px 14px 10px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;font:700 15px/1 var(--f-display);text-transform:uppercase;letter-spacing:.06em}
+.ledger ol{list-style:none;margin:0;padding:6px 0;overflow:hidden;flex:1;mask-image:linear-gradient(#000 75%,transparent)}
+.ledger li{padding:6px 14px;font-size:10.5px;color:var(--muted);border-bottom:1px solid rgba(242,228,201,.05);display:grid;grid-template-columns:38px 1fr;gap:6px;animation:in 500ms var(--ease)}
+.ledger li .ts{color:var(--faint)}
+.ledger li .tx2{color:var(--cream)}
+.ledger li .tx2 a{color:var(--faint);text-decoration:none}
+.ledger li.hot{background:linear-gradient(90deg,rgba(237,75,67,.16),transparent)}
+.ledger li.good{background:linear-gradient(90deg,rgba(114,201,154,.1),transparent)}
+@keyframes in{from{opacity:0;transform:translateY(-6px);background:rgba(255,217,160,.12)}}
+.legend{padding:10px 14px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:6px}
+
+/* fx */
+.fx{position:absolute;inset:0;pointer-events:none;z-index:5}
+.dot{position:absolute;left:0;top:0;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:var(--verified);box-shadow:0 0 10px var(--verified);opacity:0}
+.ember{position:absolute;left:0;top:0;width:9px;height:9px;margin:-4.5px 0 0 -4.5px;border-radius:50%;background:radial-gradient(#fff6ea,var(--amber) 45%,var(--ember));box-shadow:0 0 14px var(--amber),0 0 30px rgba(237,75,67,.6);opacity:0}
+.pop{position:absolute;left:0;top:0;font:800 22px/1 var(--f-display);color:var(--dawn);text-shadow:0 0 18px rgba(231,168,75,.7);opacity:0;white-space:nowrap}
+
+/* receipt */
+.receipt{position:absolute;left:0;right:0;top:92px;bottom:16px;z-index:6;display:grid;grid-template-columns:1.25fr 1fr 0.9fr;gap:0;padding:0;
+  background:linear-gradient(160deg,rgba(30,19,16,.97),rgba(16,11,10,.98));backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,217,160,.35);border-radius:14px;
+  box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,217,160,.08),0 -10px 120px rgba(231,168,75,.18);
+  opacity:0;transform:translateY(40px) scale(.98);pointer-events:none;transition:opacity 700ms var(--ease),transform 900ms var(--ease);overflow:hidden}
+.receipt.show{opacity:1;transform:none;pointer-events:auto}
+.receipt>div{padding:20px 22px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.receipt>div:last-child{border-right:0}
+.receipt h4{margin:0;font:700 14px/1 var(--f-display);text-transform:uppercase;letter-spacing:.14em;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
+.net{font:800 76px/.9 var(--f-display);letter-spacing:-.01em;color:var(--cream)}
+.net small{font:500 16px var(--f-mono);color:var(--muted);margin-left:4px;letter-spacing:0}
+.per{font:italic 24px/1.1 var(--f-serif);color:var(--dawn)}
+.brk{margin:4px 0 0;padding:0;list-style:none;font-size:11px;color:var(--muted)}
+.brk li{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dashed var(--line)}
+.brk li b{color:var(--cream);font-weight:600}
+.brk li.tot b{color:var(--dawn)}
+.lb{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
+.lb li{display:grid;grid-template-columns:96px 1fr 52px;gap:8px;align-items:center;font-size:11px}
+.lb .nm2{font:700 14px/1 var(--f-display);text-transform:uppercase;letter-spacing:.04em}
+.lb .track{position:relative;height:8px;background:var(--ghost);border-radius:4px}
+.lb .track::after{content:"";position:absolute;left:30%;top:-3px;bottom:-3px;width:1px;background:var(--line-strong)}
+.lb .track i{position:absolute;top:0;bottom:0;border-radius:4px;width:0;transition:width 900ms var(--ease)}
+.lb .pos i{left:30%;background:var(--verified)}
+.lb .neg i{right:70%;background:var(--ember)}
+.lb .v2{text-align:right;font-weight:600}
+.lb .pos .v2{color:var(--verified)} .lb .neg .v2{color:var(--ember)}
+.r2{display:flex;flex-direction:column;gap:9px}
+.r2 .r{display:grid;grid-template-columns:96px 1fr 38px;gap:8px;align-items:center;font-size:11px}
+.r2 .track{height:8px;border-radius:4px;background:var(--ghost);overflow:hidden}
+.r2 .track i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--amber),var(--dawn));transition:width 900ms var(--ease)}
+.tag{margin-top:auto;font:italic 26px/1.1 var(--f-serif);color:var(--cream)}
+.tag em{color:var(--dawn)}
+.fine{font-size:10px;color:var(--faint);line-height:1.5}
+.receipt .d1{transition-delay:.1s} .receipt .d2{transition-delay:.25s} .receipt .d3{transition-delay:.4s} .receipt .d4{transition-delay:.55s}
+
+/* ---------- tokens strip ---------- */
+.tokens{max-width:1280px;margin:0 auto;padding:48px 24px 80px;display:grid;grid-template-columns:repeat(12,1fr);gap:24px}
+.tokens h2{grid-column:1/-1;margin:0;font:800 40px/1 var(--f-display);text-transform:uppercase}
+.tokens h2 em{font:italic 400 42px var(--f-serif);text-transform:none;color:var(--dawn)}
+.tokens .intro{grid-column:1/-1;margin:-8px 0 0;color:var(--muted);max-width:760px}
+.tk{grid-column:span 6;border:1px solid var(--line);border-radius:12px;padding:18px;background:var(--night-2)}
+.tk.w12{grid-column:1/-1}
+.tk h3{margin:0 0 12px;font:700 16px/1 var(--f-display);text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+.sw{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.sw div{font-size:10px;color:var(--muted)}
+.sw i{display:block;height:56px;border-radius:8px;margin-bottom:6px;border:1px solid var(--line)}
+.sw b{display:block;color:var(--cream);font-weight:600}
+.spec{display:flex;flex-direction:column;gap:12px}
+.spec .s1{font:800 48px/1 var(--f-display);text-transform:uppercase}
+.spec .s2{font:italic 34px/1 var(--f-serif);color:var(--dawn)}
+.spec .s3{font:500 13px var(--f-mono);color:var(--muted)}
+.spec .cap{font-size:10px;color:var(--faint);letter-spacing:.1em;text-transform:uppercase}
+.mot{width:100%;border-collapse:collapse;font-size:11px}
+.mot td{padding:7px 0;border-bottom:1px solid var(--line);color:var(--muted)}
+.mot td:first-child{color:var(--cream);width:30%}
+.chips{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.chips .vchip{opacity:1;transform:none}
+.principles{margin:0;padding-left:18px;color:var(--muted);columns:2;column-gap:40px}
+.principles li{margin-bottom:8px;break-inside:avoid}
+.principles b{color:var(--cream)}
+
+/* ---------- narrow ---------- */
+@media (max-width:980px){
+  .frame{height:auto}
+  .grid{grid-template-columns:1fr;height:auto}
+  .rail ol{display:flex;gap:4px;padding:0;overflow-x:auto}
+  .rail ol::before,.rail .fill,.rail li::before,.rail .foot{display:none}
+  .rail .t{font-size:13px}
+  .row1{grid-template-columns:1fr;height:auto}
+  .lanes{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .lane.arrived{transform:none}
+  .receipt{position:relative;top:0;grid-template-columns:1fr}
+  .ledger{height:360px}
+  .tk{grid-column:1/-1}
+  .sw{grid-template-columns:repeat(3,1fr)}
+  .principles{columns:1}
+  .meta{display:none}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}}
+</style>
+</head>
+<body>
+<div class="frame" id="frame">
+  <div class="sky" aria-hidden="true">
+    <div class="sky-night"></div><div class="sky-dawn"></div>
+    <div class="moon" id="moon"></div><div class="sun" id="sun"></div>
+    <div class="horizon"></div><div class="vignette"></div><div class="redflash" id="redflash"></div><div class="grain"></div>
+  </div>
+
+  <header class="top">
+    <div class="brand"><b>Ad Slot</b><em>auction</em></div>
+    <div class="meta">Tender <b>T-0001</b> · NeoRack · Masumi escrow on Cardano preprod · tUSDM</div>
+    <div class="spacer"></div>
+    <div class="clock num" id="clock">00:00</div>
+    <div class="ctrl">
+      <button class="btn primary" id="play">Pause</button>
+      <button class="btn" id="replay">Replay</button>
+    </div>
+  </header>
+  <div class="progress"><i id="bar"></i></div>
+
+  <main class="grid">
+    <nav class="rail" aria-label="Scenes">
+      <div class="fill" id="railfill"></div>
+      <ol id="rail"></ol>
+      <div class="foot">Run time <b>&lt; 30 s</b><br>Escrows <b>6 REAL · 4 SIMULATED</b><br>Verifier <b>deterministic</b></div>
+    </nav>
+
+    <section class="stage" id="stage">
+      <div class="head" id="head">
+        <div class="kicker" id="kicker">01 · Brief</div>
+        <h1 id="title"></h1>
+        <p id="sub"></p>
+      </div>
+
+      <div class="row1">
+        <div class="card brief">
+          <div class="label" style="display:flex;justify-content:space-between;align-items:center"><span>User NeoRack · GPU neocloud</span><span class="chip pub" id="c4">Tender published</span></div>
+          <div class="quote"><span id="quote"></span><span class="caret" id="caret"></span></div>
+          <div class="terms">
+            <span class="chip" id="c1">Gate <b>5</b> signups / 1,000</span>
+            <span class="chip" id="c2">Bond <b>25%</b> of award</span>
+            <span class="chip" id="c3">Bid fee <b>0.2</b></span>
+          </div>
+        </div>
+        <div class="card wallet" id="wallet">
+          <div class="label">NeoRack Consumer · net</div>
+          <div class="big num" id="wnet">0.000<small>tUSDM</small></div>
+          <div class="sub"><span id="wesc">In escrow 0</span><span class="b b-real">REAL</span></div>
+          <div class="side">
+            <div>Verified signups<b class="num" id="wsu">0</b></div>
+            <div>Per signup<b class="num" id="wpp">—</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="budget">
+        <span class="label">Budget</span>
+        <div class="bar"><div class="seg s0" id="g0"></div><div class="seg s1" id="g1"></div><div class="seg s2" id="g2"></div></div>
+        <span class="val num" id="bval"><b>0</b> / 20 tUSDM</span>
+      </div>
+
+      <div class="feed" id="feed"><span class="live"></span><span>NeoRack signup feed · events signed by shop key</span><span class="b b-sim">SIMULATED</span><span class="spacer"></span><span class="num" id="fcount">0 events</span></div>
+
+      <div class="lanes" id="lanes"></div>
+
+      <div class="receipt" id="receipt">
+        <div>
+          <h4>Receipt <span class="b b-real">REAL settlement</span></h4>
+          <div class="net num" id="rnet">0<small>tUSDM</small></div>
+          <div class="per">for 14 verified signups, about <span id="rper">0.78</span> each</div>
+          <ul class="brk">
+            <li><span>Awards escrowed</span><b class="num">−20.000</b></li>
+            <li><span>Under-gate refund, DevNewsletter</span><b class="num">+7.000</b></li>
+            <li><span>Forfeits, 1.75 + 0.375</span><b class="num">+2.125</b></li>
+            <li class="tot"><span>Consumer net</span><b class="num">−10.875</b></li>
+          </ul>
+          <div class="fine">Receipt hash <span id="rhash"></span> · signed by Tender Board</div>
+        </div>
+        <div>
+          <h4>ROI leaderboard</h4>
+          <ul class="lb" id="lb"></ul>
+          <div class="fine">Bid fees 4 × 0.2 kept by the Tender Board <span class="b b-sim">SIMULATED</span></div>
+        </div>
+        <div>
+          <h4>Round 2 <span class="b b-sim">Illustrative</span></h4>
+          <div class="r2" id="r2"></div>
+          <div class="fine">Shown, not executed. No chain operations.</div>
+          <div class="tag">Don't pay for impressions.<br><em>Pay for outcomes.</em></div>
+        </div>
+      </div>
+
+      <div class="fx" id="fx"></div>
+    </section>
+
+    <aside class="ledger">
+      <div class="card">
+        <h3>Event ledger <span class="b b-pre" title="Concept: the live build shows LIVE or PRE-RECORDED here">PRE-RECORDED</span></h3>
+        <ol id="log"></ol>
+        <div class="legend"><span class="b b-real">REAL</span><span class="b b-sim">SIMULATED</span><span class="b b-pre">PRE-RECORDED</span></div>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<section class="tokens">
+  <h2>Direction A · Dusk <em>till</em> dawn</h2>
+  <p class="intro">The auction runs from dusk to dawn, like the hackathon. The sky is the progress bar: a blood moon at the brief, sunrise at the receipt. One board, four lanes, every card changes state in place. Every tUSDM movement is visible as light moving from payer to payee.</p>
+
+  <div class="tk w12">
+    <h3>Palette · one family, 3 semantic accents</h3>
+    <div class="sw">
+      <div><i style="background:#0b0908"></i><b>Night #0b0908</b>Background</div>
+      <div><i style="background:#151110"></i><b>Night-2 #151110</b>Panels</div>
+      <div><i style="background:#eee6d8"></i><b>Cream #eee6d8</b>Text, primary</div>
+      <div><i style="background:#cf352e"></i><b>Blood #cf352e</b>Brand, dusk</div>
+      <div><i style="background:#ed4b43"></i><b>Ember #ed4b43</b>Under gate, forfeit</div>
+      <div><i style="background:#e7a84b"></i><b>Amber #e7a84b</b>Escrowed, Short of promise</div>
+      <div><i style="background:#ffd9a0"></i><b>Dawn #ffd9a0</b>Highlight, receipt</div>
+      <div><i style="background:#72c99a"></i><b>Verified #72c99a</b>Signups, Pass, REAL</div>
+      <div><i style="background:rgba(238,230,216,.66)"></i><b>Muted 66%</b>Secondary text</div>
+      <div><i style="background:rgba(242,228,201,.13)"></i><b>Line 13%</b>Hairlines</div>
+      <div><i style="background:linear-gradient(90deg,#cf352e,#ed4b43,#e7a84b,#ffd9a0)"></i><b>Dusk→dawn</b>Progress</div>
+      <div><i style="background:radial-gradient(circle,#fff6ea,#e7a84b 45%,#ed4b43)"></i><b>Ember particle</b>Money in motion</div>
+    </div>
+  </div>
+
+  <div class="tk">
+    <h3>Type · 3 voices</h3>
+    <div class="spec">
+      <div><div class="cap">Display · Barlow Condensed 800, uppercase</div><div class="s1">Four sealed bids</div></div>
+      <div><div class="cap">Accent · Instrument Serif italic, one word per headline</div><div class="s2">pay for outcomes</div></div>
+      <div><div class="cap">Data · JetBrains Mono, tabular numerals</div><div class="s3">−10.875 tUSDM · tx 8f3a…c21e · sig✓ attr✓ window✓</div></div>
+    </div>
+  </div>
+
+  <div class="tk">
+    <h3>Motion · 3 durations, 1 curve</h3>
+    <table class="mot">
+      <tr><td>Ease</td><td>cubic-bezier(.22, 1, .36, 1), fast out, soft landing</td></tr>
+      <tr><td>Fast 180 ms</td><td>hover, press, ledger row highlight</td></tr>
+      <tr><td>Base 420 ms</td><td>chip and badge enter, rank swap, title swap</td></tr>
+      <tr><td>Slow 900 ms</td><td>lane reorder, receipt rise, wallet glow</td></tr>
+      <tr><td>Hero 2 s</td><td>Under-gate refund only: crack, stamp, embers flow back</td></tr>
+      <tr><td>Stamp</td><td>cubic-bezier(.3, 1.6, .5, 1), overshoot for verdict chips</td></tr>
+    </table>
+  </div>
+
+  <div class="tk">
+    <h3>Badges · on every money element</h3>
+    <div class="chips">
+      <span class="b b-real">REAL</span> preprod tx + explorer link
+      <span class="b b-sim">SIMULATED</span> simulated, no funds moved
+      <span class="b b-pre">PRE-RECORDED</span> canned replay
+    </div>
+  </div>
+
+  <div class="tk">
+    <h3>Verdicts · 4 states, nothing else</h3>
+    <div class="chips">
+      <span class="vchip v-pass">Pass</span>
+      <span class="vchip v-short">Short of promise</span>
+      <span class="vchip v-under">Under gate</span>
+      <span class="vchip v-lost">Lost bid</span>
+    </div>
+  </div>
+
+  <div class="tk w12">
+    <h3>Motion principles</h3>
+    <ol class="principles">
+      <li><b>One board, no page jumps.</b> The 4 lanes persist from bid to verdict. State changes in place, so a judge never loses track of a supplier.</li>
+      <li><b>Money moves visibly.</b> Every tUSDM movement is light travelling from payer to payee. Green dots are verified signups, embers are tUSDM.</li>
+      <li><b>The sky is the clock.</b> Progress maps dusk to dawn. The sun rises behind the receipt, the event's own metaphor.</li>
+      <li><b>One hero beat.</b> Only the Under-gate refund gets 2 s, a crack, a stamp and a red flash. Everything else stays under 900 ms.</li>
+      <li><b>Numbers count, never jump.</b> Tabular numerals that tween, so totals read as a consequence of events.</li>
+      <li><b>Honest by default.</b> Badges are part of the layout, not tooltips. A money element without a badge is a bug.</li>
+    </ol>
+  </div>
+</section>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+  const smooth = (a, b, t) => { const x = clamp((t - a) / (b - a)); return x * x * (3 - 2 * x); };
+  const easeOut = (x) => 1 - Math.pow(1 - x, 3);
+  const fmt = (v, d = 3) => (v < 0 ? "−" : v > 0 ? "" : "") + Math.abs(v).toFixed(d);
+
+  function hexFrom(seed) {
+    let x = (seed * 2654435761) >>> 0 || 1, s = "";
+    for (let i = 0; i < 64; i++) { x ^= x << 13; x >>>= 0; x ^= x >>> 17; x ^= x << 5; x >>>= 0; s += (x & 15).toString(16); }
+    return s;
+  }
+  const short = (h) => h.slice(0, 4) + "…" + h.slice(-4);
+  const txUrl = (h) => "https://preprod.cardanoscan.io/transaction/" + h;
+  const txA = (h) => `<a href="${txUrl(h)}" target="_blank" rel="noopener">${short(h)} ↗</a>`;
+
+  const END = 31;
+  const SCENES = [
+    { t: 0,    k: "Brief",     title: "The <em>brief</em>", sub: "User NeoRack sets a budget and a goal. The Consumer agent turns it into a tender." },
+    { t: 4,    k: "Sealed bids", title: "Four <em>sealed</em> bids", sub: "Supplier agents from the Masumi registry commit a hash. Nobody can see or change a bid." },
+    { t: 8.5,  k: "Reveal",    title: "Reveal. Rank. <em>Fill.</em>", sub: "The Board recomputes every hash, drops bids below the gate and fills 20 tUSDM cheapest first." },
+    { t: 13,   k: "Lock",      title: "Money on <em>the line</em>", sub: "The Consumer locks 3 awards. Winners lock 25% bonds. 6 escrows on Masumi preprod." },
+    { t: 17,   k: "Delivery",  title: "Only <em>verified</em> signups count", sub: "Signed by the shop key, attributed, inside the window. Impressions alone count for nothing." },
+    { t: 22.5, k: "Verdicts",  title: "The <em>verdicts</em>", sub: "The Board signs one verdict per supplier. Settlement follows the rule, not a negotiation." },
+    { t: 27,   k: "Receipt",   title: "The <em>receipt</em>", sub: "Don't pay for impressions. Pay for outcomes." },
+  ];
+
+  const S = [
+    { id: "tb", name: "TechBlog",      mono: "TB", persona: "conservative", impr: 1000, price: 7, promised: 7,  pps: "1.00", award: 7, bond: 1.75, delivered: 8, verdict: "pass",  rank: 2 },
+    { id: "cp", name: "CodePodcast",   mono: "CP", persona: "moderate",     impr: 1000, price: 6, promised: 8,  pps: "0.75", award: 6, bond: 1.5,  delivered: 6, verdict: "short", rank: 1 },
+    { id: "dn", name: "DevNewsletter", mono: "DN", persona: "aggressive",   impr: 1500, price: 7, promised: 12, pps: "0.39", award: 7, bond: 1.75, delivered: 0, verdict: "under", rank: 0 },
+    { id: "gf", name: "GamingForum",   mono: "GF", persona: "passive",      impr: 1000, price: 3, promised: 4,  pps: "0.75", verdict: "lost", rank: 3 },
+  ];
+  S.forEach((s, i) => {
+    s.home = i;
+    s.commit = hexFrom(11 + i * 7);
+    s.txA = hexFrom(101 + i * 3); s.txB = hexFrom(201 + i * 3); s.txV = hexFrom(301 + i * 3); s.txR = hexFrom(401 + i * 3);
+    s.arrive = 4.2 + i * 0.45; s.sealed = s.arrive + 1.0; s.reveal = 8.8 + i * 0.4;
+    if (s.rank < 3) { s.awardT = 13.3 + s.rank * 0.35; s.bondT = 14.6 + s.rank * 0.35; }
+    s.verdictT = { tb: 23.0, cp: 23.9, dn: 24.8, gf: 22.8 }[s.id];
+  });
+  const LOST_T = 10.6, RANK_T = 11.2, SEG_T = [11.6, 12.0, 12.4];
+  const byRank = [...S].sort((a, b) => a.rank - b.rank);
+
+  // signup events
+  const SIGNUPS = [];
+  for (let k = 0; k < 8; k++) SIGNUPS.push({ lane: 0, t: 17.6 + k * 0.55 });
+  for (let k = 0; k < 6; k++) SIGNUPS.push({ lane: 1, t: 17.9 + k * 0.62 });
+  SIGNUPS.sort((a, b) => a.t - b.t);
+
+  // ledger events
+  const EV = [
+    { t: 0.3, x: "User NeoRack: brief received" },
+    { t: 3.2, x: "Consumer agent published tender <b>T-0001</b>" },
+    { t: 4.0, x: "Board queried Masumi registry: <b>4 Supplier agents</b>" },
+  ];
+  S.forEach((s) => EV.push({ t: s.sealed, x: `Sealed bid · ${s.name} · ${short(s.commit)} · fee 0.2 <span class="b b-sim">SIM</span>` }));
+  EV.push({ t: 8.6, x: "Bidding closed. Reveal window open" });
+  S.forEach((s) => EV.push({ t: s.reveal + 0.3, x: `${s.name} revealed · hash match <span class="match">✓</span>`, c: "good" }));
+  EV.push({ t: LOST_T, x: "<b>GamingForum: Lost bid</b> · 4 / 1k below gate 5", c: "hot" });
+  EV.push({ t: 12.5, x: "Budget filled <b>20 / 20</b> · 3 winners" });
+  byRank.slice(0, 3).forEach((s) => {
+    EV.push({ t: s.awardT, x: `Award <b>${s.award}</b> locked · Consumer → ${s.name} · ${txA(s.txA)} <span class="b b-real">REAL</span>` });
+    EV.push({ t: s.bondT, x: `Bond <b>${s.bond}</b> locked · ${s.name} → Board · ${txA(s.txB)} <span class="b b-real">REAL</span>` });
+  });
+  EV.push({ t: 17.0, x: "Traffic serving · signup feed open <span class='b b-sim'>SIM</span>" });
+  SIGNUPS.forEach((e, i) => EV.push({ t: e.t, x: `Signup #${String(i + 1).padStart(2, "0")} sig✓ attr✓ window✓ → ${S[e.lane].name}`, c: "good" }));
+  EV.push({ t: 22.0, x: "Feed closed · <b>DevNewsletter: 1,500 impressions, 0 signups</b>", c: "hot" });
+  EV.push({ t: 23.0, x: `Verdict TechBlog: <b>Pass</b> · 7 paid · bond 1.75 returned · ${txA(S[0].txV)} <span class="b b-real">REAL</span>`, c: "good" });
+  EV.push({ t: 23.9, x: `Verdict CodePodcast: <b>Short of promise</b> · 0.375 forfeited · ${txA(S[1].txV)} <span class="b b-real">REAL</span>` });
+  EV.push({ t: 24.8, x: "Verdict DevNewsletter: <b>Under gate</b>", c: "hot" });
+  EV.push({ t: 25.9, x: `Refund <b>7</b> → Consumer · ${txA(S[2].txR)} <span class="b b-real">REAL</span>`, c: "hot" });
+  EV.push({ t: 26.5, x: `Bond <b>1.75</b> forfeited → Consumer · ${txA(S[2].txV)} <span class="b b-real">REAL</span>`, c: "hot" });
+  EV.push({ t: 27.0, x: `Receipt signed · ${short(hexFrom(999))}` });
+  EV.sort((a, b) => a.t - b.t);
+
+  // ---------- build DOM ----------
+  $("#rail").innerHTML = SCENES.map((s, i) => `<li><button data-i="${i}"><span class="n">0${i + 1}</span><span class="t">${s.k}</span></button></li>`).join("");
+  const railLis = [...document.querySelectorAll("#rail li")];
+
+  const lanesEl = $("#lanes");
+  lanesEl.innerHTML = S.map((s) => {
+    const max = 14, gateX = (5 / max) * 100, prX = (s.promised / max) * 100;
+    const isLost = s.verdict === "lost";
+    const vText = {
+      pass: `<span class="vchip v-pass">Pass</span><div class="vline">8 vs 7 promised · <b>7 paid</b> · bond <b>1.75</b> returned</div>`,
+      short: `<span class="vchip v-short">Short of promise</span><div class="vline">6 vs 8 · <b>6 paid</b> · <b>0.375</b> forfeited, 1.125 back</div>`,
+      under: `<span class="vchip v-under">Under gate</span><div class="vline">0 vs 12 · <b>7 refunded</b> · bond <b>1.75</b> forfeited</div>`,
+      lost: `<span class="vchip v-lost">Lost bid</span><div class="vline">Below gate · paid <b>0.2</b> bid fee <span class="b b-sim">SIM</span></div>`,
+    }[s.verdict];
+    return `<article class="card lane${s.delivered === 0 ? " zero" : ""}" id="L-${s.id}">
+      <svg class="crack" viewBox="0 0 100 300" preserveAspectRatio="none"><path d="M62 0 L55 40 L66 70 L48 110 L58 150 L40 190 L52 230 L38 300"/></svg>
+      <div class="hd"><span class="mono">${s.mono}</span><div><div class="nm">${s.name}</div><div class="ps">${s.persona}</div></div><span class="rank">#${s.rank + 1}</span></div>
+      <div class="sec"><div class="label"><span>Sealed bid</span><span class="b b-sim">fee 0.2</span></div>
+        <div class="seal"><div class="hash" data-h></div>
+          <div class="plain"><b>${s.impr.toLocaleString("en")}</b> impr · <b>${s.price}</b> tUSDM<br>promises <b>${s.promised}</b> / 1,000
+            <div class="pps">${s.pps}<small>per promised signup</small></div><span class="match">hash ✓ match</span></div></div></div>
+      <div class="sec money">${isLost ? `<div class="lock" style="grid-column:1/-1"><div class="l">Escrow</div><div class="v" style="color:var(--faint)">—</div></div>` :
+        `<div class="lock" data-award><div class="l">Award</div><div class="v num">${s.award}</div><a class="tx" href="${txUrl(s.txA)}" target="_blank" rel="noopener">${short(s.txA)} ↗ <span class="b b-real">REAL</span></a></div>
+         <div class="lock" data-bond><div class="l">Bond</div><div class="v num">${s.bond}</div><a class="tx" href="${txUrl(s.txB)}" target="_blank" rel="noopener">${short(s.txB)} ↗ <span class="b b-real">REAL</span></a></div>`}</div>
+      <div class="sec deliv">${isLost ? `<div class="imp"><span>Not served</span></div>` :
+        `<div class="imp"><span>Impressions</span><span class="num" data-imp>0</span></div><div class="thin"><i data-impbar></i></div>
+         <div class="su"><span class="c num" data-su>0</span><span class="p">verified · promised ${s.promised}</span></div>
+         <div class="gauge"><i data-gauge></i><span class="tick gate" style="left:${gateX}%"><span>gate 5</span></span><span class="tick" style="left:${prX}%"></span></div>`}</div>
+      <div class="sec verdict">${vText}</div>
+      <div class="stamp lostst">Lost bid</div>
+      ${s.verdict === "under" ? `<div class="stamp underst">Under gate</div>` : ""}
+    </article>`;
+  }).join("");
+  S.forEach((s) => { s.el = $("#L-" + s.id); s.hashEl = s.el.querySelector("[data-h]"); s.hashKey = ""; s.wasUnder = false; });
+
+  $("#lb").innerHTML = [
+    ["TechBlog", 6.8], ["CodePodcast", 5.425], ["Board", 0.8], ["GamingForum", -0.2], ["DevNewsletter", -1.95],
+  ].map(([n, v]) => `<li class="${v >= 0 ? "pos" : "neg"}"><span class="nm2">${n}</span><span class="track"><i data-w="${Math.abs(v) / 7 * (v >= 0 ? 70 : 30)}"></i></span><span class="v2 num">${v > 0 ? "+" : "−"}${Math.abs(v)}</span></li>`).join("");
+  $("#r2").innerHTML = [["TechBlog", 50], ["CodePodcast", 50], ["DevNewsletter", 0]]
+    .map(([n, v]) => `<div class="r"><span class="nm2" style="font:700 14px/1 var(--f-display);text-transform:uppercase">${n}</span><span class="track"><i data-w="${v}"></i></span><span class="num" style="text-align:right">${v}%</span></div>`).join("");
+  $("#rhash").textContent = short(hexFrom(999));
+
+  const fx = $("#fx");
+  const dots = SIGNUPS.map(() => { const d = document.createElement("i"); d.className = "dot"; fx.appendChild(d); return d; });
+  const embers = Array.from({ length: 22 }, () => { const d = document.createElement("i"); d.className = "ember"; fx.appendChild(d); return d; });
+  const pops = [["+7 refund", 25.9], ["+1.75 bond", 26.5], ["+0.375", 24.3]].map(([txt, t]) => { const p = document.createElement("div"); p.className = "pop"; p.textContent = txt; fx.appendChild(p); return { el: p, t }; });
+
+  // ---------- state helpers ----------
+  const stage = $("#stage"), head = $("#head"), wallet = $("#wallet");
+  let curScene = -1, swapToken = 0;
+  function setScene(i) {
+    curScene = i;
+    const s = SCENES[i], tok = ++swapToken;
+    head.classList.add("swap");
+    setTimeout(() => {
+      if (tok !== swapToken) return;
+      $("#kicker").textContent = `0${i + 1} · ${s.k}`;
+      $("#title").innerHTML = s.title; $("#sub").textContent = s.sub;
+      head.classList.remove("swap");
+    }, 220);
+    railLis.forEach((li, j) => { li.classList.toggle("on", j === i); li.classList.toggle("done", j < i); });
+  }
+  const tog = (el, c, on) => el.classList.toggle(c, !!on);
+  const rel = (el) => { const r = el.getBoundingClientRect(), b = stage.getBoundingClientRect(); return { x: r.left - b.left + r.width / 2, y: r.top - b.top + r.height / 2 }; };
+
+  const disp = { net: 0, esc: 0, rnet: 0 };
+  function netAt(t) {
+    let n = 0;
+    byRank.slice(0, 3).forEach((s) => { if (t >= s.awardT) n -= s.award; });
+    if (t >= 24.3) n += 0.375;
+    if (t >= 25.9) n += 7;
+    if (t >= 26.5) n += 1.75;
+    return n;
+  }
+  function escAt(t) {
+    let e = 0;
+    byRank.slice(0, 3).forEach((s) => { if (t >= s.awardT) e += s.award; });
+    if (t >= 23.0) e -= 7; if (t >= 23.9) e -= 6; if (t >= 25.9) e -= 7;
+    return e;
+  }
+  let lastLog = -1;
+
+  // ---------- render(t) ----------
+  function render(t, dt) {
+    let si = 0; SCENES.forEach((s, i) => { if (t >= s.t) si = i; });
+    if (si !== curScene) setScene(si);
+
+    $("#bar").style.width = (t / END) * 100 + "%";
+    $("#railfill").style.height = `calc(${(t / END) * 100}% - 16px)`;
+    const sec = Math.floor(t); $("#clock").textContent = `00:${String(sec).padStart(2, "0")} / 00:${END}`;
+
+    // sky
+    const dawn = smooth(14, 30, t);
+    document.documentElement.style.setProperty("--dawn-p", dawn.toFixed(3));
+    $("#sun").style.opacity = (dawn * 0.95).toFixed(3);
+    $("#sun").style.transform = `translateY(${(1 - easeOut(dawn)) * 80 + 34}%)`;
+    $("#moon").style.opacity = (0.5 * (1 - dawn)).toFixed(3);
+    $("#moon").style.transform = `translateY(${dawn * 120}px)`;
+    const flash = t >= 24.8 && t < 26.2 ? Math.sin(((t - 24.8) / 1.4) * Math.PI) : 0;
+    $("#redflash").style.opacity = flash.toFixed(3);
+
+    // brief
+    const q = "Budget 20 tUSDM, technical users, pay per verified signup.";
+    const n = Math.floor(clamp((t - 0.4) / 2.0) * q.length);
+    $("#quote").textContent = q.slice(0, n);
+    $("#caret").style.display = t < 2.8 ? "" : "none";
+    tog($("#c1"), "on", t >= 2.0); tog($("#c2"), "on", t >= 2.3); tog($("#c3"), "on", t >= 2.6); tog($("#c4"), "on", t >= 3.2);
+
+    // budget
+    let filled = 0;
+    byRank.slice(0, 3).forEach((s, i) => { const on = t >= SEG_T[i]; $("#g" + i).style.width = on ? (s.price / 20) * 100 + "%" : "0"; if (on) filled += s.price; });
+    $("#bval").innerHTML = filled >= 20 ? `<b>20</b> / 20 tUSDM · budget full` : `<b>${filled}</b> / 20 tUSDM`;
+
+    // feed
+    tog($("#feed"), "on", t >= 17 && t < 22.3);
+    const fc = SIGNUPS.filter((e) => e.t <= t).length;
+    $("#fcount").textContent = `${fc} events`;
+
+    // lanes
+    S.forEach((s) => {
+      const el = s.el;
+      tog(el, "arrived", t >= s.arrive);
+      el.style.setProperty("--d", t >= RANK_T ? s.rank - s.home : 0);
+      // hash scramble
+      let key;
+      if (t < s.arrive) key = "x";
+      else if (t < s.sealed) key = "s" + Math.floor(t * 30);
+      else key = "done";
+      if (key !== s.hashKey) {
+        s.hashKey = key;
+        let h = s.commit;
+        if (key.startsWith("s")) {
+          const k = Math.floor(clamp((t - s.arrive) / (s.sealed - s.arrive)) * 64);
+          h = s.commit.slice(0, k) + Array.from({ length: 64 - k }, () => "0123456789abcdef"[(Math.random() * 16) | 0]).join("");
+        }
+        const lines = h.match(/.{16}/g) || [];
+        s.hashEl.innerHTML = key === "x" ? "" : `<span class="k">${lines[0].slice(0, 4)}</span>${lines[0].slice(4)}<br>` + lines.slice(1).join("<br>");
+      }
+      tog(el, "revealed", t >= s.reveal);
+      tog(el, "ranked", t >= RANK_T && s.rank < 3);
+      tog(el, "lost", s.verdict === "lost" && t >= LOST_T);
+      if (s.rank < 3) {
+        const a = el.querySelector("[data-award]"), b = el.querySelector("[data-bond]");
+        const aOn = t >= s.awardT, bOn = t >= s.bondT;
+        if (aOn && !a.classList.contains("on") && t - s.awardT < 0.3) a.classList.add("flash");
+        if (bOn && !b.classList.contains("on") && t - s.bondT < 0.3) b.classList.add("flash");
+        tog(a, "on", aOn); tog(b, "on", bOn);
+        if (!aOn) a.classList.remove("flash"); if (!bOn) b.classList.remove("flash");
+        const ip = smooth(17.2, 21.8, t);
+        el.querySelector("[data-imp]").textContent = `${Math.round(ip * s.impr).toLocaleString("en")} / ${s.impr.toLocaleString("en")}`;
+        el.querySelector("[data-impbar]").style.width = ip * 100 + "%";
+        const cnt = SIGNUPS.filter((e) => e.lane === s.home && e.t <= t).length;
+        el.querySelector("[data-su]").textContent = cnt;
+        el.querySelector("[data-gauge]").style.width = (cnt / 14) * 100 + "%";
+        tog(el, "pulse-warn", s.id === "dn" && t >= 19.5 && t < 24.8);
+      }
+      tog(el, "verdicted", t >= s.verdictT);
+      if (s.verdict === "under") { const u = t >= s.verdictT; tog(el, "under", u); }
+    });
+
+    // signup dots
+    const feedR = $("#feed").getBoundingClientRect(), stR = stage.getBoundingClientRect();
+    SIGNUPS.forEach((e, i) => {
+      const d = dots[i], p = clamp((t - (e.t - 0.5)) / 0.5);
+      if (p > 0 && p < 1) {
+        const target = rel(S[e.lane].el.querySelector("[data-su]"));
+        const sx = target.x, sy = feedR.bottom - stR.top;
+        const x = sx + Math.sin(p * Math.PI) * 10, y = sy + (target.y - sy) * easeOut(p);
+        d.style.opacity = 1; d.style.transform = `translate(${x}px,${y}px) scale(${1 - p * 0.3})`;
+      } else d.style.opacity = 0;
+    });
+
+    // ember flow: DevNewsletter → Consumer wallet
+    const src = rel(S[2].el.querySelector("[data-award]")), dst = rel($("#wnet"));
+    embers.forEach((d, k) => {
+      const st = 25.0 + k * 0.055, p = clamp((t - st) / 1.0);
+      if (p > 0 && p < 1) {
+        const e = easeOut(p), cx = (src.x + dst.x) / 2 + 80, cy = Math.min(src.y, dst.y) - 140 - (k % 5) * 14;
+        const x = (1 - e) * (1 - e) * src.x + 2 * (1 - e) * e * cx + e * e * dst.x;
+        const y = (1 - e) * (1 - e) * src.y + 2 * (1 - e) * e * cy + e * e * dst.y;
+        d.style.opacity = Math.min(1, (1 - p) * 3); d.style.transform = `translate(${x}px,${y}px) scale(${1.2 - p * 0.6})`;
+      } else d.style.opacity = 0;
+    });
+    pops.forEach(({ el, t: pt }, k) => {
+      const p = clamp((t - pt) / 1.4);
+      const anchor = k === 2 ? rel(S[1].el.querySelector("[data-bond]")) : dst;
+      if (p > 0 && p < 1) { el.style.opacity = Math.sin(p * Math.PI).toFixed(3); el.style.transform = `translate(${anchor.x + (k === 2 ? -20 : 70)}px,${anchor.y - 20 - p * 34 - k * 4}px)`; }
+      else el.style.opacity = 0;
+    });
+    tog(wallet, "glow", t >= 25.8 && t < 28);
+
+    // wallet tweens
+    const k = Math.min(1, dt * 7);
+    const tn = netAt(t), te = escAt(t);
+    disp.net += (tn - disp.net) * k; if (Math.abs(tn - disp.net) < 0.0005) disp.net = tn;
+    disp.esc += (te - disp.esc) * k; if (Math.abs(te - disp.esc) < 0.0005) disp.esc = te;
+    $("#wnet").innerHTML = `${fmt(disp.net)}<small>tUSDM</small>`;
+    $("#wesc").textContent = `In escrow ${disp.esc.toFixed(3)}`;
+    $("#wsu").textContent = fc;
+    $("#wpp").textContent = t >= 26.6 ? "0.78" : "—";
+
+    // receipt
+    const show = t >= 27;
+    tog($("#receipt"), "show", show);
+    const rp = easeOut(clamp((t - 27.3) / 1.6));
+    $("#rnet").innerHTML = `${fmt(-10.875 * rp)}<small>tUSDM</small>`;
+    $("#rper").textContent = (0.78 * rp).toFixed(2);
+    document.querySelectorAll("#lb i, #r2 i").forEach((i, j) => { i.style.width = show && t >= 27.6 + j * 0.12 ? i.dataset.w + "%" : "0"; });
+
+    // ledger
+    const cnt = EV.filter((e) => e.t <= t).length;
+    if (cnt !== lastLog) {
+      const items = EV.slice(0, cnt).slice(-18).reverse();
+      $("#log").innerHTML = items.map((e) => `<li class="${e.c || ""}"><span class="ts num">${String(Math.floor(e.t)).padStart(2, "0")}.${String(Math.floor((e.t % 1) * 10))}s</span><span class="tx2">${e.x}</span></li>`).join("");
+      lastLog = cnt;
+    }
+  }
+
+  // ---------- loop ----------
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const startAt = parseFloat((location.hash.match(/t=([\d.]+)/) || [])[1] || document.body.dataset.t || "");
+  let t = reduce ? END : isNaN(startAt) ? 0 : startAt, playing = !reduce && isNaN(startAt), last = performance.now();
+  window.__seek = (v) => { t = v; lastLog = -1; playing = false; syncBtn(); };
+  const playBtn = $("#play");
+  const syncBtn = () => { playBtn.textContent = playing ? "Pause" : t >= END ? "Play again" : "Play"; };
+  playBtn.onclick = () => { if (t >= END) t = 0; playing = !playing; syncBtn(); };
+  $("#replay").onclick = () => { t = 0; lastLog = -1; playing = true; syncBtn(); };
+  $("#rail").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; t = SCENES[+b.dataset.i].t + 0.01; lastLog = -1; playing = true; syncBtn(); };
+  addEventListener("keydown", (e) => {
+    if (e.code === "Space") { e.preventDefault(); playBtn.click(); }
+    if (e.code === "ArrowRight" || e.code === "ArrowLeft") {
+      let si = 0; SCENES.forEach((s, i) => { if (t >= s.t) si = i; });
+      si = clamp(si + (e.code === "ArrowRight" ? 1 : -1), 0, SCENES.length - 1);
+      t = SCENES[si].t + 0.01; lastLog = -1;
+    }
+  });
+  function frame(now) {
+    const dt = Math.min(0.1, (now - last) / 1000); last = now;
+    if (playing) { t = Math.min(END, t + dt); if (t >= END) { playing = false; syncBtn(); } }
+    render(t, reduce ? 1 : dt);
+    requestAnimationFrame(frame);
+  }
+  syncBtn();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
