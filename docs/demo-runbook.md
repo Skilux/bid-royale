@@ -135,7 +135,7 @@ Rules:
 2. Set `SIMULATE_PAYMENTS=false` only for the recorded run #45. Set it back to `true` right after.
 3. After #13 and the #45 recording are in, the judge URL runs with `DEMO_MODE=canned`.
 4. Every env change needs a redeploy. A new value reaches the site only after the next deploy, and only Danila deploys.
-5. After each deploy, open `/api/health` and check `flags.simulatePayments`, `flags.demoMode`, `paymentAdapter` and the `env` block. `env` shows true or false per variable, never values. Do not start a run until the flags match the row above.
+5. After each deploy, open `/api/health` and check `flags.simulatePayments`, `flags.demoMode`, `paymentAdapter` and the `env` block. `env` shows true or false per variable, never values. Do not start a run until the flags match the row above. `treasury` probes the worker with the real token: `authOk: true` means `TREASURY_URL` and `TREASURY_TOKEN` work, `false` means the worker rejected the token, `reachable: false` means the URL is wrong or the worker is down. Vercel hides both values, so this is the only check.
 
 ## Canned replay (`DEMO_MODE=canned`)
 

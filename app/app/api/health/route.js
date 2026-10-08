@@ -2,6 +2,7 @@ import { getFlags } from "@/lib/config";
 import { createStoreFromEnv } from "@/lib/board";
 import { getAdapter } from "@/lib/masumi";
 import { describeReplay } from "@/lib/replay";
+import { probeTreasury } from "@/lib/treasury/probe";
 
 export const dynamic = "force-dynamic";
 
@@ -34,13 +35,15 @@ function envPresence() {
   return Object.fromEntries([...new Set([...ENV_KEYS, ...extra])].map((k) => [k, Boolean(process.env[k])]));
 }
 
-export function GET() {
+export async function GET() {
+  const treasury = await probeTreasury().catch(() => ({ configured: true, reachable: false, status: null, authOk: null }));
   return Response.json({
     ok: true,
     flags: getFlags(),
     paymentAdapter: getAdapter().badge,
     boardStore: createStoreFromEnv().kind,
     replay: describeReplay(),
+    treasury,
     env: envPresence(),
     time: new Date().toISOString(),
   });
