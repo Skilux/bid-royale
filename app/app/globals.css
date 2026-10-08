@@ -106,3 +106,5 @@ body {
 .flow .cr-devnewsletter b { color: #111; }
 .flow .cr-gamingforum i { background: radial-gradient(80% 60% at 50% 0%, #ff3df0, #2a0a4a 70%); }
 .flow .cr-lost { filter: grayscale(1); }
+.flow .cr-img { flex: 0 0 52px; width: 52px; height: 92px; object-fit: cover; border-radius: 7px; border: 1px solid var(--color-line); }
+.flow .cr-img.cr-lost { opacity: 0.55; }

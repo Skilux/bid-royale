@@ -474,8 +474,22 @@ function EscrowCell({ title, cell }) {
   );
 }
 
-function Creative({ id, lost }) {
+/** The supplier's NeoRack ad (#60, `public/creatives/<id>.svg`, illustrative). The CSS mockup is the fallback if the file is missing. */
+function Creative({ id, name, lost }) {
+  const [failed, setFailed] = useState(false);
   const known = ["techblog", "codepodcast", "devnewsletter", "gamingforum"].includes(id) ? id : "techblog";
+  if (!failed) {
+    return (
+      <img
+        src={`/creatives/${id}.svg`}
+        alt={`NeoRack ad on ${name} (illustrative mock)`}
+        width={52}
+        height={92}
+        onError={() => setFailed(true)}
+        className={`cr-img ${lost ? "cr-lost" : ""}`}
+      />
+    );
+  }
   return (
     <div className={`cr cr-${known} ${lost ? "cr-lost" : ""}`} aria-hidden="true">
       <i />
@@ -502,7 +516,7 @@ function SupplierCard({ s, i, view, quoteBadge, refEl }) {
       data-supplier={s.id}
       data-verdict={s.chip?.kind ?? "none"}
     >
-      <Creative id={s.id} lost={s.lost} />
+      <Creative id={s.id} name={s.name} lost={s.lost} />
       <div className="min-w-0 flex-1">
         <div className="flex min-h-[24px] items-center justify-between gap-2">
           <h3 className={`font-display text-[19px] font-extrabold uppercase leading-none tracking-[0.03em] ${s.lost ? "text-ink-3 line-through" : ""}`}>{s.name}</h3>
