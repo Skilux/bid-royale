@@ -9,28 +9,25 @@ no LLM, no judgement calls.
 
 ## Contract
 
-- **Inputs:** signup events + shop public key + attribution map
-  (session → supplier) + campaign window + per supplier: impressions served
-  and promised signups per 1,000 + the gate (5 per 1,000).
-- **Checks (all three must pass):**
-  1. Signature valid (shop key)?
-  2. Session ID attributed to this supplier?
-  3. Timestamp within the campaign window?
-- **Outputs (plan):** `VerifiedCounts { supplierId: count }` and
-  `Verdict { supplierId, delivered, promised, verdict }`, signed by the
-  Board.
-  `verdict` = `Pass | ShortOfPromise | UnderGate`. `LostBid` is set by the
-  Board before the auction and never reaches the verifier.
-- **Verdict rule:** delivered ≥ promised → Pass; delivered ≥ 5 but below
-  promised → ShortOfPromise; delivered < 5 → UnderGate. Delivered = verified
-  signups per 1,000 impressions.
-- **Rules:** bot signals (click bursts, datacenter ASNs) are supporting
-  context for the dashboard only — never the verdict. The gate is crude on
-  purpose; 5 per 1,000 is a policy choice. The verdict hash goes to the
-  decision log. No Validator fee.
+- `verify(events, { window, shopPublicKey })` returns
+  `{ verified: { supplier: count }, rejections: [{ eventId, supplier, reason }] }`.
+  `shopPublicKey` is a KeyObject, PEM, or 64 hex chars of the raw key.
+- **Checks, in order:** `malformed` (missing fields), `bad_signature` (shop key over
+  `eventId|sessionId|supplier|ts`), `wrong_attribution` (the `<supplier>.<n>` session id names a
+  different supplier), `outside_window` (start inclusive, end exclusive), `duplicate` (repeated
+  eventId counts once).
+- `buildVerdict({ supplier, verified, impressions, promised, award, gate, bondRate })` returns a
+  `Verdict` (type in `settlement/plan.js`) with `hash` = SHA-256 of
+  `[supplier, kind, delivered, promised, gate, award, bond]` as JSON and `signature` = Board
+  Ed25519 over the hash, key derived from `BOARD_SIGNING_KEY`. `kind` comes from `classify`.
+  `verifyVerdict(verdict, boardPublicKey)` re-checks both.
+- Delivered = verified signups ÷ impressions × 1,000. Zero impressions gives delivered 0.
+- **Rules:** bot signals are dashboard context only, never the verdict. No LLM. `LostBid` is set
+  by the Board before the auction and never reaches the verifier. The verdict hash goes to the
+  decision log.
 
 ## Done when
 
-Delivered 8 / 6 / 0 is reproduced exactly (TechBlog Pass, CodePodcast Short
-of promise, DevNewsletter Under gate), and a tampered signature or
-out-of-window event is rejected.
+Delivered 8 / 6 / 0 is reproduced exactly (TechBlog pass, CodePodcast short of promise,
+DevNewsletter under gate), and a tampered signature or out-of-window event is rejected.
+Covered by `verifier.test.js`.

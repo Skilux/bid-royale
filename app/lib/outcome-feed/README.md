@@ -8,17 +8,22 @@ attribution by click/session ID. An outcome is a verified signup.
 
 ## Contract
 
-- **Inputs:** supplier list, scenario script (who signs up, how many).
-- **Outputs:** `SignupEvent { supplierId, sessionId, timestamp, signature }`
-  signed with `SHOP_SIGNING_KEY`; impression counts per supplier.
-- **Script (signups per 1k impressions):** TechBlog → 8; CodePodcast → 6;
-  DevNewsletter → 0 (zero-signup traffic, scripted). GamingForum is
-  not served (bid rejected below the gate).
-- **Rules:** every event is signed; signatures must verify with the shop's
-  public key in `app/lib/verifier/`. Labelled "simulated, no funds moved" in
-  the UI.
+- `generateFeed({ seed, suppliers, window, includeInvalid, signingSecret })` returns
+  `{ events, impressions, invalid }`. Defaults: `WORKED_EXAMPLE`, `DEFAULT_WINDOW`, key from
+  `SHOP_SIGNING_KEY`. Same seed gives an identical feed.
+- `SignupEvent { eventId, sessionId, supplier, ts, signature }`. `sessionId` is
+  `<supplier>.<n>`, the session the shop attributed to that supplier. `signature` is Ed25519
+  (hex) over `eventId|sessionId|supplier|ts`. The key is derived from the secret in
+  `app/lib/signing/`.
+- Each event also carries unsigned `signals { asn, clickBurst }`. Dashboard context only, the
+  verifier never reads them.
+- **Script (signups per 1k impressions):** TechBlog 8 on 1,000 impressions, CodePodcast 6 on
+  1,000, DevNewsletter 0 on 1,500. GamingForum is not served.
+- **Invalid events for tests:** each served supplier gets one `bad_signature`,
+  `wrong_attribution` and `outside_window` event. `invalid` lists them with the expected
+  reason. Pass `includeInvalid: false` to drop them.
+- Labelled "simulated, no funds moved" in the UI.
 
-## Done when
+## Test
 
-The verifier accepts the feed's signatures and counts exactly 8 / 6 / 0
-verified signups.
+`node --test app/lib/outcome-feed app/lib/verifier`
