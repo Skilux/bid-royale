@@ -352,7 +352,7 @@ function ExplorerButton({ s }) {
   );
 }
 
-function FinalReceipt({ view }) {
+export function FinalReceipt({ view }) {
   const f = view.final;
   const perSignup = f.costPerSignup === null ? null : Number(f.costPerSignup.toFixed(2));
   return (

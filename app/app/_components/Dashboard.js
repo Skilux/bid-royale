@@ -47,11 +47,11 @@ function Panel({ children, className = "", ...rest }) {
 }
 
 /** The embeddable dashboard. Draws a `buildDashboardView` result and nothing else. */
-export function Dashboard({ view }) {
+export function Dashboard({ view, onSelectStep = null }) {
   const quoteBadge = view.mode === "canned" ? "PRE-RECORDED" : "SIMULATED";
   return (
     <div className="space-y-3" data-testid="dashboard">
-      <StepBar view={view} />
+      <StepBar view={view} onSelect={onSelectStep} />
       {view.degraded ? (
         <div className="rounded-lg border border-dashed border-short bg-short-bg px-3 py-2 text-[13px]" data-testid="degraded">
           The live run failed{view.degraded.step ? ` at ${view.degraded.step}` : ""}. Showing the recorded run instead, badged <Badge kind="PRE-RECORDED" />.
@@ -82,7 +82,7 @@ function EmptyNote({ children }) {
   return <p className="rounded-lg border border-dashed border-line px-3 py-4 text-[13px] text-ink-3">{children}</p>;
 }
 
-function StepBar({ view }) {
+function StepBar({ view, onSelect }) {
   return (
     <ol className="flex items-center gap-1.5 overflow-x-auto font-mono text-[10px] uppercase tracking-[0.12em]" aria-label="Run steps">
       {view.steps.map((s, i) => (
@@ -92,7 +92,17 @@ function StepBar({ view }) {
               s.status === "done" ? "border-cobalt bg-cobalt" : s.status === "running" ? "border-cobalt bg-card ring-4 ring-cobalt/20" : s.status === "failed" ? "border-under bg-under" : "border-line bg-card"
             }`}
           />
-          <span className={s.status === "pending" ? "text-ink-3" : s.status === "running" ? "text-cobalt" : "text-ink-2"}>{s.label}</span>
+          {onSelect ? (
+            <button
+              type="button"
+              onClick={() => onSelect(s.key)}
+              className={`cursor-pointer uppercase tracking-[0.12em] hover:text-ink ${s.status === "pending" ? "text-ink-3" : s.status === "running" ? "text-cobalt" : "text-ink-2"}`}
+            >
+              {s.label}
+            </button>
+          ) : (
+            <span className={s.status === "pending" ? "text-ink-3" : s.status === "running" ? "text-cobalt" : "text-ink-2"}>{s.label}</span>
+          )}
           {i < view.steps.length - 1 ? <span className="h-px flex-1 bg-line" /> : null}
         </li>
       ))}
