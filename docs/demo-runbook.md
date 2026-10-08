@@ -3,9 +3,9 @@
 ## The scenario (90 s submission video)
 
 Decided in the S4 storyboard session (#5), 8 Oct 2026. Hard cap 90 s, target 85 s.
-The Win Plan says "≤90 s demo video"; the public event page says "two-minute".
-A 90 s cut satisfies both. **Confirm the length rule with the organizers at the
-venue.** All amounts are tUSDM. Voiceover lines are drafts. Visual style is
+The rule is a video under 90 seconds (Win Plan). The public event page says
+two minutes; a cut under 90 s satisfies both. **Confirm the length rule with the
+organizers at the venue.** The voiceover is ElevenLabs. All amounts are tUSDM. Voiceover lines are drafts. Visual style is
 owned by #15; this section fixes beats, order, timings and what is on screen.
 
 ### Decisions
@@ -100,8 +100,8 @@ The remaining 5 s up to 1:30 is margin, not content.
 - [ ] `SIMULATE_PAYMENTS` and `DEMO_MODE=canned` flags working
 - [ ] Full successful run recorded (video backstop) by Oct 7 evening
 - [ ] **Warm run started at least 50 min before recording**; its settlement txs saved for the verdict beat
-- [ ] Video length rule (≤90 s vs two minutes) confirmed with the organizers
-- [ ] ElevenLabs narration pre-generated (or captions fallback ready)
+- [ ] Video length rule (<90 s) confirmed with the organizers
+- [ ] ElevenLabs voiceover pre-generated and timed to the cut (captions always on, fallback if the voice is cut)
 - [ ] **Oct 7 evening check:** Masumi preprod reliable → primary. If not,
   lean on the labelled simulated ledger + canned replay (no second rail —
   Masumi-only by team decision)

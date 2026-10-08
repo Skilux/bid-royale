@@ -29,4 +29,4 @@ Hours are drafts. Danila confirms them with Vladimir before the night starts.
 
 From `docs/demo-runbook.md`, cut top-down: voiceover, then bot-signal panel and
 round 2, then multi-seller discovery. Never cut real escrow txs with explorer
-links, the under-30 s run, badges, the 2-minute video, honest limitations.
+links, the under-30 s run, badges, the <90 s video with an ElevenLabs voiceover, honest limitations.

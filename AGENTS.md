@@ -79,7 +79,7 @@ you're off the rails.
 6. Supplier agents (4 bidders): TechBlog Pass, CodePodcast Short of promise,
    DevNewsletter Under gate (the rehearsed failure), GamingForum below the gate
 7. Settlement beat (3 verdict branches) + ROI leaderboard + receipt
-8. 2-min video cut
+8. <90 s video cut, with an ElevenLabs voiceover and always-on captions
 
 ## Code layout (agents: read before creating any file)
 
@@ -226,9 +226,9 @@ a merged violation is expensive.
 
 ## Never cut (in this order, cut top-down everything else)
 
-1. ElevenLabs voiceover → captions
+1. ElevenLabs voiceover (we use it for the video) → captions
 2. Bot-signal panel and round-2 on the receipt (dashboard polish)
 3. Multi-seller discovery → seeded registry (discovery UI stays)
 4. **Never cut:** real escrow + award and bond tx with explorer links
-   (including the Under-gate refund), <30s Wrapper UI run, badges, 2-min video,
+   (including the Under-gate refund), <30s Wrapper UI run, badges, <90 s video,
    README honest-limitations section.
