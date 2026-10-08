@@ -1,23 +1,18 @@
 import { randomBytes } from "node:crypto";
 import { commit } from "../auction/index.js";
 import { estimateWinChance } from "./gate.js";
-import { MAX_ATTEMPTS, runAttempt } from "./llm.js";
+import { newMeter, runAttempt } from "./llm.js";
+import { resolveLlmConfig } from "./llm-config.js";
 import { PERSONAS } from "./personas.js";
 
 const newSalt = () => randomBytes(16).toString("hex");
-
-export const parseModels = (value) =>
-  (value ?? "")
-    .split(",")
-    .map((m) => m.trim())
-    .filter(Boolean);
 
 function sealed(supplier, quote, salt) {
   return { supplier, ...quote, salt, commit: commit({ ...quote, salt }) };
 }
 
 /** The persona's pinned quote as an InviteResponse. Pinned quotes bypass the gate: they are the anchors. */
-export function pinnedResponse({ supplier, tender, reference, reason, salt = newSalt() }) {
+export function pinnedResponse({ supplier, tender, reference, reason, salt = newSalt(), usage }) {
   const persona = PERSONAS[supplier];
   return {
     supplier,
@@ -27,6 +22,7 @@ export function pinnedResponse({ supplier, tender, reference, reason, salt = new
     gate: estimateWinChance(persona.pinned, { persona, tender, reference: reference.pricePerSignup }),
     source: "pinned",
     reason,
+    ...(usage ? { usage } : {}),
   };
 }
 
@@ -40,16 +36,17 @@ export function pinnedResponse({ supplier, tender, reference, reason, salt = new
 export async function runSupplier(request, { env = process.env, fetch: fetchImpl = fetch, newSalt: salt = newSalt, attemptTimeoutMs } = {}) {
   const { supplier, tender, reference, history } = request;
   const persona = PERSONAS[supplier];
-  const pinned = (reason) => pinnedResponse({ supplier, tender, reference, reason, salt: salt() });
+  const meter = newMeter();
+  const pinned = (reason) => pinnedResponse({ supplier, tender, reference, reason, salt: salt(), usage: meter.calls ? { ...meter } : undefined });
 
   if (env.PERSONA_MODE === "pinned") return pinned("forced");
 
-  const models = parseModels(env.OPENROUTER_MODELS);
-  if (!env.OPENROUTER_API_KEY || models.length === 0) return pinned("llm_error");
+  const config = resolveLlmConfig(env);
+  if (!env.OPENROUTER_API_KEY) return pinned("llm_error");
 
   let reason = "llm_error";
-  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-    const model = models[attempt % models.length];
+  for (let attempt = 0; attempt < config.maxAttempts; attempt++) {
+    const model = config.models[attempt % config.models.length];
     try {
       const { answer, turns } = await runAttempt({
         fetch: fetchImpl,
@@ -59,6 +56,8 @@ export async function runSupplier(request, { env = process.env, fetch: fetchImpl
         tender,
         reference,
         history,
+        config,
+        meter,
         timeoutMs: attemptTimeoutMs,
       });
       const quote = { price: answer.price, impressions: answer.impressions, promisedPer1000: answer.promisedPer1000 };
@@ -73,9 +72,11 @@ export async function runSupplier(request, { env = process.env, fetch: fetchImpl
         source: "llm",
         model,
         turns,
+        usage: { ...meter },
       };
     } catch (err) {
       reason = err.reason ?? "llm_error";
+      if (reason === "budget") break;
     }
   }
   return pinned(reason);

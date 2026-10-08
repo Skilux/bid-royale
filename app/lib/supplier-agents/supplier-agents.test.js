@@ -3,7 +3,9 @@ import assert from "node:assert/strict";
 import { commit, evaluateBids } from "../auction/index.js";
 import { TENDER } from "../config.js";
 import { createFixtureBoard } from "../board/worked-example.js";
-import { bidFor, InviteResponse, PERSONAS, SUPPLIER_IDS, estimateWinChance, handleRun, runSupplier } from "./index.js";
+import { LLM_CONFIG, bidFor, InviteRequest, InviteResponse, PERSONAS, SUPPLIER_IDS, estimateWinChance, handleRun, resolveLlmConfig, runSupplier } from "./index.js";
+import { createRateLimiter } from "./handler.js";
+import { runAttempt } from "./llm.js";
 import { createBidSource, localInvite, httpInvite } from "./bid-source.js";
 import { byPersona, failure, mockFetch, reply, submitting, toolCall } from "./mock-llm.js";
 
@@ -57,6 +59,8 @@ test("LLM path: tool loop, OpenRouter call shape, salt and commit made in code",
   assert.equal(res.decision, "bid");
   assert.equal(res.model, "m1");
   assert.equal(res.turns, 3);
+  assert.equal(res.usage.calls, 3);
+  assert.ok(res.usage.tokens > 0);
   assert.equal(res.rationale, "Fair margin.");
   assert.deepEqual(res.gate, { pricePerSignup: 1, winChance: 1, margin: 2, ev: 1.8, passed: true });
   assert.equal(res.bid.salt, "fixed-salt");
@@ -68,6 +72,8 @@ test("LLM path: tool loop, OpenRouter call shape, salt and commit made in code",
   assert.equal(first.url, "https://openrouter.ai/api/v1/chat/completions");
   assert.equal(first.init.headers.authorization, "Bearer k");
   assert.ok(first.init.signal instanceof AbortSignal);
+  assert.equal(first.body.max_tokens, LLM_CONFIG.maxOutputTokens);
+  assert.deepEqual(first.body.provider, { max_price: LLM_CONFIG.maxPrice });
   assert.deepEqual(first.body.tools.map((t) => t.function.name), ["get_operator_config", "estimate_win_chance", "submit_bid"]);
   assert.match(first.body.messages[0].content, /You run TechBlog/);
   assert.match(first.body.messages[0].content, /Budget 20 tUSDM/);
@@ -144,11 +150,12 @@ test("zod failure on every attempt gives pinned with reason zod", async () => {
   assert.equal(res.reason, "zod");
 });
 
-test("a model that never calls submit_bid ends the attempt after 4 turns", async () => {
+test("a model that never calls submit_bid uses 4 turns per attempt, then the call cap ends the run", async () => {
   const fetch = mockFetch(() => reply({ content: "I think we should bid 7." }));
   const res = await brain("techblog", fetch, { ...ENV, OPENROUTER_MODELS: "m1" });
-  assert.equal(fetch.calls.length, 12, "3 attempts x 4 turns");
-  assert.equal(res.reason, "llm_error");
+  assert.equal(fetch.calls.length, LLM_CONFIG.maxCallsPerInvite);
+  assert.equal(res.source, "pinned");
+  assert.equal(res.reason, "budget");
 });
 
 test("forced failures: no API key, no models, PERSONA_MODE=pinned all skip the network", async () => {
@@ -156,8 +163,6 @@ test("forced failures: no API key, no models, PERSONA_MODE=pinned all skip the n
   const noKey = await brain("gamingforum", fetch, { ...ENV, OPENROUTER_API_KEY: "" });
   assert.equal(noKey.source, "pinned");
   assert.equal(noKey.reason, "llm_error");
-  const noModels = await brain("gamingforum", fetch, { ...ENV, OPENROUTER_MODELS: "" });
-  assert.equal(noModels.reason, "llm_error");
   const forced = await brain("gamingforum", fetch, { ...ENV, PERSONA_MODE: "pinned" });
   assert.equal(forced.source, "pinned");
   assert.equal(forced.reason, "forced");
@@ -374,4 +379,81 @@ test("Board rehearsal: a skipping supplier gets no commit and pays no bid fee", 
   assert.equal(run.bids.some((b) => b.supplier === "gamingforum"), false);
   assert.equal(run.ledger.filter((l) => l.phase === "bid_fee").length, 3);
   assert.deepEqual(outcome(run).winners, WORKED.winners);
+});
+
+// ---- one place for LLMs, and the spend guards ----
+
+test("llm config: defaults live in llm-config.js, OPENROUTER_MODELS only overrides the model list", () => {
+  assert.deepEqual(resolveLlmConfig({}).models, LLM_CONFIG.models);
+  assert.deepEqual(resolveLlmConfig({ OPENROUTER_MODELS: " " }).models, LLM_CONFIG.models);
+  assert.deepEqual(resolveLlmConfig({ OPENROUTER_MODELS: "a, b" }).models, ["a", "b"]);
+  assert.equal(resolveLlmConfig({ OPENROUTER_MODELS: "a" }).maxOutputTokens, LLM_CONFIG.maxOutputTokens);
+  assert.ok(LLM_CONFIG.maxCallsPerInvite <= LLM_CONFIG.maxAttempts * LLM_CONFIG.maxTurns);
+});
+
+test("default models are used when OPENROUTER_MODELS is unset", async () => {
+  const fetch = mockFetch(() => failure(503));
+  await brain("techblog", fetch, { OPENROUTER_API_KEY: "k" });
+  assert.deepEqual(fetch.calls.map((c) => c.body.model), LLM_CONFIG.models);
+});
+
+test("budget: the call cap stops the run and pins the quote with reason budget", async () => {
+  const fetch = mockFetch(() => reply({ content: "thinking" }));
+  const res = await brain("techblog", fetch, { ...ENV, OPENROUTER_MODELS: "m1" });
+  assert.equal(fetch.calls.length, LLM_CONFIG.maxCallsPerInvite);
+  assert.equal(res.source, "pinned");
+  assert.equal(res.reason, "budget");
+  assert.equal(res.usage.calls, LLM_CONFIG.maxCallsPerInvite);
+});
+
+test("budget: the token cap stops the run after the call that crossed it", async () => {
+  const fat = () => ({ ok: true, status: 200, json: async () => ({ choices: [{ message: { content: "x" } }], usage: { total_tokens: LLM_CONFIG.maxTokensPerInvite } }) });
+  const fetch = mockFetch(fat);
+  const res = await brain("techblog", fetch);
+  assert.equal(fetch.calls.length, 1);
+  assert.equal(res.reason, "budget");
+  assert.equal(res.usage.tokens, LLM_CONFIG.maxTokensPerInvite);
+});
+
+test("budget: an oversized prompt is refused before any call", async () => {
+  const fetch = mockFetch(() => failure(500));
+  await assert.rejects(
+    runAttempt({ fetch, apiKey: "k", model: "m1", persona: PERSONAS.techblog, tender, reference, history: [], config: { ...LLM_CONFIG, maxInputChars: 100 } }),
+    (err) => err.reason === "budget",
+  );
+  assert.equal(fetch.calls.length, 0);
+});
+
+test("input limits: the prompt only carries the last historyEntries results, and the route schema bounds every string", () => {
+  const long = (n) => "x".repeat(n);
+  assert.equal(InviteRequest.safeParse({ ...request("techblog"), tender: { ...tender, audience: long(201) } }).success, false);
+  assert.equal(InviteRequest.safeParse({ ...request("techblog"), runId: long(101) }).success, false);
+  const row = { supplier: "techblog", kind: "pass", price: 1, promised: 1, delivered: 1 };
+  assert.equal(InviteRequest.safeParse({ ...request("techblog"), history: Array(21).fill(row) }).success, false);
+  assert.equal(InviteRequest.safeParse({ ...request("techblog"), history: Array(20).fill(row) }).success, true);
+});
+
+test("prompt shows at most historyEntries past results", async () => {
+  const history = Array.from({ length: 8 }, (_, i) => ({ supplier: "techblog", kind: "pass", price: 7, promised: 7, delivered: 100 + i }));
+  const fetch = mockFetch(submitting(PERSONAS.techblog.pinned));
+  await runSupplier({ ...request("techblog"), history }, { env: ENV, fetch, newSalt: salt });
+  const sys = fetch.calls[0].body.messages[0].content;
+  assert.match(sys, /"delivered":107/);
+  assert.doesNotMatch(sys, /"delivered":102/);
+});
+
+test("rate limit: past maxInvitesPerMinute the route answers pinned rate_limited without calling the LLM", async () => {
+  let t = 0;
+  const limiter = createRateLimiter({ now: () => t });
+  const fetch = mockFetch(() => failure(503));
+  const env = { ...ENV, OPENROUTER_MODELS: "m1" };
+  const call = () => handleRun({ request: post(request("techblog")), name: "techblog", env, fetch, limiter });
+  for (let i = 0; i < LLM_CONFIG.maxInvitesPerMinute; i++) assert.equal((await (await call()).json()).reason, "llm_error");
+  const callsBefore = fetch.calls.length;
+  const over = await (await call()).json();
+  assert.equal(over.reason, "rate_limited");
+  assert.equal(over.source, "pinned");
+  assert.equal(fetch.calls.length, callsBefore);
+  t = 61_000;
+  assert.equal((await (await call()).json()).reason, "llm_error", "the window slides");
 });

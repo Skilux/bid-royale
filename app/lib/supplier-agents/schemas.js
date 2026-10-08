@@ -21,22 +21,23 @@ export const QuoteArgs = z.object({
 
 export const InviteRequest = z.object({
   action: z.literal("bid").default("bid"),
-  runId: z.string(),
+  runId: z.string().max(100),
   supplier: z.enum(SUPPLIER_IDS),
   tender: z.object({
     budget: z.number(),
     gate: z.number(),
     bondRate: z.number(),
     bidFee: z.number(),
-    currency: z.string(),
-    audience: z.string().optional(),
+    currency: z.string().max(20),
+    audience: z.string().max(200).optional(),
     deadline: z.number().optional(),
   }),
   reference: z
     .object({ pricePerSignup: z.number(), source: z.enum(["operator", "history"]) })
     .default({ pricePerSignup: 1, source: "operator" }),
   history: z
-    .array(z.object({ supplier: z.string(), kind: z.string(), price: z.number(), promised: z.number(), delivered: z.number() }))
+    .array(z.object({ supplier: z.string().max(50), kind: z.string().max(50), price: z.number(), promised: z.number(), delivered: z.number() }))
+    .max(20)
     .default([]),
 });
 
@@ -61,4 +62,5 @@ export const InviteResponse = z.object({
   reason: z.string().optional(),
   model: z.string().optional(),
   turns: z.number().optional(),
+  usage: z.object({ calls: z.number(), tokens: z.number() }).optional(),
 });

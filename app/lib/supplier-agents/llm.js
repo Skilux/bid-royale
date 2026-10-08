@@ -2,13 +2,14 @@ import { z } from "zod";
 import { estimateWinChance } from "./gate.js";
 import { QuoteArgs, bidFor } from "./schemas.js";
 import { systemPrompt, userPrompt } from "./prompt.js";
+import { LLM_CONFIG } from "./llm-config.js";
 
 export const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
-export const ATTEMPT_TIMEOUT_MS = 12_000;
-export const MAX_ATTEMPTS = 3;
-export const MAX_TURNS = 4;
 
-/** Failure with a category the route reports as `reason`: llm_error, zod or timeout. */
+/** Spend meter for one invite, shared by all its attempts. */
+export const newMeter = () => ({ calls: 0, tokens: 0 });
+
+/** Failure with a category the route reports as `reason`: llm_error, zod, timeout or budget. */
 export class AttemptError extends Error {
   constructor(reason, message) {
     super(message);
@@ -33,17 +34,17 @@ function toolDefs(persona) {
 const isPositive = (n) => typeof n === "number" && Number.isFinite(n) && n > 0;
 
 /**
- * One attempt: one model, one OpenRouter tool-calling loop of up to `MAX_TURNS` turns, one AbortSignal.
+ * One attempt: one model, one OpenRouter tool-calling loop of up to `config.maxTurns` turns, one AbortSignal.
  * Returns the validated `submit_bid` arguments. Throws AttemptError.
  */
-export async function runAttempt({ fetch, apiKey, model, persona, tender, reference, history, timeoutMs = ATTEMPT_TIMEOUT_MS }) {
+export async function runAttempt({ fetch, apiKey, model, persona, tender, reference, history, config = LLM_CONFIG, meter = newMeter(), timeoutMs = config.attemptTimeoutMs }) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   const tools = toolDefs(persona);
   const schema = bidFor(persona.id);
   const ctx = { persona, tender, reference: reference.pricePerSignup };
   const messages = [
-    { role: "system", content: systemPrompt({ persona, tender, reference, history }) },
+    { role: "system", content: systemPrompt({ persona, tender, reference, history: history.slice(-config.historyEntries) }) },
     { role: "user", content: userPrompt(persona) },
   ];
 
@@ -62,15 +63,29 @@ export async function runAttempt({ fetch, apiKey, model, persona, tender, refere
   };
 
   try {
-    for (let turn = 1; turn <= MAX_TURNS; turn++) {
+    for (let turn = 1; turn <= config.maxTurns; turn++) {
+      if (meter.calls >= config.maxCallsPerInvite) throw new AttemptError("budget", `call cap ${config.maxCallsPerInvite} reached`);
+      if (meter.tokens >= config.maxTokensPerInvite) throw new AttemptError("budget", `token cap ${config.maxTokensPerInvite} reached`);
+      const body = JSON.stringify({
+        model,
+        messages,
+        tools,
+        tool_choice: "auto",
+        temperature: config.temperature,
+        max_tokens: config.maxOutputTokens,
+        provider: { max_price: config.maxPrice },
+      });
+      if (JSON.stringify(messages).length > config.maxInputChars) throw new AttemptError("budget", `input over ${config.maxInputChars} chars`);
+      meter.calls += 1;
       const res = await fetch(OPENROUTER_URL, {
         method: "POST",
         signal: ctrl.signal,
         headers: { authorization: `Bearer ${apiKey}`, "content-type": "application/json" },
-        body: JSON.stringify({ model, messages, tools, tool_choice: "auto", temperature: 0.4, max_tokens: 700 }),
+        body,
       });
       if (!res.ok) throw new AttemptError("llm_error", `OpenRouter ${res.status} from ${model}`);
       const payload = await res.json();
+      meter.tokens += Number(payload?.usage?.total_tokens) || Math.ceil((body.length + JSON.stringify(payload).length) / 4);
       const message = payload?.choices?.[0]?.message;
       if (!message) throw new AttemptError("llm_error", `no message from ${model}: ${payload?.error?.message ?? "empty"}`);
 
@@ -96,7 +111,7 @@ export async function runAttempt({ fetch, apiKey, model, persona, tender, refere
         messages.push({ role: "tool", tool_call_id: call.id, content: JSON.stringify(runTool(call.function?.name, args)) });
       }
     }
-    throw new AttemptError("llm_error", `${model} did not call submit_bid in ${MAX_TURNS} turns`);
+    throw new AttemptError("llm_error", `${model} did not call submit_bid in ${config.maxTurns} turns`);
   } catch (err) {
     if (err instanceof AttemptError) throw err;
     if (ctrl.signal.aborted) throw new AttemptError("timeout", `${model} timed out after ${timeoutMs} ms`);

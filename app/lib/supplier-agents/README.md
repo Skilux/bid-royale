@@ -8,7 +8,7 @@ MIP-003 routes under the same base path come from #37.
 
 1. `POST /api/agents/<name>/tender-invite` or `/run` (`handler.js`, same handler): 404 unknown name, 401 bad `x-agent-secret` (also when
    `AGENT_SHARED_SECRET` is unset), 400 body fails `InviteRequest` or `supplier` differs from `<name>`.
-2. `runSupplier` (`brain.js`): up to 3 attempts, one model each from `OPENROUTER_MODELS` (cycled), 12 s `AbortController`
+2. `runSupplier` (`brain.js`): up to 3 attempts, one model each from `llm-config.js` (cycled), 12 s `AbortController`
    per attempt, next model on HTTP error, timeout or zod failure.
 3. One attempt (`llm.js`): OpenRouter chat completions with tools, max 4 turns. Tools `get_operator_config`,
    `estimate_win_chance`, `submit_bid`. `submit_bid` arguments are checked with `bidFor(id)` (the clamps).
@@ -19,6 +19,25 @@ MIP-003 routes under the same base path come from #37.
 
 No `@openai/agents`: the loop is raw OpenRouter function calling (the spec allows it), so tests mock `fetch` and no SDK sits
 between the code and the free-tier models.
+
+## LLMs and spend guards: `llm-config.js`
+
+The one place that defines the models and every cap. `OPENROUTER_MODELS` only overrides the model list.
+
+| Guard | Default | Effect |
+|---|---|---|
+| `models` | claude-haiku-5.5, gpt-oss-120b, qwen3.7-flash | tried in order, one per attempt |
+| `maxOutputTokens` | 800 | `max_tokens` on every call |
+| `maxInputChars` | 8,000 | call refused before sending, quote pinned (`reason: "budget"`) |
+| `historyEntries` | 5 | past results in the prompt. The route schema also bounds every string and `history` to 20 rows |
+| `maxPrice` | 0.5 / 2 USD per M tokens | sent as `provider.max_price`: OpenRouter will not route to a dearer provider |
+| `maxCallsPerInvite` | 6 | all attempts of one supplier together |
+| `maxTokensPerInvite` | 12,000 | from `usage.total_tokens`, stops further calls |
+| `maxInvitesPerMinute` | 24 | per server instance, over it the route answers pinned `rate_limited` with no LLM call |
+
+Worst case is 6 calls per supplier, so 24 per run, under $0.01 per run at these prices. `usage: { calls, tokens }` comes back on
+every response. These caps are per instance and per invite. The hard ceiling is the credit limit on the OpenRouter key
+(OpenRouter dashboard, Keys, set a credit limit), which only the key owner can set.
 
 ## Board hook
 
@@ -37,7 +56,7 @@ plus `reason` and `model` when present, never `committedAt`.
 
 ## Env vars
 
-`OPENROUTER_API_KEY`, `OPENROUTER_MODELS`, `AGENT_SHARED_SECRET`, `REFERENCE_PRICE` (default 1), `PERSONA_MODE`
+`OPENROUTER_API_KEY`, `OPENROUTER_MODELS` (optional override), `AGENT_SHARED_SECRET`, `REFERENCE_PRICE` (default 1), `PERSONA_MODE`
 (`pinned` forces pinned quotes), `SUPPLIER_INVITE_URLS`, `SUPPLIER_AGENTS`.
 
 ## Try it

@@ -1,12 +1,15 @@
 // Scripted rehearsal: one full Board run with the supplier agents as bidSource.
 // Run from app/: node lib/supplier-agents/rehearse.js
-// Uses OPENROUTER_API_KEY and OPENROUTER_MODELS when set (live LLM), else the pinned quotes.
+// Uses OPENROUTER_API_KEY when set (live LLM, models from llm-config.js), else the pinned quotes.
 // PERSONA_MODE=pinned forces pinned quotes. Payments are the SIMULATED adapter.
 import { createFixtureBoard } from "../board/worked-example.js";
 import { createBidSource, localInvite } from "./bid-source.js";
+import { resolveLlmConfig } from "./llm-config.js";
 
 const env = { ...process.env };
 const referencePrice = Number(env.REFERENCE_PRICE) > 0 ? Number(env.REFERENCE_PRICE) : 1;
+const { models } = resolveLlmConfig(env);
+console.log(`models: ${models.join(", ")}`);
 const board = await createFixtureBoard({ bidSource: createBidSource({ invite: localInvite({ env }), referencePrice }) });
 const created = await board.createRun();
 const run = await board.runAll(created.id);
@@ -19,6 +22,7 @@ for (const b of run.bids) {
     `${b.supplier.padEnd(14)} ${b.source.padEnd(6)} ${b.reason ?? b.model ?? ""}`.trimEnd(),
     `price ${b.price} impressions ${b.impressions} promised ${b.promisedPer1000}`,
     `gate pps ${g.pricePerSignup} win ${g.winChance} margin ${g.margin} ev ${g.ev}`,
+    b.usage ? `usage ${b.usage.calls} calls ${b.usage.tokens} tokens` : "",
   );
 }
 const skipped = run.suppliers.map((s) => s.id).filter((id) => !run.bids.some((b) => b.supplier === id));
