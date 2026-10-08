@@ -155,9 +155,9 @@ QUOTED.
 - **Refund path A2:** the supplier never submits a result and the Consumer
   reclaims the award after the submit-result deadline without a supplier
   signature. Open until the D9 preprod dry run confirms the contract allows it.
-- **Budget fill rule:** "accept each bid while the running total stays within
-  20" does not define whether a bid that does not fit stops the fill or is
-  skipped. The demo example never hits this case.
+- **Budget fill rule (D11, decided 8 Oct by Danila, not yet in the PRD):** a
+  ranked bid that does not fit the remaining budget is skipped and the fill
+  continues with the next cheapest bid. The demo example never hits this case.
 - **Win-chance formula (proposal):** a supplier bids only if win chance ×
   margin − 0.2 > 0; win chance = clamp(2 − p ÷ R, 0, 1), p = own price per
   promised signup, R = highest winning price per signup in the last auction

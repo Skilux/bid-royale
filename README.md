@@ -15,7 +15,7 @@ budget in a sealed-bid auction, and the Consumer pays only for verified signups.
 > Track rule: "An agent completes a transaction scenario with a visible outcome.
 > A sandbox transaction counts; a simulated payment must be labelled."
 
-- Scenario spec: Notion (Ad Slot Auction PRD v3.0, plus "Ad Slot Auction: Money Flow, Step by Step" and "Ad Auction — Diagrams"). `docs/` is the technical subset, not a mirror.
+- Scenario spec: Notion (Ad Slot Auction PRD v3.1, plus "Ad Slot Auction: Money Flow, Step by Step" and "Ad Auction — Diagrams"). `docs/` is the technical subset, not a mirror.
 - Technical baseline for this repo: `docs/architecture.md`, `docs/services.md`, `docs/hosting.md`
 - Build rules for the night: `AGENTS.md`
 - Terms: `GLOSSARY.md`
@@ -112,6 +112,7 @@ bid-royale/
 │   ├── architecture.md  ← components, contracts, data flow
 │   ├── services.md      ← every external service: purpose, access, status
 │   ├── hosting.md       ← Vercel setup, env vars, collab, deploy pipeline
+│   ├── plan/            ← lanes, checkpoints, merge points (Masumi, Product)
 │   ├── masumi.md        ← Masumi integration notes (API, states, polling)
 │   ├── demo-runbook.md  ← build order, demo script, cut order, checklists
 │   └── honest-limitations.md ← what is real vs simulated, labelling rules
