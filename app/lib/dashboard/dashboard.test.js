@@ -176,3 +176,26 @@ test("registry.discovered shows as a Discovery chip: live or seeded, with the ag
   );
   assert.equal(view([]).discovery, null);
 });
+
+test("coins: a token per moved row, none for PENDING, the refund is the hero, a row flies once per id", async () => {
+  const { coinFor } = await import("./coins.js");
+  const ev = (name, data) => ({ name, data });
+  const award = fixture.events.find((e) => e.name === "escrow.locked" && e.data.kind === "award");
+  const bond = fixture.events.find((e) => e.name === "escrow.locked" && e.data.kind === "bond");
+  const refund = fixture.events.find((e) => e.data?.receipt?.action === "award_reclaim");
+  assert.equal(coinFor(award).path, "award");
+  assert.equal(coinFor(bond).path, "bond");
+  assert.equal(coinFor(bond, { mode: "canned" }).badge, "PRE-RECORDED");
+  const hero = coinFor(refund);
+  assert.deepEqual([hero.path, hero.amount, hero.hero], ["back", 70, true]);
+  assert.equal(coinFor(fixture.events.find((e) => e.name === "bid.committed")), null);
+
+  const pending = ev("escrow.locked", { supplier: "techblog", kind: "award", receipt: { ...award.data.receipt, badge: "PENDING", txHash: null } });
+  assert.equal(coinFor(pending), null);
+
+  const real = ev("settlement.progress", { supplier: "techblog", phase: "lock", action: "award", receiptId: "r1", badge: "REAL", txHash: REAL_TX });
+  assert.equal(coinFor(real), null, "no amount known, no token");
+  assert.equal(coinFor(real, { amountOf: () => 70 }).path, "award");
+  const progressPending = ev("settlement.progress", { supplier: "techblog", phase: "settlement", action: "award_release", receiptId: "r2", badge: "PENDING", txHash: null });
+  assert.equal(coinFor(progressPending, { amountOf: () => 70 }), null);
+});

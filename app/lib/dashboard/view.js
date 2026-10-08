@@ -183,6 +183,7 @@ export function buildDashboardView(state, { signals = null } = {}) {
     },
     bidFees: { total: sum(money.filter((m) => m.phase === "bid_fee")), badges: uniqueBadges(money.filter((m) => m.phase === "bid_fee").map((m) => m.badge)) },
     hero,
+    rows: money,
     settlement: state.settlement,
     chips: {
       discovery: state.order.length > 0,
