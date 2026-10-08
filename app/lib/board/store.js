@@ -1,3 +1,7 @@
+import { createHash } from "node:crypto";
+
+const transferKey = (id) => `treasury:transfer:${createHash("sha256").update(id).digest("hex")}`;
+
 const RUN_TTL_SECONDS = 24 * 60 * 60;
 const JOB_TTL_SECONDS = 7 * 24 * 60 * 60;
 const UPSTASH_TIMEOUT_MS = 5000;
@@ -25,9 +29,17 @@ export function createMemoryStore() {
   const events = new Map();
   const claims = new Map();
   const jobs = new Map();
+  const transfers = new Map();
 
   return {
     kind: "memory",
+    async getTransfer(id) { return structuredClone(transfers.get(id) ?? null); },
+    async reserveTransfer(id, record) {
+      if (transfers.has(id)) return false;
+      transfers.set(id, structuredClone({ ...record, id }));
+      return true;
+    },
+    async setTransfer(id, record) { transfers.set(id, structuredClone({ ...record, id })); },
     async getRun(id) {
       const run = runs.get(id);
       return run ? structuredClone(run) : null;
@@ -103,6 +115,16 @@ export function createUpstashStore({ url, token, fetchImpl = fetch, timeoutMs = 
 
   return {
     kind: "upstash",
+    async getTransfer(id) {
+      const raw = await command("GET", transferKey(id));
+      return raw ? JSON.parse(raw) : null;
+    },
+    async reserveTransfer(id, record) {
+      return (await command("SET", transferKey(id), JSON.stringify({ ...record, id }), "NX")) === "OK";
+    },
+    async setTransfer(id, record) {
+      await command("SET", transferKey(id), JSON.stringify({ ...record, id }));
+    },
     async getRun(id) {
       const raw = await command("GET", runKey(id));
       return raw ? JSON.parse(raw) : null;
