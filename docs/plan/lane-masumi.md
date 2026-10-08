@@ -23,7 +23,7 @@ Scope: payment logic only. No UI, agents or verifier. Rails stay Masumi's (see
 
 ## Progress
 
-Status as of 2026-10-08 ~22:08. V2 source created (#21); all ten party wallets funded and six scoped keys tested (#26). Registry check remains W3.
+Status as of 2026-10-08 ~23:30. V2 source created (#21); all ten party wallets funded and six scoped keys tested (#26); 4 suppliers and the Board registered and discovered on V2, Python `techblog-agent` retired (#27).
 
 | Checkpoint 1 item | Status |
 |---|---|
@@ -104,19 +104,26 @@ covering its selling wallet; reuse it throughout the payment lifecycle.
 
 ### Registered agents
 
-#27 part A smoke registration: TechBlog and Tender Board only, on V2 source
-`cmuzylds0000347p4qfsw0ed3`. Both reached `RegistrationConfirmed`, with
-`CurrentTransaction.status: Confirmed` and one confirmation at the final poll.
+#27: all 4 suppliers and the Tender Board on V2 source
+`cmuzylds0000347p4qfsw0ed3`. Part A (TechBlog, Tender Board) and part B
+(CodePodcast, DevNewsletter, GamingForum) all reached `RegistrationConfirmed`
+with `CurrentTransaction.status: Confirmed`.
 
 | Agent | Selling wallet suffix | apiBaseUrl | agentIdentifier | Registration tx (REAL) | Minutes to confirm |
 |---|---|---|---|---|---|
 | TechBlog | s3lh2d | https://ad-slot-auction.vercel.app/api/agents/techblog | `67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b10adaaad1ba6f00b23a439dcb64cc022e13ae3e4ac093f9e5a56facd1f000000` | [REAL Preprod transaction](https://preprod.cardanoscan.io/transaction/abb55b8172cbdca48f366ea49f9b8108df07324423e77eda54b8033c1589e437) | 6.49 |
 | Tender Board | h0ydnc | https://ad-slot-auction.vercel.app/api/agents/board | `67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b1034612d96631d8349e3cab3d745d0af73ba378996ba49ef94c3649f34000000` | [REAL Preprod transaction](https://preprod.cardanoscan.io/transaction/734ed64ea3f150715dd670150bb5ffebb3d7553feb779bef1e7fcbf782c6b281) | 6.49 |
+| CodePodcast | mhc2yn | https://ad-slot-auction.vercel.app/api/agents/codepodcast | `67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b10a1389a9987a72d5ac638993bbb3fae35d9edf337172d44635af33ed0000000` | [REAL Preprod transaction](https://preprod.cardanoscan.io/transaction/8575a023e97bab0c8235ad97eb081dcadf2908a94b8648a6f176196e81e4d1b9) | 1.30 |
+| DevNewsletter | 4mvm9y | https://ad-slot-auction.vercel.app/api/agents/devnewsletter | `67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b109150335daa6d55f995eb38aea9773df9a05420f779b99b16831a4eff000000` | [REAL Preprod transaction](https://preprod.cardanoscan.io/transaction/fea850984e9c12e61e408228e9356cdc7fdb5998a207e4b6f1fff20c7a61188a) | 1.28 |
+| GamingForum | s8kj8x | https://ad-slot-auction.vercel.app/api/agents/gamingforum | `67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b10aec5ba825779ae68bb401136b41990b4915de5e04f8f15d9f263bccf000000` | [REAL Preprod transaction](https://preprod.cardanoscan.io/transaction/c03f7aa69a4f493519f59a604cb152b21f36007e94c4c24712585f5d4202cfc3) | 1.28 |
 
 Registry request IDs: TechBlog `cmuzzhmkk002g47p4ccootv5z`; Tender Board
-`cmuzzhmy6002j47p47lwfm9v4`. Minutes above use each request's `createdAt` and
-confirmed response's `updatedAt`; confirmation was first observed at
-20:30:00.303 UTC (6.58 min after submission).
+`cmuzzhmy6002j47p47lwfm9v4`; CodePodcast `cmv01n3kj008t47p4rxci74bl`;
+DevNewsletter `cmv01n444008w47p440op3dpe`; GamingForum
+`cmv01n4g1008z47p41vu30rag`. Minutes above use each request's `createdAt` and
+confirmed response's `updatedAt`. Part A confirmation was first observed at
+20:30:00.303 UTC (6.58 min after submission); part B confirmed in about
+1.3 min, so registration time varies widely with the node's scheduler.
 
 Observed state timeline, 8 Oct 2026 (UTC):
 
@@ -124,17 +131,24 @@ Observed state timeline, 8 Oct 2026 (UTC):
 |---|---|---|---|
 | TechBlog | 20:23:25.316 | 20:28:59.423 | 20:29:54.913; 20:30:00.303 |
 | Tender Board | 20:23:25.806 | 20:28:59.423 | 20:29:54.906; 20:30:00.303 |
+| CodePodcast | 21:23:39.859 | 21:23:56.969 (node updatedAt) | 21:24:57.598 |
+| DevNewsletter | 21:23:40.564 | 21:23:56.679 (node updatedAt) | 21:24:57.593 |
+| GamingForum | 21:23:40.993 | 21:23:57.062 (node updatedAt) | 21:24:57.606 |
 
 Every Admin call returned HTTP 200; no registration errors or retries.
-Both registrations are `Standard`, advertise only our Preprod V2 address,
+All five registrations are `Standard`, advertise only our Preprod V2 address,
 and use Dynamic pricing inside `supportedPaymentSources[].pricing`.
 The 0.29.0 schema forbids top-level `AgentPricing` for V2; it was omitted.
 Empty `ExampleOutputs` was accepted.
 
-The published Vercel URLs are agreed metadata placeholders; their routes do
-not exist yet and were not tested. No Railway service was stopped or changed.
-The remaining three supplier registrations and discovery search remain part B;
-#27 as a whole is not complete.
+The `apiBaseUrl` paths are served by the MIP-003 routes from #37
+(`app/app/api/agents/[name]/`). Each route needs `MASUMI_AGENT_<NAME>` set in
+Vercel; the five identifiers above are in the gitignored `.env.vercel.local`.
+
+**Discovery (checkpoint 5).** `GET /registry?network=Preprod&filterSmartContractAddress=<V2 contract>`
+returns all 4 suppliers and the Board, each `RegistrationConfirmed` with its
+`apiBaseUrl`. Without a V2-aware filter, the list defaults to `Web3CardanoV1`
+and shows only the failed test entry from 0.22.0.
 
 Done so far:
 
@@ -157,11 +171,10 @@ Done so far:
   poll `GET /wallet/transfer-funds` for the tx hash). Use it to fund
   per-party wallets and for the checkpoint 4 plain transfers (forfeits).
   New wallets: `POST /wallet`.
-- **`techblog-agent`** (Python SDK `masumi==1.2.0`, `app/lib/agents/techblog-agent`)
-  deployed as Railway service at `https://techblog-agent-production.up.railway.app`.
-  `/availability` and `/input_schema` answer publicly. Not registered yet
-  (no `AGENT_IDENTIFIER`). Business logic is still the scaffold echo + HITL stub.
-  **Retired by ADR 0002** (seller agents live on Vercel); stop the service in #27.
+- **`techblog-agent`** (Python SDK `masumi==1.2.0`): **retired** by ADR 0002 in
+  #27. The Railway deployment was stopped and the service deleted on 8 Oct;
+  the project now holds only `masumi-payment-service` and
+  `masumi-psql-database`. `app/lib/agents/techblog-agent` was removed.
 - **Local sandbox**: Docker Compose quickstart (`~/Documents/masumi-services-dev-quickstart`,
   still on 0.22.0, needs the same bump) with its own funded wallets. Not used for the demo.
 - Secrets live only in Railway variables, gitignored `.env` files and
