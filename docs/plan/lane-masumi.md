@@ -102,6 +102,40 @@ On V2, only the key that created a payment (or Admin) may later call
 `submit-result` / `authorize-refund`. Keep exactly one seller key per party,
 covering its selling wallet; reuse it throughout the payment lifecycle.
 
+### Registered agents
+
+#27 part A smoke registration: TechBlog and Tender Board only, on V2 source
+`cmuzylds0000347p4qfsw0ed3`. Both reached `RegistrationConfirmed`, with
+`CurrentTransaction.status: Confirmed` and one confirmation at the final poll.
+
+| Agent | Selling wallet suffix | apiBaseUrl | agentIdentifier | Registration tx (REAL) | Minutes to confirm |
+|---|---|---|---|---|---|
+| TechBlog | s3lh2d | https://ad-slot-auction.vercel.app/api/agents/techblog | `67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b10adaaad1ba6f00b23a439dcb64cc022e13ae3e4ac093f9e5a56facd1f000000` | [REAL Preprod transaction](https://preprod.cardanoscan.io/transaction/abb55b8172cbdca48f366ea49f9b8108df07324423e77eda54b8033c1589e437) | 6.49 |
+| Tender Board | h0ydnc | https://ad-slot-auction.vercel.app/api/agents/board | `67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b1034612d96631d8349e3cab3d745d0af73ba378996ba49ef94c3649f34000000` | [REAL Preprod transaction](https://preprod.cardanoscan.io/transaction/734ed64ea3f150715dd670150bb5ffebb3d7553feb779bef1e7fcbf782c6b281) | 6.49 |
+
+Registry request IDs: TechBlog `cmuzzhmkk002g47p4ccootv5z`; Tender Board
+`cmuzzhmy6002j47p47lwfm9v4`. Minutes above use each request's `createdAt` and
+confirmed response's `updatedAt`; confirmation was first observed at
+20:30:00.303 UTC (6.58 min after submission).
+
+Observed state timeline, 8 Oct 2026 (UTC):
+
+| Agent | RegistrationRequested (POST) | RegistrationInitiated (first observed) | RegistrationConfirmed (node updatedAt; first observed) |
+|---|---|---|---|
+| TechBlog | 20:23:25.316 | 20:28:59.423 | 20:29:54.913; 20:30:00.303 |
+| Tender Board | 20:23:25.806 | 20:28:59.423 | 20:29:54.906; 20:30:00.303 |
+
+Every Admin call returned HTTP 200; no registration errors or retries.
+Both registrations are `Standard`, advertise only our Preprod V2 address,
+and use Dynamic pricing inside `supportedPaymentSources[].pricing`.
+The 0.29.0 schema forbids top-level `AgentPricing` for V2; it was omitted.
+Empty `ExampleOutputs` was accepted.
+
+The published Vercel URLs are agreed metadata placeholders; their routes do
+not exist yet and were not tested. No Railway service was stopped or changed.
+The remaining three supplier registrations and discovery search remain part B;
+#27 as a whole is not complete.
+
 Done so far:
 
 - **Payment Service on Railway**, pinned to image
