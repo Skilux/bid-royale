@@ -44,7 +44,7 @@ Money Flow spec and may change. All amounts are tUSDM.
   main event): Under-gate path / WithdrawRefund. Also confirms whether the
   contract lets the Consumer reclaim without a supplier signature (path A2,
   open)
-- [ ] OpenAI key works; Groq + Gemini keys tested
+- [ ] OpenRouter key works; each model in `OPENROUTER_MODELS` tested
 - [ ] `SIMULATE_PAYMENTS` and `DEMO_MODE=canned` flags working
 - [ ] Full successful run recorded (video backstop) by Oct 7 evening
 - [ ] ElevenLabs narration pre-generated (or captions fallback ready)

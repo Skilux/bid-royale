@@ -15,7 +15,7 @@ integration (decided 8 Oct by Danila: Vercel instances do not share memory).
 Internet ──▶ Vercel URL (Next.js 16 Wrapper UI + Tender Board, harness, agent brains,
                  │        verifier, server-side API routes)
                  ├──▶ Railway: Masumi Payment Service + Postgres (ReadAndPay key only)
-                 ├──▶ OpenAI (primary) / Groq / Gemini (LLM fallback)
+                 ├──▶ OpenRouter (free-tier models, tried in order)
                  └──▶ cardanoscan preprod (proof links, read-only)
 
 Buyers / registry ──▶ Railway: Python SDK seller agents (one service each)
@@ -59,7 +59,9 @@ See `.env.example` for the full list. Rules:
   `MASUMI_REGISTRY_BASE_URL`, `MASUMI_REGISTRY_API_KEY`, `MASUMI_NETWORK`
   (`Preprod`), `MASUMI_SELLING_WALLET_VKEY`. Names match `docs/masumi.md`
   and `.env.example`.
-- Models: `OPENAI_API_KEY` (primary), `GROQ_API_KEY`, `GEMINI_API_KEY` (LLM fallback)
+- Models: `OPENROUTER_API_KEY`, `OPENROUTER_MODELS` (comma list, first is primary,
+  the rest are fallbacks; decided 8 Oct, no OpenAI credits received)
+- Board state: `KV_REST_API_URL`, `KV_REST_API_TOKEN` (Upstash, injected by the Vercel integration)
 - Flags: `SIMULATE_PAYMENTS` (false = real preprod), `DEMO_MODE` (live | canned)
 - Shop signing key for the NeoRack signup feed: `SHOP_SIGNING_KEY` (demo-only
   key, generated locally — it signs simulated signup events)

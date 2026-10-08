@@ -7,11 +7,12 @@ export const dynamic = "force-dynamic";
 const ENV_KEYS = [
   "MASUMI_PAYMENT_BASE_URL",
   "MASUMI_PAYMENT_API_KEY",
-  "OPENAI_API_KEY",
+  "OPENROUTER_API_KEY",
+  "OPENROUTER_MODELS",
   "SHOP_SIGNING_KEY",
   "BOARD_SIGNING_KEY",
-  "UPSTASH_REDIS_REST_URL",
-  "UPSTASH_REDIS_REST_TOKEN",
+  "KV_REST_API_URL",
+  "KV_REST_API_TOKEN",
 ];
 
 export function GET() {
