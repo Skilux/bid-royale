@@ -7,7 +7,7 @@ import { createBidSource, localInvite } from "./bid-source.js";
 import { resolveLlmConfig } from "./llm-config.js";
 
 const env = { ...process.env };
-const referencePrice = Number(env.REFERENCE_PRICE) > 0 ? Number(env.REFERENCE_PRICE) : 1;
+const referencePrice = Number(env.REFERENCE_PRICE) > 0 ? Number(env.REFERENCE_PRICE) : 10;
 const { models } = resolveLlmConfig(env);
 console.log(`models: ${models.join(", ")}`);
 const board = await createFixtureBoard({ bidSource: createBidSource({ invite: localInvite({ env }), referencePrice }) });

@@ -91,7 +91,7 @@ git push main ──▶ Vercel auto-deploy ──▶ public URL updates (~1–2 
 - The deployed URL is the demo URL. Test it from venue wifi at 17:30 on
   Oct 8, before building starts.
 - `/api/health` pre-flight route reports: model reachability, Masumi API
-  reachability, wallet balances (tUSDM + ADA) → green/amber/red on the Wrapper UI.
+  reachability, wallet balances (tADA) → green/amber/red on the Wrapper UI.
 - Payments are Masumi only. No x402, no second rail.
 - If a deploy breaks at 06:45: Vercel → Deployments → instant rollback to
   the last green build. Know where that button is before the night.

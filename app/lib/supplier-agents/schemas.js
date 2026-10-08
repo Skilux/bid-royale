@@ -6,7 +6,7 @@ export const bidFor = (id) => {
   const c = PERSONAS[id].clamps;
   return z.object({
     decision: z.enum(["bid", "skip"]),
-    price: z.number().min(c.price[0]).max(c.price[1]).multipleOf(0.5),
+    price: z.number().min(c.price[0]).max(c.price[1]).multipleOf(5),
     impressions: z.number().int().min(c.impressions[0]).max(c.impressions[1]).multipleOf(100),
     promisedPer1000: z.number().int().min(c.promisedPer1000[0]).max(c.promisedPer1000[1]),
     rationale: z.string().min(1).max(280),

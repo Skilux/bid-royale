@@ -5,9 +5,9 @@ import { bondFor, classify, consumerNet, forfeitFor, planSettlement } from "./pl
 const GATE = 5;
 
 export const workedExample = [
-  { supplier: "techblog", promised: 7, delivered: 8, award: 7 },
-  { supplier: "codepodcast", promised: 8, delivered: 6, award: 6 },
-  { supplier: "devnewsletter", promised: 12, delivered: 0, award: 7 },
+  { supplier: "techblog", promised: 7, delivered: 8, award: 70 },
+  { supplier: "codepodcast", promised: 8, delivered: 6, award: 60 },
+  { supplier: "devnewsletter", promised: 12, delivered: 0, award: 70 },
 ].map((s) => ({
   ...s,
   gate: GATE,
@@ -25,21 +25,21 @@ test("verdict kinds match the Money Flow example", () => {
 test("bonds are 25% of the award", () => {
   assert.deepEqual(
     workedExample.map((v) => v.bond),
-    [1.75, 1.5, 1.75],
+    [17.5, 15, 17.5],
   );
 });
 
-test("forfeits: 0, 0.375, full bond", () => {
+test("forfeits: 0, 3.75, full bond", () => {
   assert.deepEqual(
     workedExample.map((v) => forfeitFor(v)),
-    [0, 0.375, 1.75],
+    [0, 3.75, 17.5],
   );
 });
 
-test("Short of promise returns 1.125 to the supplier and forfeits 0.375", () => {
+test("Short of promise returns 11.25 to the supplier and forfeits 3.75", () => {
   const plan = planSettlement(workedExample[1]);
-  assert.equal(plan.find((t) => t.reason === "bond_return").amount, 1.125);
-  assert.equal(plan.find((t) => t.reason === "bond_forfeit").amount, 0.375);
+  assert.equal(plan.find((t) => t.reason === "bond_return").amount, 11.25);
+  assert.equal(plan.find((t) => t.reason === "bond_forfeit").amount, 3.75);
 });
 
 test("Under gate pays the supplier nothing", () => {
@@ -47,8 +47,8 @@ test("Under gate pays the supplier nothing", () => {
   assert.ok(plan.every((t) => t.to === "consumer"));
 });
 
-test("Consumer net is -10.875 for 14 verified signups", () => {
-  assert.deepEqual(consumerNet(workedExample), { net: -10.875, signups: 14 });
+test("Consumer net is -108.75 for 14 verified signups", () => {
+  assert.deepEqual(consumerNet(workedExample), { net: -108.75, signups: 14 });
 });
 
 test("gate boundary: delivered equal to gate is Short of promise", () => {

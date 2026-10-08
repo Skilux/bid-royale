@@ -39,7 +39,7 @@ export const localInvite = (deps) => (request) => runSupplier(InviteRequest.pars
  *
  * @param {{ invite: (request: object) => Promise<object>, referencePrice?: number, suppliers?: string[] }} deps
  */
-export function createBidSource({ invite, referencePrice = 1, suppliers = SUPPLIER_IDS }) {
+export function createBidSource({ invite, referencePrice = 10, suppliers = SUPPLIER_IDS }) {
   return async function bidSource({ tender, run }) {
     const reference = { pricePerSignup: referencePrice, source: "operator" };
     const entries = await Promise.all(
@@ -83,7 +83,7 @@ export function createBidSource({ invite, referencePrice = 1, suppliers = SUPPLI
  * `SUPPLIER_AGENTS=local` runs the brains in-process.
  */
 export function bidSourceFromEnv(env = process.env, { fetch: fetchImpl = fetch } = {}) {
-  const referencePrice = Number(env.REFERENCE_PRICE) > 0 ? Number(env.REFERENCE_PRICE) : 1;
+  const referencePrice = Number(env.REFERENCE_PRICE) > 0 ? Number(env.REFERENCE_PRICE) : 10;
   if (env.SUPPLIER_INVITE_URLS) {
     let urls;
     try {

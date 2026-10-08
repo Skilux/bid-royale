@@ -49,19 +49,20 @@ budget in a sealed-bid auction, and the Consumer pays only for verified signups.
 └──────────────────────┘  └──────────────────────┘
 ```
 
-**Money flow (the demo, all tUSDM):** budget 20 → Board invites 4 suppliers
-via the Masumi registry → 4 commit-reveal sealed bids (0.2 bid fee each) →
-3 winners (TechBlog 7, CodePodcast 6, DevNewsletter 7 = 20) → Consumer locks
-3 awards, winners lock 3 bonds (25% of award = 5) → traffic serves → NeoRack
+**Money flow (the demo, all tADA, the spec ×10):** budget 200 → Board invites 4 suppliers
+via the Masumi registry → 4 commit-reveal sealed bids (2 bid fee each) →
+3 winners (TechBlog 70, CodePodcast 60, DevNewsletter 70 = 200) → Consumer locks
+3 awards, winners lock 3 bonds (25% of award = 50) → traffic serves → NeoRack
 signup feed emits signed signups → the Board's verifier counts verified
 signups and the Board signs a verdict per supplier → settlement, one of 3 verdicts:
-TechBlog **Pass** (7 paid, 1.75 bond returned) /
-CodePodcast **Short of promise** (6 paid, 0.375 of bond forfeited to Consumer) /
-DevNewsletter **Under gate** (0 signups: 7 back to Consumer, 1.75 bond forfeited to Consumer) →
-receipt: Consumer net -10.875 for 14 verified signups (about 0.78 each) +
+TechBlog **Pass** (70 paid, 17.5 bond returned) /
+CodePodcast **Short of promise** (60 paid, 3.75 of bond forfeited to Consumer) /
+DevNewsletter **Under gate** (0 signups: 70 back to Consumer, 17.5 bond forfeited to Consumer) →
+receipt: Consumer net -108.75 for 14 verified signups (about 7.77 each) +
 round-2 allocation (illustrative, shown not executed).
 GamingForum bids below the gate (4 per 1,000 promised) and is a **Lost bid**.
 10 escrows total: 3 awards + 3 bonds on the critical path (REAL), 4 bid fees in the background (SIMULATED first, REAL if time allows).
+Every step with who calls what, amounts and measured preprod times (a full run settles in about 15 min): [`docs/money-flow.md`](docs/money-flow.md).
 
 **Per-supplier state machine:**
 `DRAFT → TENDERED → QUOTED → AUTHORIZED → ESCROWED → IN_PROGRESS → DELIVERED → VALIDATING → SETTLED | REFUNDED`
@@ -82,7 +83,7 @@ originality 10%, honest limitations 10%.
 |---|---|---|
 | Frontend + hosting | Next.js 16 (App Router), Tailwind, Vercel | `app/` already scaffolded (plain JS, no Tailwind yet), Vercel linked |
 | Agent runtime | OpenAI Agents SDK (primary) | Native to OpenAI; final call at kickoff once the credit form is known — fallbacks: Vercel AI SDK v7, raw OpenAI function calling |
-| Payment rail | Masumi preprod (Cardano), tUSDM (availability on preprod unverified; fallback tADA with scaled amounts) — ONLY | Topic partner's rails; escrow + dispute primitives; self-hosted official Payment Service + Python SDK seller agents on Railway, product on Vercel — see [ADR 0001](docs/adr/0001-railway-for-masumi-rails-vercel-for-product.md) |
+| Payment rail | Masumi preprod (Cardano), tADA, the spec amounts ×10 (decided 8 Oct, #24) — ONLY | Topic partner's rails; escrow + dispute primitives; self-hosted official Payment Service + Python SDK seller agents on Railway, product on Vercel — see [ADR 0001](docs/adr/0001-railway-for-masumi-rails-vercel-for-product.md) |
 | Degrade path | Labelled simulated ledger (`SIMULATE_PAYMENTS`) | Demo never dies; the track rule requires labelling |
 | Models | OpenAI primary; Groq / Gemini keys as fallback | OpenAI credits per win plan, activation is a kickoff question; fallback keys pre-tested |
 | State | Upstash Redis (Vercel integration) + seeded JSON | Decided 8 Oct by Danila. Vercel instances do not share memory, so tender, bids and events need a shared store. No relational DB |

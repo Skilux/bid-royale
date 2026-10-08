@@ -68,7 +68,7 @@ test("start_job creates payment terms with the agent's own key and stores the jo
   assert.equal(body.agentIdentifier, "agent-techblog");
   assert.equal(body.paymentSourceType, "Web3CardanoV2");
   assert.equal(body.supportedPaymentSourceIndex, 0);
-  assert.deepEqual(body.RequestedFunds, [{ amount: "14000000", unit: "" }]);
+  assert.deepEqual(body.RequestedFunds, [{ amount: "140000000", unit: "" }]);
   assert.equal(body.inputHash, inputHash(PURCHASER, { impressions: 2000 }));
   assert.ok(Date.parse(body.submitResultTime) >= NOW + 15 * 60_000);
   assert.deepEqual(Object.keys(out).sort(), [
@@ -84,8 +84,8 @@ test("start_job creates payment terms with the agent's own key and stores the jo
 });
 
 test("board job is priced at the bid fee", () => {
-  assert.equal(priceFor("board", { brief: "x" }), 0.2);
-  assert.equal(priceFor("gamingforum", { impressions: 1500 }), 4.5);
+  assert.equal(priceFor("board", { brief: "x" }), 2);
+  assert.equal(priceFor("gamingforum", { impressions: 1500 }), 45);
 });
 
 test("input hash is stable under key order", () => {

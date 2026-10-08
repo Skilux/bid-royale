@@ -4,7 +4,7 @@ import { TENDER } from "../config.js";
 /**
  * @typedef {Object} Bid  revealed sealed bid, the shape supplier agents produce
  * @property {string} supplier         supplier id, e.g. "techblog"
- * @property {number} price            bid price, tUSDM (this is also the award if the bid wins)
+ * @property {number} price            bid price, tADA (this is also the award if the bid wins)
  * @property {number} impressions      impressions offered
  * @property {number} promisedPer1000  promised signups per 1,000 impressions
  * @property {string} salt             random secret used in the commit

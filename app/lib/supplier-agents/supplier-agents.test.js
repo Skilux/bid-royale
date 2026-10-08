@@ -10,7 +10,7 @@ import { createBidSource, localInvite, httpInvite } from "./bid-source.js";
 import { byPersona, failure, mockFetch, reply, submitting, toolCall } from "./mock-llm.js";
 
 const tender = { ...TENDER, audience: "technical users" };
-const reference = { pricePerSignup: 1, source: "operator" };
+const reference = { pricePerSignup: 10, source: "operator" };
 const request = (supplier) => ({ action: "bid", runId: "run_t", supplier, tender, reference, history: [] });
 const ENV = { OPENROUTER_API_KEY: "k", OPENROUTER_MODELS: "m1,m2,m3,m4", AGENT_SHARED_SECRET: "s3cret" };
 const salt = () => "fixed-salt";
@@ -22,10 +22,10 @@ const brain = (supplier, fetch, env = ENV, extra = {}) => runSupplier(request(su
 test("clamps: each persona's schema rejects quotes outside its table row", () => {
   const ok = (id, over) => bidFor(id).safeParse({ decision: "bid", rationale: "r", ...PERSONAS[id].pinned, ...over }).success;
   for (const id of SUPPLIER_IDS) assert.ok(ok(id, {}), `${id} pinned quote is inside its clamps`);
-  assert.equal(ok("techblog", { price: 8.5 }), false);
-  assert.equal(ok("techblog", { price: 5 }), false);
+  assert.equal(ok("techblog", { price: 85 }), false);
+  assert.equal(ok("techblog", { price: 50 }), false);
   assert.equal(ok("techblog", { promisedPer1000: 9 }), false);
-  assert.equal(ok("techblog", { price: 6.25 }), false, "price is a multiple of 0.5");
+  assert.equal(ok("techblog", { price: 62.5 }), false, "price is a multiple of 5");
   assert.equal(ok("techblog", { impressions: 450 }), false);
   assert.equal(ok("techblog", { impressions: 1050 }), false, "impressions are a multiple of 100");
   assert.equal(ok("techblog", { promisedPer1000: 7.5 }), false, "promised is an integer");
@@ -35,25 +35,25 @@ test("clamps: each persona's schema rejects quotes outside its table row", () =>
   assert.equal(bidFor("gamingforum").safeParse({ ...PERSONAS.gamingforum.pinned, decision: "bid", rationale: "" }).success, false);
 });
 
-test("D12 gate: every pinned quote passes at R = 1.00 with the documented margins", () => {
-  const margins = { techblog: 2, codepodcast: 2, devnewsletter: 2.5, gamingforum: 1 };
+test("D12 gate: every pinned quote passes at R = 10 with the documented margins", () => {
+  const margins = { techblog: 20, codepodcast: 20, devnewsletter: 25, gamingforum: 10 };
   for (const id of SUPPLIER_IDS) {
-    const g = estimateWinChance(PERSONAS[id].pinned, { persona: PERSONAS[id], tender, reference: 1 });
+    const g = estimateWinChance(PERSONAS[id].pinned, { persona: PERSONAS[id], tender, reference: 10 });
     assert.equal(g.winChance, 1, id);
     assert.equal(g.margin, margins[id], id);
     assert.equal(g.passed, true, id);
   }
-  const g = estimateWinChance(PERSONAS.techblog.pinned, { persona: PERSONAS.techblog, tender, reference: 1 });
-  assert.deepEqual(g, { pricePerSignup: 1, winChance: 1, margin: 2, ev: 1.8, passed: true });
-  const dear = estimateWinChance({ price: 8, impressions: 500, promisedPer1000: 5 }, { persona: PERSONAS.techblog, tender, reference: 1 });
+  const g = estimateWinChance(PERSONAS.techblog.pinned, { persona: PERSONAS.techblog, tender, reference: 10 });
+  assert.deepEqual(g, { pricePerSignup: 10, winChance: 1, margin: 20, ev: 18, passed: true });
+  const dear = estimateWinChance({ price: 80, impressions: 500, promisedPer1000: 5 }, { persona: PERSONAS.techblog, tender, reference: 10 });
   assert.equal(dear.winChance, 0);
   assert.equal(dear.passed, false);
-  const thin = estimateWinChance({ price: 5.5, impressions: 1500, promisedPer1000: 8 }, { persona: PERSONAS.techblog, tender, reference: 1 });
-  assert.equal(thin.passed, false, "margin below 0.5 fails even with positive ev");
+  const thin = estimateWinChance({ price: 55, impressions: 1500, promisedPer1000: 8 }, { persona: PERSONAS.techblog, tender, reference: 10 });
+  assert.equal(thin.passed, false, "margin below 5 fails even with positive ev");
 });
 
 test("LLM path: tool loop, OpenRouter call shape, salt and commit made in code", async () => {
-  const fetch = mockFetch(submitting({ price: 7, impressions: 1000, promisedPer1000: 7 }, "Fair margin."));
+  const fetch = mockFetch(submitting({ price: 70, impressions: 1000, promisedPer1000: 7 }, "Fair margin."));
   const res = await brain("techblog", fetch);
 
   assert.equal(res.source, "llm");
@@ -63,9 +63,9 @@ test("LLM path: tool loop, OpenRouter call shape, salt and commit made in code",
   assert.equal(res.usage.calls, 3);
   assert.ok(res.usage.tokens > 0);
   assert.equal(res.rationale, "Fair margin.");
-  assert.deepEqual(res.gate, { pricePerSignup: 1, winChance: 1, margin: 2, ev: 1.8, passed: true });
+  assert.deepEqual(res.gate, { pricePerSignup: 10, winChance: 1, margin: 20, ev: 18, passed: true });
   assert.equal(res.bid.salt, "fixed-salt");
-  assert.equal(res.bid.commit, commit({ price: 7, impressions: 1000, promisedPer1000: 7, salt: "fixed-salt" }));
+  assert.equal(res.bid.commit, commit({ price: 70, impressions: 1000, promisedPer1000: 7, salt: "fixed-salt" }));
   assert.equal(InviteResponse.safeParse(res).success, true);
 
   assert.equal(fetch.calls.length, 3);
@@ -77,10 +77,10 @@ test("LLM path: tool loop, OpenRouter call shape, salt and commit made in code",
   assert.deepEqual(first.body.provider, { max_price: LLM_CONFIG.maxPrice });
   assert.deepEqual(first.body.tools.map((t) => t.function.name), ["get_operator_config", "estimate_win_chance", "submit_bid"]);
   assert.match(first.body.messages[0].content, /You run TechBlog/);
-  assert.match(first.body.messages[0].content, /Budget 20 tUSDM/);
+  assert.match(first.body.messages[0].content, /Budget 200 tADA/);
   const config = JSON.parse(fetch.calls[1].body.messages.find((m) => m.role === "tool").content);
   assert.deepEqual(config.clamps, PERSONAS.techblog.clamps);
-  assert.equal(config.costPer1000, 5);
+  assert.equal(config.costPer1000, 50);
   const estimate = JSON.parse(fetch.calls[2].body.messages.filter((m) => m.role === "tool")[1].content);
   assert.equal(estimate.passed, true);
 });
@@ -95,10 +95,10 @@ test("the model never supplies salt or commit: extra fields in submit_bid are ig
 });
 
 test("retry across models: 503, then a zod failure, then the third model answers", async () => {
-  const good = submitting({ price: 6, impressions: 1000, promisedPer1000: 8 });
+  const good = submitting({ price: 60, impressions: 1000, promisedPer1000: 8 });
   const fetch = mockFetch((body, call, i) => {
     if (i === 0) return failure(503);
-    if (i === 1) return reply({ tool_calls: [toolCall("submit_bid", { decision: "bid", price: 6, impressions: 1000, promisedPer1000: 99, rationale: "r" })] });
+    if (i === 1) return reply({ tool_calls: [toolCall("submit_bid", { decision: "bid", price: 60, impressions: 1000, promisedPer1000: 99, rationale: "r" })] });
     return good(body);
   });
   const res = await brain("codepodcast", fetch);
@@ -108,7 +108,7 @@ test("retry across models: 503, then a zod failure, then the third model answers
 });
 
 test("a 429 moves on to the next model", async () => {
-  const good = submitting({ price: 6, impressions: 1000, promisedPer1000: 8 });
+  const good = submitting({ price: 60, impressions: 1000, promisedPer1000: 8 });
   const fetch = mockFetch((body, call, i) => (i === 0 ? failure(429) : good(body)));
   const res = await brain("codepodcast", fetch);
   assert.equal(res.model, "m2");
@@ -131,7 +131,7 @@ test("a single-model list is retried on that model, still capped at 3 attempts",
 });
 
 test("timeout: a hanging model is aborted, the next model is tried, all hanging gives pinned with reason timeout", async () => {
-  const good = submitting({ price: 7, impressions: 1000, promisedPer1000: 7 });
+  const good = submitting({ price: 70, impressions: 1000, promisedPer1000: 7 });
   const mixed = mockFetch((body, call, i) => (i === 0 ? "hang" : good(body)));
   const res = await brain("techblog", mixed, ENV, { attemptTimeoutMs: 20 });
   assert.equal(res.model, "m2");
@@ -152,7 +152,7 @@ test("zod failure on every attempt gives pinned with reason zod", async () => {
 });
 
 test("a model that never calls submit_bid uses 4 turns per attempt, then the call cap ends the run", async () => {
-  const fetch = mockFetch(() => reply({ content: "I think we should bid 7." }));
+  const fetch = mockFetch(() => reply({ content: "I think we should bid 70." }));
   const res = await brain("techblog", fetch, { ...ENV, OPENROUTER_MODELS: "m1" });
   assert.equal(fetch.calls.length, LLM_CONFIG.maxCallsPerInvite);
   assert.equal(res.source, "pinned");
@@ -212,7 +212,7 @@ test("an HTTP 200 whose body is an error (provider overloaded) is reported with 
 });
 
 test("a successful run after failures still reports the failed attempts", async () => {
-  const good = submitting({ price: 7, impressions: 1000, promisedPer1000: 7 });
+  const good = submitting({ price: 70, impressions: 1000, promisedPer1000: 7 });
   const fetch = mockFetch((body, call, i) => (i === 0 ? failure(429) : good(body)));
   const res = await brain("techblog", fetch);
   assert.equal(res.source, "llm");
@@ -227,13 +227,13 @@ test("a missing API key says which one is missing", async () => {
 });
 
 test("request switches reasoning off, so a reasoning model does not spend its token budget thinking", async () => {
-  const fetch = mockFetch(submitting({ price: 7, impressions: 1000, promisedPer1000: 7 }));
+  const fetch = mockFetch(submitting({ price: 70, impressions: 1000, promisedPer1000: 7 }));
   await brain("techblog", fetch);
   assert.deepEqual(fetch.calls[0].body.reasoning, { enabled: false });
 });
 
 test("a model that makes reasoning mandatory is asked again with reasoning on, once", async () => {
-  const good = submitting({ price: 7, impressions: 1000, promisedPer1000: 7 });
+  const good = submitting({ price: 70, impressions: 1000, promisedPer1000: 7 });
   const fetch = mockFetch((body, call, i) =>
     i === 0 ? failure(400, { error: { message: "Reasoning is mandatory for this endpoint and cannot be disabled." } }) : good(body),
   );
@@ -256,7 +256,7 @@ test("any other 400 is a failed attempt, not a retry", async () => {
 });
 
 test("the last turn forces submit_bid, so a model that keeps probing still answers", async () => {
-  const quote = { price: 7, impressions: 1000, promisedPer1000: 7 };
+  const quote = { price: 70, impressions: 1000, promisedPer1000: 7 };
   const fetch = mockFetch((body) =>
     body.tool_choice === "auto" ? reply({ tool_calls: [toolCall("estimate_win_chance", quote)] }) : reply({ tool_calls: [toolCall("submit_bid", { decision: "bid", ...quote, rationale: "r" })] }),
   );
@@ -288,12 +288,12 @@ test("the route returns the attempts in its 200 body", async () => {
 });
 
 test("GamingForum: the LLM cannot promise the gate, so its bid ends below it", async () => {
-  const stretch = mockFetch(() => reply({ tool_calls: [toolCall("submit_bid", { decision: "bid", price: 3, impressions: 1000, promisedPer1000: 5, rationale: "r" })] }));
+  const stretch = mockFetch(() => reply({ tool_calls: [toolCall("submit_bid", { decision: "bid", price: 30, impressions: 1000, promisedPer1000: 5, rationale: "r" })] }));
   const res = await brain("gamingforum", stretch, { ...ENV, OPENROUTER_MODELS: "m1" });
   assert.equal(res.source, "pinned", "5 per 1,000 fails the clamp");
   assert.ok(res.bid.promisedPer1000 < tender.gate);
 
-  const honest = mockFetch(submitting({ price: 3, impressions: 1000, promisedPer1000: 4 }));
+  const honest = mockFetch(submitting({ price: 30, impressions: 1000, promisedPer1000: 4 }));
   const ok = await brain("gamingforum", honest);
   assert.equal(ok.source, "llm");
   assert.ok(ok.bid.promisedPer1000 < tender.gate);
@@ -302,7 +302,7 @@ test("GamingForum: the LLM cannot promise the gate, so its bid ends below it", a
 });
 
 test("DevNewsletter over-promises: its clamp starts above any realistic rate and the bid is accepted as a quote", async () => {
-  const fetch = mockFetch(submitting({ price: 7, impressions: 1500, promisedPer1000: 15 }, "List converts well."));
+  const fetch = mockFetch(submitting({ price: 70, impressions: 1500, promisedPer1000: 15 }, "List converts well."));
   const res = await brain("devnewsletter", fetch);
   assert.equal(res.source, "llm");
   assert.equal(res.decision, "bid");
@@ -313,7 +313,7 @@ test("DevNewsletter over-promises: its clamp starts above any realistic rate and
 });
 
 test("the code applies the gate: a quote that fails it becomes a skip with no bid", async () => {
-  const dear = mockFetch(submitting({ price: 8, impressions: 500, promisedPer1000: 5 }));
+  const dear = mockFetch(submitting({ price: 80, impressions: 500, promisedPer1000: 5 }));
   const res = await brain("techblog", dear);
   assert.equal(res.source, "llm");
   assert.equal(res.decision, "skip");
@@ -333,7 +333,7 @@ test("the code applies the gate: a quote that fails it becomes a skip with no bi
 test("bad estimate_win_chance arguments come back as a tool error, not a crash", async () => {
   const fetch = mockFetch((body) => {
     const tools = body.messages.filter((m) => m.role === "tool");
-    if (tools.length === 0) return reply({ tool_calls: [toolCall("estimate_win_chance", { price: 7, impressions: 1000, promisedPer1000: 0 })] });
+    if (tools.length === 0) return reply({ tool_calls: [toolCall("estimate_win_chance", { price: 70, impressions: 1000, promisedPer1000: 0 })] });
     return reply({ tool_calls: [toolCall("submit_bid", { decision: "bid", ...PERSONAS.techblog.pinned, rationale: "r" })] });
   });
   const res = await brain("techblog", fetch);
@@ -342,7 +342,7 @@ test("bad estimate_win_chance arguments come back as a tool error, not a crash",
 });
 
 test("history reaches the prompt and the operator config", async () => {
-  const history = [{ supplier: "techblog", kind: "pass", price: 7, promised: 7, delivered: 8 }];
+  const history = [{ supplier: "techblog", kind: "pass", price: 70, promised: 7, delivered: 8 }];
   const fetch = mockFetch(submitting(PERSONAS.techblog.pinned));
   await runSupplier({ ...request("techblog"), history }, { env: ENV, fetch, newSalt: salt });
   assert.match(fetch.calls[0].body.messages[0].content, /"delivered":8/);
@@ -437,7 +437,7 @@ const outcome = (run) => ({
 });
 
 const WORKED = {
-  net: -10.875,
+  net: -108.75,
   signups: 14,
   winners: ["codepodcast", "devnewsletter", "techblog"],
   rejected: [{ supplier: "gamingforum", reason: "below_gate" }],
@@ -450,7 +450,7 @@ async function rehearse(bidSource) {
   return board.runAll(created.id);
 }
 
-test("Board rehearsal, PERSONA_MODE=pinned, in-process: worked example, Consumer net -10.875 and 14 signups", async () => {
+test("Board rehearsal, PERSONA_MODE=pinned, in-process: worked example, Consumer net -108.75 and 14 signups", async () => {
   const run = await rehearse(createBidSource({ invite: localInvite({ env: { ...ENV, PERSONA_MODE: "pinned" } }) }));
   assert.deepEqual(outcome(run), WORKED);
   assert.ok(run.bids.every((b) => b.source === "pinned" && b.reason === "forced"));
@@ -491,7 +491,7 @@ test("Board rehearsal, LLM down: every supplier falls back to its pinned quote a
 });
 
 test("Board rehearsal: a skipping supplier gets no commit and pays no bid fee", async () => {
-  const quotes = { ...anchors, gamingforum: { price: 4, impressions: 500, promisedPer1000: 2 } };
+  const quotes = { ...anchors, gamingforum: { price: 40, impressions: 500, promisedPer1000: 2 } };
   const llm = mockFetch(byPersona(quotes));
   const run = await rehearse(createBidSource({ invite: localInvite({ env: ENV, fetch: llm }) }));
   assert.equal(run.bids.some((b) => b.supplier === "gamingforum"), false);
@@ -551,13 +551,13 @@ test("input limits: the prompt only carries the last historyEntries results, and
   const long = (n) => "x".repeat(n);
   assert.equal(InviteRequest.safeParse({ ...request("techblog"), tender: { ...tender, audience: long(201) } }).success, false);
   assert.equal(InviteRequest.safeParse({ ...request("techblog"), runId: long(101) }).success, false);
-  const row = { supplier: "techblog", kind: "pass", price: 1, promised: 1, delivered: 1 };
+  const row = { supplier: "techblog", kind: "pass", price: 10, promised: 1, delivered: 1 };
   assert.equal(InviteRequest.safeParse({ ...request("techblog"), history: Array(21).fill(row) }).success, false);
   assert.equal(InviteRequest.safeParse({ ...request("techblog"), history: Array(20).fill(row) }).success, true);
 });
 
 test("prompt shows at most historyEntries past results", async () => {
-  const history = Array.from({ length: 8 }, (_, i) => ({ supplier: "techblog", kind: "pass", price: 7, promised: 7, delivered: 100 + i }));
+  const history = Array.from({ length: 8 }, (_, i) => ({ supplier: "techblog", kind: "pass", price: 70, promised: 7, delivered: 100 + i }));
   const fetch = mockFetch(submitting(PERSONAS.techblog.pinned));
   await runSupplier({ ...request("techblog"), history }, { env: ENV, fetch, newSalt: salt });
   const sys = fetch.calls[0].body.messages[0].content;

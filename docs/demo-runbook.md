@@ -5,7 +5,7 @@
 Decided in the S4 storyboard session (#5), 8 Oct 2026. Hard cap 90 s, target 85 s.
 The rule is a video under 90 seconds (Win Plan). The public event page says
 two minutes; a cut under 90 s satisfies both. **Confirm the length rule with the
-organizers at the venue.** All amounts are tUSDM. Voiceover lines are drafts.
+organizers at the venue.** All amounts are tADA, the spec ×10 (#24). Voiceover lines are drafts.
 Visual style is owned by #15; this section fixes beats, order, timings and what
 is on screen.
 
@@ -37,13 +37,13 @@ is on screen.
 
 | Time | Challenge | Story and voice (draft) | On screen | Badges and chips |
 |---|---|---|---|---|
-| **0:00–0:10** | Discovery: an agent has budget but no way to find sellers | **NeoRack:** "Hi, I'm NeoRack's agent. I have 20 tUSDM and I want to buy ads from other agents. Can anyone help me?" **Board:** "I'm the Tender Board. Tell me what you need." | Empty brief. NeoRack agent card on the left, Board card on the right | none |
+| **0:00–0:10** | Discovery: an agent has budget but no way to find sellers | **NeoRack:** "Hi, I'm NeoRack's agent. I have 200 tADA and I want to buy ads from other agents. Can anyone help me?" **Board:** "I'm the Tender Board. Tell me what you need." | Empty brief. NeoRack agent card on the left, Board card on the right | none |
 | **0:10–0:20** | Terms: agree what "done" means before money moves | **NeoRack:** "I only pay for verified signups. At least 5 per 1,000 impressions, and winners put up a 25% bond." **Board:** "Published. I'll find sellers in the Masumi registry." | Tender card with gate and bond. Registry lookup returns four agent cards | chip: **Discovery: Masumi registry** |
-| **0:20–0:34** | Fair allocation among strangers | Bubbles: TechBlog "7 per 1,000 for 7." CodePodcast "8 for 6." DevNewsletter "12 for 7." GamingForum "4 for 3." **Board:** "Bids are sealed, so nobody can peek or change them. GamingForum promises less than the gate, so it's out. The rest are ranked by price per promised signup." | Commit hashes, reveal, GamingForum greys out ("promises 4 per 1,000, gate is 5"), ranking DevNewsletter 0.39, CodePodcast 0.75, TechBlog 1.00, budget bar fills to 20. One static creative per supplier card | **SIMULATED**: 0.2 bid fee per bidder (REAL if time allows) |
-| **0:34–0:46** | Trust between agents that have never met | **NeoRack:** "DevNewsletter promises 12 per thousand. I've never met it. Why believe it?" **Board:** "You don't have to. Your award sits in escrow, and every winner locks a bond." | 6 escrow rows: awards 7 + 6 + 7, bonds 1.75 + 1.5 + 1.75, each with its wallet and an explorer link | **REAL**: 6 preprod escrows with tx links. chips: **Wallet**, **Escrow: Masumi, Cardano preprod** |
+| **0:20–0:34** | Fair allocation among strangers | Bubbles: TechBlog "7 per 1,000 for 70." CodePodcast "8 for 60." DevNewsletter "12 for 70." GamingForum "4 for 30." **Board:** "Bids are sealed, so nobody can peek or change them. GamingForum promises less than the gate, so it's out. The rest are ranked by price per promised signup." | Commit hashes, reveal, GamingForum greys out ("promises 4 per 1,000, gate is 5"), ranking DevNewsletter 3.89, CodePodcast 7.50, TechBlog 10.00, budget bar fills to 200. One static creative per supplier card | **SIMULATED**: 2 bid fee per bidder (REAL if time allows) |
+| **0:34–0:46** | Trust between agents that have never met | **NeoRack:** "DevNewsletter promises 12 per thousand. I've never met it. Why believe it?" **Board:** "You don't have to. Your award sits in escrow, and every winner locks a bond." | 6 escrow rows: awards 70 + 60 + 70, bonds 17.5 + 15 + 17.5, each with its wallet and an explorer link | **REAL**: 6 preprod escrows with tx links. chips: **Wallet**, **Escrow: Masumi, Cardano preprod** |
 | **0:46–0:54** | Proof of outcome with no trusted third party | **Board:** "Now the traffic runs. I count only signups signed by NeoRack's feed and attributed to the right publisher." | Dashboard: impressions climb, verified signups tick up per supplier. DevNewsletter stays at 0. Bot-signal panel beside it | **SIMULATED**: shop and signup events, no funds moved |
-| **0:54–1:14** | Accountability: who pays when a promise breaks | **Board:** "TechBlog delivered 8 against a promise of 7. Paid in full, bond returned. CodePodcast delivered 6 against 8. Paid, and it loses part of its bond. DevNewsletter promised 12 and delivered 0. Its award goes back to NeoRack, and its bond is forfeited." | Labelled "N min later" card. Pass card (about 3 s), Short of promise card (about 3 s). Then slow on DevNewsletter: stamp **Under gate**, 7 back to NeoRack, 1.75 bond forfeited. Last 4 s: the real refund tx opens in the Cardano explorer | **REAL**: award and bond settlements from the warm run, refund tx with explorer link. chip: **Dispute path: refund** |
-| **1:14–1:25** | Learning: the agent reallocates by results | **NeoRack:** "I paid 10.875 for 14 verified signups. Next round, my budget goes to TechBlog and CodePodcast. Don't pay for impressions. Pay for outcomes." | Receipt: net −10.875 tUSDM, about 0.78 per signup. ROI leaderboard. Round-2 split TechBlog 50 / CodePodcast 50 / DevNewsletter 0. Tally line: "6 escrows REAL on Cardano preprod. Bid fees and traffic SIMULATED. Suppliers are our own agents." | round 2 **shown, not executed** (D2) |
+| **0:54–1:14** | Accountability: who pays when a promise breaks | **Board:** "TechBlog delivered 8 against a promise of 7. Paid in full, bond returned. CodePodcast delivered 6 against 8. Paid, and it loses part of its bond. DevNewsletter promised 12 and delivered 0. Its award goes back to NeoRack, and its bond is forfeited." | Labelled "N min later" card. Pass card (about 3 s), Short of promise card (about 3 s). Then slow on DevNewsletter: stamp **Under gate**, 70 back to NeoRack, 17.5 bond forfeited. Last 4 s: the real refund tx opens in the Cardano explorer | **REAL**: award and bond settlements from the warm run, refund tx with explorer link. chip: **Dispute path: refund** |
+| **1:14–1:25** | Learning: the agent reallocates by results | **NeoRack:** "I paid 108.75 for 14 verified signups. Next round, my budget goes to TechBlog and CodePodcast. Don't pay for impressions. Pay for outcomes." | Receipt: net −108.75 tADA, about 7.77 per signup. ROI leaderboard. Round-2 split TechBlog 50 / CodePodcast 50 / DevNewsletter 0. Tally line: "6 escrows REAL on Cardano preprod. Bid fees and traffic SIMULATED. Suppliers are our own agents." | round 2 **shown, not executed** (D2) |
 
 The remaining 5 s up to 1:30 is margin, not content. About 210 spoken words, so
 it is tight. If it overruns, fold the 0:10–0:20 terms beat into the first one.
@@ -70,11 +70,11 @@ Challenge to mechanism (for the README and the pitch):
 
 ### Numbers to check
 
-- Awards 7 + 6 + 7 = 20. Bonds 1.75 + 1.5 + 1.75 = 5.
-- Price per promised signup: DevNewsletter 7 ÷ (1.5 × 12) = 0.39, CodePodcast
-  6 ÷ (1 × 8) = 0.75, TechBlog 7 ÷ (1 × 7) = 1.00.
+- Awards 70 + 60 + 70 = 200. Bonds 17.5 + 15 + 17.5 = 50.
+- Price per promised signup: DevNewsletter 70 ÷ (1.5 × 12) = 3.89, CodePodcast
+  60 ÷ (1 × 8) = 7.50, TechBlog 70 ÷ (1 × 7) = 10.00.
 - Delivered per 1,000: TechBlog 8, CodePodcast 6, DevNewsletter 0.
-- Forfeit 1.5 × (8 − 6) ÷ 8 = 0.375. Consumer net −20 + 7 + 2.125 = −10.875.
+- Forfeit 15 × (8 − 6) ÷ 8 = 3.75. Consumer net −200 + 70 + 3.75 + 17.5 = −108.75.
 
 ### Dependencies
 
@@ -99,9 +99,8 @@ Challenge to mechanism (for the README and the pitch):
 
 - [ ] Vercel project linked, env vars set, deploy green, URL opens on cellular
 - [ ] Masumi API auth verified; Consumer, Supplier and Board
-  wallets funded (tUSDM + ADA)
-- [ ] tUSDM availability on preprod confirmed (unverified; fallback tADA with
-  scaled amounts)
+  wallets funded (tADA)
+- [x] Asset decided: tADA, spec ×10 (#24)
 - [ ] 4 Supplier agents registered in the registry
 - [ ] D9 decided: preprod contract V1 vs V2 (open)
 - [ ] **Lock → release dry run on preprod, tx hash saved** (go/no-go):

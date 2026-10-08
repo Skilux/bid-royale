@@ -15,7 +15,7 @@ cd app
 export SHOP_SIGNING_KEY=$(openssl rand -hex 32) BOARD_SIGNING_KEY=$(openssl rand -hex 32)   # or .env.local
 npm run dev
 RUN=$(curl -s -X POST localhost:3000/api/run | jq -r .run.id)
-curl -s -X POST localhost:3000/api/run/$RUN/all | jq .run.receipt.consumer     # net -10.875, signups 14
+curl -s -X POST localhost:3000/api/run/$RUN/all | jq .run.receipt.consumer     # net -108.75, signups 14
 curl -N "localhost:3000/api/events?run=$RUN"                                  # replay the SSE stream
 ```
 
@@ -38,7 +38,7 @@ All JSON. Errors are `{ error, message, ... }` with the status below.
 | `POST /api/run` | Create run, publish tender. Body optional: `{ brief?, seed? }` | 201 `{ run }` |
 | `GET /api/run/:id` | Full run state | 200 `{ run }` |
 | `POST /api/run/:id/bids` | 4 sealed commits, 4 bid fees locked (SIMULATED), then reveals | 200 `{ step, repeated, run }` |
-| `POST /api/run/:id/allocation` | Recompute commits, reject, rank, fill the 20 budget | same |
+| `POST /api/run/:id/allocation` | Recompute commits, reject, rank, fill the 200 budget | same |
 | `POST /api/run/:id/locks` | Lock award and bond per winner, in parallel | same |
 | `POST /api/run/:id/feed` | NeoRack signed signup feed (scripted delivery) | same |
 | `POST /api/run/:id/verification` | Deterministic verifier: signature, attribution, window | same |
@@ -73,7 +73,7 @@ Rules:
   steps: { tender|bids|allocation|locks|feed|verification|verdicts|settlement:
            { status: "pending"|"running"|"done"|"failed", startedAt?, finishedAt?, error? } },
   brief: { advertiser, audience, goal },
-  tender: { budget: 20, gate: 5, bondRate: 0.25, bidFee: 0.2, currency: "tUSDM", audience, deadline },
+  tender: { budget: 200, gate: 5, bondRate: 0.25, bidFee: 2, currency: "tADA", audience, deadline },
   suppliers: [{ id, name, persona }],                      // 4, fixed order
   keys: { shop, board },                                   // Ed25519 public keys, hex
   bids: [{ supplier, price, impressions, promisedPer1000, salt, commit, committedAt }],
@@ -102,13 +102,13 @@ Notes for UI:
 - `auction.accepted`, `verdicts` and `leaderboard` are in ranking order (cheapest per signup first), not
   supplier order. Sort by `suppliers` if you want TechBlog, CodePodcast, DevNewsletter.
 - `leaderboard` ranks by `costPerSignup`, Under gate rows with no signups after that, `lost_bid` rows last.
-  GamingForum is `kind: "lost_bid"`: rejected before the auction, its 0.2 bid fee is not returned.
+  GamingForum is `kind: "lost_bid"`: rejected before the auction, its 2 bid fee is not returned.
 - `feed.events[].signals` are dashboard context only. They never change a verdict.
 - Receipt ids are deterministic per action and parties (the simulated adapter hashes them), so two runs
   on one server share ids. Key UI lists by `runId` + `id`.
-- Worked example: Consumer net -10.875 tUSDM, 14 signups, 0.7768 per signup. TechBlog Pass (8 of 7),
-  CodePodcast Short of promise (6 of 8, 0.375 forfeited), DevNewsletter Under gate (0 of 12, award 7
-  back, 1.75 forfeited), GamingForum Lost bid (4 per 1,000, below the gate).
+- Worked example: Consumer net -108.75 tADA, 14 signups, 7.7679 per signup. TechBlog Pass (8 of 7),
+  CodePodcast Short of promise (6 of 8, 3.75 forfeited), DevNewsletter Under gate (0 of 12, award 70
+  back, 17.5 forfeited), GamingForum Lost bid (4 per 1,000, below the gate).
 
 ## SSE
 

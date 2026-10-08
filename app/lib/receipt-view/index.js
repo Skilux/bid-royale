@@ -58,7 +58,7 @@ const REASON_LABEL = {
  */
 export function buildReceiptView(run) {
   const mode = run?.mode === "canned" ? "canned" : "live";
-  const currency = run?.tender?.currency ?? "tUSDM";
+  const currency = run?.tender?.currency ?? "tADA";
   const nameOf = (id) => run?.suppliers?.find((s) => s.id === id)?.name ?? id;
   const ledger = (run?.ledger ?? []).map((l) => ({ ...l, badge: deriveBadge(l, { mode }) }));
   const settlementDone = run?.settlement?.status === "done" && (run?.verdicts?.length ?? 0) > 0;
