@@ -16,6 +16,7 @@ const upTo = (name, nth = 1) => {
   return fixture.events.slice(0, i + 1);
 };
 const sup = (v, id) => v.suppliers.find((s) => s.id === id);
+const cellOf = (v, id, kind) => sup(v, id).cells.find((c) => c.kind === kind);
 
 test("worked example: tender, four bids, GamingForum rejected below the gate", () => {
   const v = view(fixture.events);
@@ -25,7 +26,7 @@ test("worked example: tender, four bids, GamingForum rejected below the gate", (
   const gf = sup(v, "gamingforum");
   assert.equal(gf.chip.kind, "lost_bid");
   assert.equal(gf.rejectedNote, "promises 4 per 1,000, gate is 5");
-  assert.equal(gf.escrow, null);
+  assert.equal(gf.cells, null);
 });
 
 test("worked example: ranking by price per promised signup and the budget bar fills to 200", () => {
@@ -50,7 +51,8 @@ test("worked example: three verdicts, DevNewsletter stays at 0, wallet nets -108
   assert.equal(v.wallet.net, -108.75);
   assert.equal(v.receipt.net, -108.75);
   assert.equal(v.receipt.signups, 14);
-  assert.equal(v.hero, true);
+  assert.equal(v.hero.amount, 70);
+  assert.equal(v.hero.name, "DevNewsletter");
   assert.equal(v.chips.dispute, true);
   assert.deepEqual(v.roundTwo.map((r) => [r.name, r.share]), [["CodePodcast", 0.5], ["TechBlog", 0.5], ["DevNewsletter", 0]]);
 });
@@ -61,7 +63,7 @@ test("every money row has a badge, and a replay shows PRE-RECORDED, never SIMULA
   const replay = view(fixture.events, { replay: true });
   assert.equal(replay.runBadge, "PRE-RECORDED");
   for (const s of replay.suppliers) {
-    for (const cell of Object.values(s.escrow ?? {})) {
+    for (const cell of s.cells ?? []) {
       for (const m of [cell.lock, ...cell.outcomes].filter(Boolean)) assert.equal(m.badge, "PRE-RECORDED");
     }
   }
@@ -85,7 +87,7 @@ test("a PENDING lock is not money moved: not in the wallet, badge PENDING, then 
     { seq: 2, name: "escrow.locked", data: { supplier: "techblog", kind: "award", receipt: pending } },
   ];
   const v1 = view(base);
-  const cell = sup(v1, "techblog").escrow.award;
+  const cell = cellOf(v1, "techblog", "award");
   assert.equal(cell.lock.badge, "PENDING");
   assert.equal(cell.lock.pending, true);
   assert.equal(cell.tone, "pending");
@@ -95,7 +97,7 @@ test("a PENDING lock is not money moved: not in the wallet, badge PENDING, then 
 
   const real = { seq: 3, name: "settlement.progress", data: { supplier: "techblog", phase: "lock", action: "award", receiptId: "lock-1", state: "FundsLocked", badge: "REAL", txHash: REAL_TX, explorerUrl: EXPLORER } };
   const v2 = view([...base, real]);
-  const lock = sup(v2, "techblog").escrow.award.lock;
+  const lock = cellOf(v2, "techblog", "award").lock;
   assert.equal(lock.badge, "REAL");
   assert.equal(lock.explorerUrl, EXPLORER);
   assert.equal(v2.wallet.escrowed, 70);
@@ -108,7 +110,7 @@ test("REAL without a tx hash is not REAL", () => {
     { seq: 1, name: "tender.published", data: { tender: fixture.run.tender, brief: fixture.run.brief, suppliers: fixture.run.suppliers } },
     { seq: 2, name: "escrow.locked", data: { supplier: "techblog", kind: "award", receipt: { id: "x", badge: "REAL", action: "award", amount: 70, from: "consumer", to: "techblog", txHash: null } } },
   ];
-  assert.equal(sup(view(ev), "techblog").escrow.award.lock.badge, "SIMULATED");
+  assert.equal(cellOf(view(ev), "techblog", "award").lock.badge, "SIMULATED");
 });
 
 test("settlement.transfer is upserted by receipt id: a row created PENDING then REAL is one row", () => {
@@ -118,7 +120,7 @@ test("settlement.transfer is upserted by receipt id: a row created PENDING then 
     { seq: 2, name: "settlement.transfer", data: { supplier: "techblog", verdict: "pass", receipt: { ...row, badge: "PENDING", txHash: null } } },
     { seq: 3, name: "settlement.transfer", data: { supplier: "techblog", verdict: "pass", receipt: { ...row, badge: "REAL", txHash: REAL_TX, explorerUrl: EXPLORER } } },
   ];
-  const outcomes = sup(view(ev), "techblog").escrow.award.outcomes;
+  const outcomes = cellOf(view(ev), "techblog", "award").outcomes;
   assert.equal(outcomes.length, 1);
   assert.equal(outcomes[0].badge, "REAL");
 });

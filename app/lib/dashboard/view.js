@@ -125,7 +125,7 @@ export function buildDashboardView(state, { signals = null } = {}) {
       delivered: s.verdict?.delivered ?? (verifiedKnown ? s.verified : null),
       verdict: s.verdict,
       rejections: s.rejections,
-      escrow: lost ? null : { award: cellFor("award", locks.award, outcomes.filter((o) => o.action.startsWith("award"))), bond: cellFor("bond", locks.bond, outcomes.filter((o) => o.action.startsWith("bond"))) },
+      cells: lost ? null : ["award", "bond"].map((kind) => cellFor(kind, locks[kind], outcomes.filter((o) => o.action.startsWith(kind)))),
     };
   });
 
@@ -139,7 +139,8 @@ export function buildDashboardView(state, { signals = null } = {}) {
   const back = sum(moved(toConsumer));
   const accepted = state.order.map((id) => state.suppliers[id]).filter((s) => s.accepted).sort((a, b) => (a.rank ?? 9) - (b.rank ?? 9));
 
-  const hero = money.some((m) => m.action === "award_reclaim" && !m.pending);
+  const refund = money.find((m) => m.action === "award_reclaim" && !m.pending);
+  const hero = refund ? { ...refund, name: state.suppliers[refund.supplier]?.name ?? refund.supplier } : null;
 
   return {
     runId: state.runId,
@@ -183,7 +184,7 @@ export function buildDashboardView(state, { signals = null } = {}) {
     chips: {
       discovery: state.order.length > 0,
       wallet: locks.length > 0,
-      escrow: locks.length > 0,
+      masumi: locks.length > 0,
       dispute: state.order.some((id) => state.suppliers[id].verdict?.kind === "under_gate"),
     },
     bots: suppliers.map((s) => ({
