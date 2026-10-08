@@ -52,10 +52,14 @@ and it's the cheapest 10 points available.
   choices, not laws of nature — crude next to real media-mix modeling.
 - The supplier win-chance rule is a proposal, not decided. The budget fill
   rule for a bid that does not fit is not defined.
-- The Under-gate refund path (supplier never submits, Consumer reclaims after
-  the submit-result deadline) is open until the D9 preprod dry run.
-- tUSDM (test USDM) availability on Cardano preprod is unverified. Fallback is
-  tADA with scaled amounts.
+- The Under-gate award comes back by cooperative refund (5.9 min on preprod);
+  the automatic refund after the submit-result deadline (27.8 min) is the
+  fallback. See `docs/money-flow.md`.
+- The fast release of an award passes through `Disputed` on-chain before the
+  buyer authorizes the payout. It is the V2 contract's buyer-approved release,
+  not a real dispute, but the explorer shows it.
+- Amounts are tADA, the spec ×10 (#24), not a USD stablecoin: Masumi transfers
+  have a 2 ADA minimum and small escrows risk min-UTxO errors.
 - Proactive supplier discovery (GamingForum finds the Board itself) is pitch
   only. In the build, GamingForum is invited like the other three.
 - Attribution is first-touch; production needs multi-touch.

@@ -10,11 +10,11 @@ Verify endpoint signatures against the live API on the night; don't trust memory
 
 | Masumi primitive | Our usage |
 |---|---|
-| Payment service (hosted preprod) | 10 escrows per run, all tUSDM: 6 critical (3 awards, 3 bonds), REAL + 4 background bid fees, SIMULATED first and REAL if time allows (PRD D13). Settlement per verdict, calls per branch in "The escrow lifecycle in our demo" |
+| Payment service (hosted preprod) | 6 escrows per run, all tADA (spec ×10, #24): 3 awards + 3 bonds, REAL. 4 bid fees SIMULATED (PRD D13). Settlement per verdict: every call, amount and measured time in [`docs/money-flow.md`](money-flow.md) |
 | Registry | Board discovers supplier agents for the tender; register OUR 4 policy-bound supplier agents (TechBlog, CodePodcast, DevNewsletter, GamingForum) so discovery is real |
 | Escrow state machine | `FundsLocked → ResultSubmitted → RefundRequested → Disputed` — surfaced in the UI ledger (full state list below) |
 | Decision logging | We send hashes (tender terms, outcome report, signed verdicts); Masumi anchors them |
-| Faucet | tADA (fees) + tUSDM (escrow funds) for our wallets — ⚠️ test USDM on preprod is **UNVERIFIED**, see "Funding" below |
+| Faucet | tADA for fees and escrow funds (decided 8 Oct, #24) |
 | Explorer | cardanoscan preprod links per tx, shown in the UI |
 
 ## Masumi platform facts (Perplexity deep research, 2026-10-04)
@@ -129,15 +129,15 @@ Terminal states for polling: `Withdrawn`, `RefundWithdrawn`, `DisputedWithdrawn`
 ### Funding & faucets
 
 - The safe payment asset is **tADA**: Cardano testnet faucet; preprod tADA has no monetary value.
-- Funding checklist (tUSDM + ADA): Consumer purchasing wallet (20 tUSDM of awards + tx overhead), 4 supplier wallets (bid fee 0.2 + bond; they also sell, so each needs ADA for submit-result fees), Board wallet (forwarded forfeits and bond remainders; sells bid fees and bonds), registry minting wallet; add collateral if requested. Fund ≥24h before the event; don't rely on a faucet during the demo.
-- Amounts like 0.2, 0.375 and 1.125 tUSDM need the asset's decimals as integer strings; the decimals are **UNVERIFIED** with the asset itself.
+- Funding checklist (tADA): Consumer purchasing wallet (200 tADA of awards + tx overhead), 4 supplier wallets (bid fee 2 + bond up to 17.5; they also sell, so each needs ADA for submit-result fees), Board wallet (forwarded forfeits and bond remainders; sells bid fees and bonds), registry minting wallet; add collateral if requested. Fund ≥24h before the event; don't rely on a faucet during the demo.
+- Amounts go to Masumi as lovelace integer strings (1 tADA = 1,000,000 lovelace), e.g. 3.75 → `"3750000"`.
 - **Test USDM on Preprod is UNVERIFIED and contradictory:** the Masumi Dispenser advertises ADA + USDM for Testnet but requires a verification code + ADA collateral; older official docs say USDM is not available on Preprod. Research recommendation: **tADA for the judged flow**; use test USDM only if organizers provide a dispenser code, exact policy/asset ID, decimals, and funded wallets. Never hard-code mainnet USDM's policy ID into Preprod. Dispenser rate limits: **UNVERIFIED**. Commonly reported faucet limit: one request per address per 24h (confirm in the faucet UI on the day).
-- ⚠️ Conflicts with this file's plan (all amounts in tUSDM, test USDM **UNVERIFIED**): fallback is tADA with scaled amounts. Decide with Vladimir once the organizers answer.
+- Decided 8 Oct (#24, Danila approved): tADA, spec amounts ×10. tUSDM dropped.
 
 ### Fees & minimums
 
 - V2: 0% Masumi protocol fee; Cardano network fees still apply. V1 fee is payment-source configuration, not a fixed number — inspect `GET /payment-source` or the hosted dashboard; treat the hosted V1 fee as **UNVERIFIED until preflight**.
-- No universal minimum escrow amount is documented; transactions must satisfy Cardano min-UTxO + collateral. Avoid dust — a few tADA per escrow in the tADA fallback. Keep the purchasing wallet funded well above the 20 tUSDM of awards; keep several tADA in every seller wallet.
+- No universal minimum escrow amount is documented; transactions must satisfy Cardano min-UTxO + collateral. Avoid dust: the ×10 amounts keep every escrow at 15 tADA or more, and `transfer-funds` has a 2 ADA minimum. Keep the purchasing wallet funded well above the 200 tADA of awards; keep several tADA in every seller wallet.
 
 ### Integration paths (TypeScript team, ~10h)
 
@@ -175,66 +175,29 @@ Missing `/api/v1` in base URL · `Authorization: Bearer` instead of `token` head
 
 ## The escrow lifecycle in our demo
 
-All 10 escrows use the same two lock calls: the seller creates terms with
-`POST /payment` (no funds move), the buyer locks with `POST /purchase`.
-Every escrow ends in `Withdrawn` or `RefundWithdrawn`, collected by the node.
+Step by step, with who calls what with whose key, amounts, escrow states and
+measured preprod times: **[`docs/money-flow.md`](money-flow.md)**. In short:
 
-| Escrow | Count | Path | Buyer (locks) | Seller (submits result, collects) |
-|---|---|---|---|---|
-| Bid fee, 0.2 tUSDM | 4 | background, SIMULATED first | Supplier agent | Board |
-| Award (7, 6, 7) | 3 | critical, REAL | Consumer agent | Supplier agent |
-| Bond, 25% of award (1.75, 1.5, 1.75) | 3 | critical, REAL | Supplier agent (winner) | Board |
-
-Bid fee: seller calls `submit-result`, then collects after `unlockTime`. No
-refund calls, ever (the bid fee is never returned). The Board's signed
-verdicts are hashed into the decision log (inferred from "Decision logging").
-
-Award and bond calls per settlement branch (the Board's verifier signs the
-verdict before any call; "collect" = automatic after `unlockTime`):
-
-| Branch | Award (Consumer buys from Supplier) | Bond (Supplier buys from Board) |
-|---|---|---|
-| Pass (delivered ≥ promised) | Supplier `submit-result`, collects the full award → `Withdrawn` | Board `authorize-refund`, Supplier collects the full bond → `RefundWithdrawn` |
-| Short of promise (≥ 5, < promised) | Same as Pass | Board `submit-result`, collects the full bond → `Withdrawn`; then plain transfers: bond − forfeit to Supplier, forfeit to Consumer. Forfeit = bond × (promised − delivered) ÷ promised |
-| Under gate (< 5) | Path A2 (below): Supplier never submits; Consumer reclaims after `submitResultTime` | Board `submit-result`, collects the full bond → `Withdrawn`; then a plain transfer of the full bond to Consumer |
-| Lost bid | No award | No bond; bid fee only, not returned |
-
-- **A2, Under-gate award (open until the D9 dry run):** the Supplier never calls
-  `submit-result`. After `submitResultTime` the Consumer reclaims the award with
-  no supplier signature. The exact Masumi call for a buyer-only reclaim is not in
-  this research: confirm it in the dry run. Fallback if the contract rejects it:
-  Consumer `POST /purchase/request-refund` (`FundsLocked` → `RefundRequested`),
-  then Supplier `POST /payment/authorize-refund` → `RefundWithdrawn`. Our own
-  supplier agent signs it. Never `submit-result` here: a refund request after
+- 6 escrows, all tADA, locked in parallel as soon as winners are picked:
+  3 awards (Consumer buys from Supplier: 70 / 60 / 70) and 3 bonds (Supplier
+  buys from Board: 17.5 / 15 / 17.5). Each lock is seller `POST /payment`, then
+  buyer `POST /purchase`. `FundsLocked` in 1.6–3.2 min.
+- 4 bid fees of 2 tADA are SIMULATED, never returned.
+- Settlement uses the fast cooperative paths (`app/lib/masumi/real.js`):
+  Pass and Short of promise awards by early release (13.1 min, passes through
+  `Disputed`), Pass bond by cooperative return (4.7 min), Under-gate award by
+  cooperative refund (5.9 min; A2 automatic refund 27.8 min as fallback).
+  The Board collects Short-of-promise and Under-gate bonds by early release,
+  then the treasury worker sends the forfeit to the Consumer and any remainder
+  to the Supplier (plain transfers, Board-signed verdict required).
+- Never `submit-result` on an Under-gate award: a refund request after
   `ResultSubmitted` gives `Disputed`.
-- **Pass, bond refund (inferred, depends on D9):** under V1 the Board's
-  `authorize-refund` may need the Supplier's `request-refund` first
-  (`RefundRequested`); under V2 it works from `FundsLocked`.
-- **Plain transfers** (bond remainder, forfeit) are not escrows and not Masumi
-  calls. They are a trust assumption on the Board and go in honest limitations.
 - Per-supplier states: Pass and Short of promise end `SETTLED`, Under gate ends
   `REFUNDED`, Lost bid never leaves `QUOTED`.
 
-```text
-1. Brief + tender: Consumer publishes the tender (gate 5/1,000, bond 25%); Board
-   finds suppliers in the registry, POSTs /tender-invite to each api_base_url
-2. Bidding: each of 4 suppliers locks the 0.2 bid fee (4 escrows, background,
-   SIMULATED first);
-   commit hash, reveal, Board checks hashes, ranks cheapest per promised signup,
-   picks 3 winners within budget 20
-3. Lock (IN PARALLEL, early in the night): Consumer locks 3 awards, each winner
-   locks its bond → FundsLocked (save tx hash + explorer link)
-4. Traffic serves (off-chain, simulated); NeoRack signup feed → Board; the
-   Board's verifier counts verified signups and the Board signs a verdict per
-   supplier
-5. Settlement engine, per supplier, by verdict (table above):
-     Pass / Short of promise → submit result → collect → SETTLED
-     Under gate → refund path → REFUNDED
-```
-
-**Timing reality:** polling a state transition takes minutes. Locks go out as
-soon as winners are picked; the UI polls and streams progress via SSE.
-Never block the demo on a synchronous chain call — job-token + poll.
+**Timing reality:** a full run settles in about 15 min. Locks go out as soon as
+winners are picked; the UI polls and streams progress via SSE. Never block the
+demo on a synchronous chain call — job-token + poll.
 
 ## Registry usage
 
@@ -253,7 +216,7 @@ Never block the demo on a synchronous chain call — job-token + poll.
 
 - [ ] Hosted payment-service base URL + API keys (ReadAndPay)
 - [ ] Registry base URL + permission to register our 4 supplier agents
-- [ ] Faucet access / pre-funded wallets (tADA + tUSDM — ⚠️ test USDM UNVERIFIED, see above)
+- [ ] Faucet access / pre-funded wallets (tADA)
 - [ ] Contract version on preprod (V1 or V2) and whether a buyer can reclaim an award after `submitResultTime` without the seller (D9)
 - [ ] Kickoff questions: recommended integration path for a 10h build
       (payment-service REST vs `pip-masumi` vs MCP server)? What breaks most

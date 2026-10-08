@@ -40,8 +40,8 @@ from the Board-signed verdict (`app/lib/verifier/`) and executes it via `app/lib
 
 ## Done when
 
-TechBlog Pass (7 paid, 1.75 bond returned), CodePodcast Short of promise
-(6 paid, 0.375 forfeited, 1.125 returned), DevNewsletter Under gate (7 back to
-the Consumer, 1.75 forfeited). Consumer net −10.875 tUSDM for 14 verified
+TechBlog Pass (70 paid, 17.5 bond returned), CodePodcast Short of promise
+(60 paid, 3.75 forfeited, 11.25 returned), DevNewsletter Under gate (70 back to
+the Consumer, 17.5 forfeited). Consumer net −108.75 tADA for 14 verified
 signups. All with real preprod tx hashes (or labelled simulated receipts
 under the flag).

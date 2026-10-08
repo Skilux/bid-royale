@@ -18,7 +18,7 @@ edited".
 7. Chat / Notion    working notes                     — may be stale, verify upward
 ```
 
-Money constants (`budget 20`, `gate 5`, `bondRate 0.25`, `bidFee 0.2`, `tUSDM`)
+Money constants (`budget 200`, `gate 5`, `bondRate 0.25`, `bidFee 2`, `tADA`)
 are defined once in `app/lib/config.js`. Docs cite them; they never restate them
 as their own source.
 
@@ -28,7 +28,8 @@ as their own source.
 |---|---|---|
 | System shape, module boundaries | `docs/architecture.md` | link only |
 | Hosting, deploy, env vars | `docs/hosting.md` | link only |
-| Masumi primitives, escrow lifecycle | `docs/masumi.md` | link only |
+| Masumi primitives | `docs/masumi.md` | link only |
+| Money flow per run: calls, keys, amounts, escrow states, measured times | `docs/money-flow.md` | link only |
 | Third-party services, access levels | `docs/services.md` | link only |
 | Honest limits of the demo | `docs/honest-limitations.md` | README links here |
 | Demo script, merge points, timings | `docs/demo-runbook.md` | AGENTS.md links here |

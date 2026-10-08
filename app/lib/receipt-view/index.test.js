@@ -32,15 +32,15 @@ test("explorerFor: only for REAL with an https url", () => {
   assert.equal(explorerFor({ explorerUrl: null }, "REAL"), null);
 });
 
-test("worked example: net -10.875 for 14 verified signups, every badge SIMULATED", () => {
+test("worked example: net -108.75 for 14 verified signups, every badge SIMULATED", () => {
   const view = buildReceiptView({ ...fixture.run, events: fixture.events });
   assert.equal(view.settlementDone, true);
-  assert.equal(view.final.net, -10.875);
-  assert.equal(view.final.paid, 10.875);
+  assert.equal(view.final.net, -108.75);
+  assert.equal(view.final.paid, 108.75);
   assert.equal(view.final.signups, 14);
   assert.deepEqual(view.final.badges, ["SIMULATED"]);
   assert.deepEqual(view.lock.badges, ["SIMULATED"]);
-  assert.equal(view.lock.amount, 20);
+  assert.equal(view.lock.amount, 200);
   assert.equal(view.lock.count, 3);
   assert.deepEqual(view.tally, {
     locksTotal: 6,
@@ -62,9 +62,9 @@ test("worked example: story order, amounts and round 2", () => {
     ],
   );
   const [tech, pod, dev] = view.settled;
-  assert.deepEqual([tech.paid, tech.bondReturned, tech.bondForfeited], [7, 1.75, 0]);
-  assert.deepEqual([pod.paid, pod.bondReturned, pod.bondForfeited], [6, 1.125, 0.375]);
-  assert.deepEqual([dev.reclaimed, dev.bondForfeited, dev.refundTotal], [7, 1.75, 8.75]);
+  assert.deepEqual([tech.paid, tech.bondReturned, tech.bondForfeited], [70, 17.5, 0]);
+  assert.deepEqual([pod.paid, pod.bondReturned, pod.bondForfeited], [60, 11.25, 3.75]);
+  assert.deepEqual([dev.reclaimed, dev.bondForfeited, dev.refundTotal], [70, 17.5, 87.5]);
   assert.equal(dev.explorerUrl, null);
   assert.deepEqual(
     view.roundTwo.map((r) => [r.supplier, r.share]),
@@ -77,14 +77,14 @@ test("worked example: story order, amounts and round 2", () => {
   assert.deepEqual(
     view.leaderboard.map((r) => [r.rank, r.supplier, r.costPerSignup]),
     [
-      [1, "techblog", 0.875],
-      [2, "codepodcast", 0.9375],
+      [1, "techblog", 8.75],
+      [2, "codepodcast", 9.375],
       [3, "devnewsletter", null],
       [4, "gamingforum", null],
     ],
   );
-  assert.equal(view.leaderboard[2].refunded, 8.75);
-  assert.equal(view.leaderboard[3].bidFee, 0.2);
+  assert.equal(view.leaderboard[2].refunded, 87.5);
+  assert.equal(view.leaderboard[3].bidFee, 2);
 });
 
 test("a REAL refund tx shows REAL and the explorer link, the rest stay SIMULATED", () => {
@@ -138,7 +138,7 @@ test("without a receipt, totals fall back to consumerNet", () => {
   const run = clone();
   run.receipt = null;
   const view = buildReceiptView(run);
-  assert.equal(view.final.net, -10.875);
+  assert.equal(view.final.net, -108.75);
   assert.equal(view.final.signups, 14);
 });
 

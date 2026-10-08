@@ -56,11 +56,11 @@
       "goal": "pay per verified signup"
     },
     "tender": {
-      "budget": 20,
+      "budget": 200,
       "gate": 5,
       "bondRate": 0.25,
-      "bidFee": 0.2,
-      "currency": "tUSDM",
+      "bidFee": 2,
+      "currency": "tADA",
       "audience": "technical users",
       "deadline": 1791496855060
     },
@@ -93,38 +93,38 @@
     "bids": [
       {
         "supplier": "techblog",
-        "price": 7,
+        "price": 70,
         "impressions": 1000,
         "promisedPer1000": 7,
         "salt": "salt-techblog",
-        "commit": "5ab05684c168d525dd6423bea19977e8722ab9d017226ea7b6e499d031ca1e78",
+        "commit": "5520dde29f2232d3f4706b83973b2267763f0daec8dcf0660774c6c82288a564",
         "committedAt": 1791496800070
       },
       {
         "supplier": "codepodcast",
-        "price": 6,
+        "price": 60,
         "impressions": 1000,
         "promisedPer1000": 8,
         "salt": "salt-codepodcast",
-        "commit": "3cee85af48542a4d01429933d79c5f88559f1d156f28367c2d9b92ef0e13c6bd",
+        "commit": "c9abe29dc280c1d6494464d5e2512f46d327ca6b6bcd32b97a85b9f81c026e06",
         "committedAt": 1791496800080
       },
       {
         "supplier": "devnewsletter",
-        "price": 7,
+        "price": 70,
         "impressions": 1500,
         "promisedPer1000": 12,
         "salt": "salt-devnewsletter",
-        "commit": "8b148d40a0324b7424673dcb5d81fdbc41b81d29b0f4086b0c97af7a8320b0ee",
+        "commit": "88fab11a3d07d72c9a83ce6a9e47f215e916a8dd44dba580ea03db426d763183",
         "committedAt": 1791496800090
       },
       {
         "supplier": "gamingforum",
-        "price": 2,
+        "price": 20,
         "impressions": 1000,
         "promisedPer1000": 4,
         "salt": "salt-gamingforum",
-        "commit": "741fe4f67645b3c1e020dc89a09fcafb7f20efd0911f577782c1cace93f85a38",
+        "commit": "2a1d98e0b6c62f5c4f51d09dc8d60ae59fba1c3a471ba574ff312664624af64e",
         "committedAt": 1791496800100
       }
     ],
@@ -132,65 +132,65 @@
       "ranking": [
         {
           "supplier": "devnewsletter",
-          "price": 7,
+          "price": 70,
           "impressions": 1500,
           "promisedPer1000": 12,
-          "pricePerSignup": 0.3888888888888889,
+          "pricePerSignup": 3.888888888888889,
           "accepted": true,
-          "award": 7,
-          "bond": 1.75
+          "award": 70,
+          "bond": 17.5
         },
         {
           "supplier": "codepodcast",
-          "price": 6,
+          "price": 60,
           "impressions": 1000,
           "promisedPer1000": 8,
-          "pricePerSignup": 0.75,
+          "pricePerSignup": 7.5,
           "accepted": true,
-          "award": 6,
-          "bond": 1.5
+          "award": 60,
+          "bond": 15
         },
         {
           "supplier": "techblog",
-          "price": 7,
+          "price": 70,
           "impressions": 1000,
           "promisedPer1000": 7,
-          "pricePerSignup": 1,
+          "pricePerSignup": 10,
           "accepted": true,
-          "award": 7,
-          "bond": 1.75
+          "award": 70,
+          "bond": 17.5
         }
       ],
       "accepted": [
         {
           "supplier": "devnewsletter",
-          "price": 7,
+          "price": 70,
           "impressions": 1500,
           "promisedPer1000": 12,
-          "pricePerSignup": 0.3888888888888889,
+          "pricePerSignup": 3.888888888888889,
           "accepted": true,
-          "award": 7,
-          "bond": 1.75
+          "award": 70,
+          "bond": 17.5
         },
         {
           "supplier": "codepodcast",
-          "price": 6,
+          "price": 60,
           "impressions": 1000,
           "promisedPer1000": 8,
-          "pricePerSignup": 0.75,
+          "pricePerSignup": 7.5,
           "accepted": true,
-          "award": 6,
-          "bond": 1.5
+          "award": 60,
+          "bond": 15
         },
         {
           "supplier": "techblog",
-          "price": 7,
+          "price": 70,
           "impressions": 1000,
           "promisedPer1000": 7,
-          "pricePerSignup": 1,
+          "pricePerSignup": 10,
           "accepted": true,
-          "award": 7,
-          "bond": 1.75
+          "award": 70,
+          "bond": 17.5
         }
       ],
       "rejected": [
@@ -199,7 +199,7 @@
           "reason": "below_gate"
         }
       ],
-      "totalAward": 20
+      "totalAward": 200
     },
     "feed": {
       "window": {
@@ -559,10 +559,10 @@
         "delivered": 0,
         "promised": 12,
         "gate": 5,
-        "award": 7,
-        "bond": 1.75,
-        "hash": "f2fdb62a32e926a9898e66323f62cde99b913503665b6a0ea5394971d9825ac8",
-        "signature": "b453065b13236975cb42c2ed2c52115f31d98a0c48ba9469e7ca99743fee4b0f9aaad50c9277435065c71692e01989981d199fb87ae6847cdf795897f7754808"
+        "award": 70,
+        "bond": 17.5,
+        "hash": "3297b1857ce7a267a3e5576ce8af2a69f6f28c8e912218e6aabd6a3d65cef855",
+        "signature": "ccc0684d529216bb7816bc062098b01c25e22b1fafb7ee0a7388dd9447ae1743a4509e767a8a21f717298b635245c5b0f2b7b14c8ae0de54f67252ead033250c"
       },
       {
         "supplier": "codepodcast",
@@ -570,10 +570,10 @@
         "delivered": 6,
         "promised": 8,
         "gate": 5,
-        "award": 6,
-        "bond": 1.5,
-        "hash": "4c65cfc515a77a36e970493a0aedb50291119d8307e97938fe5d438c3941e2d2",
-        "signature": "642c6e31b9c0abd93110f2b00515776d492beef37b739cee6070c0c250ad57b29331a1606459f10d61e42b055d9a7aed17779d3d59cf631ac5475da050763402"
+        "award": 60,
+        "bond": 15,
+        "hash": "ad70c18058dd3e10e6625381aa79ce448d50fc19ecf982e8ea985f871e8056fd",
+        "signature": "97f29d935da2e241ecb32a3528f2556ed3a3b84e84e042e36bb64b0e7550ca42e28df75889b378ec1753c49281302c7d0477c2cda64c019914cc7d7e0c4cc002"
       },
       {
         "supplier": "techblog",
@@ -581,10 +581,10 @@
         "delivered": 8,
         "promised": 7,
         "gate": 5,
-        "award": 7,
-        "bond": 1.75,
-        "hash": "2191f006023a4fe8c321d0077690479fb70d9eb9225a810c014fd7bc04a38a22",
-        "signature": "006be4fb3b5b7508eff104b8c592b847319b31aa68f7c2c3da4fdcffd30a2d56e8c0dffed731188d2ddccd58a13c4f72b25564cce53bcad4d55eff6eff4ccb02"
+        "award": 70,
+        "bond": 17.5,
+        "hash": "1d923c7372999044ea43075bc4611b20570e982340c0f337d301df4c216c03df",
+        "signature": "be1eae888ee63a145f4a4466f36dd01ab35f239df35a987d2580a5c8e8aaf93ecd071352be1ba0be132b239b16bc555613530eb6357039a1671ff8b57a36ee0b"
       }
     ],
     "settlement": {
@@ -593,91 +593,91 @@
       "startedAt": "2026-10-08T22:00:00.640Z",
       "transfers": [
         {
-          "id": "sim_b7a8f2afdf191fe18b982ecde6f5238ade05c2ffa82874a9e43f61c7",
+          "id": "sim_fa964d3e392795135f46fe00d0e82cf9e67403859d3848f3b5a4603c",
           "badge": "SIMULATED",
           "action": "award_reclaim",
-          "amount": 7,
+          "amount": 70,
           "from": "devnewsletter",
           "to": "consumer",
-          "txHash": "sim_b7a8f2afdf191fe18b982ecde6f5238ade05c2ffa82874a9e43f61c7",
+          "txHash": "sim_fa964d3e392795135f46fe00d0e82cf9e67403859d3848f3b5a4603c",
           "explorerUrl": null,
           "state": "Withdrawn",
           "supplier": "devnewsletter",
           "verdict": "under_gate"
         },
         {
-          "id": "sim_27eb840bafc62576f26cb9a3342729d388dfa97657cf2952e19157d1",
+          "id": "sim_c1c7bb9003e2b18cc69ddc8d899eb1e3f5e9849a45c1b0b50118de63",
           "badge": "SIMULATED",
           "action": "bond_forfeit",
-          "amount": 1.75,
+          "amount": 17.5,
           "from": "board",
           "to": "consumer",
-          "txHash": "sim_27eb840bafc62576f26cb9a3342729d388dfa97657cf2952e19157d1",
+          "txHash": "sim_c1c7bb9003e2b18cc69ddc8d899eb1e3f5e9849a45c1b0b50118de63",
           "explorerUrl": null,
           "state": "TransferSent",
           "supplier": "devnewsletter",
           "verdict": "under_gate"
         },
         {
-          "id": "sim_8b33dc76b599a5f560cdccedb3752ddbb9e07019e737d37393ac87f0",
+          "id": "sim_cf669b3aca93df2ea9b6f9c06e9ad7e0e5073ac072854d6b4a501d97",
           "badge": "SIMULATED",
           "action": "award_release",
-          "amount": 6,
+          "amount": 60,
           "from": "consumer",
           "to": "codepodcast",
-          "txHash": "sim_8b33dc76b599a5f560cdccedb3752ddbb9e07019e737d37393ac87f0",
+          "txHash": "sim_cf669b3aca93df2ea9b6f9c06e9ad7e0e5073ac072854d6b4a501d97",
           "explorerUrl": null,
           "state": "Withdrawn",
           "supplier": "codepodcast",
           "verdict": "short_of_promise"
         },
         {
-          "id": "sim_ee522800edfc08884dd5f82f23eb70115bb2f1d67f8c31193ea536bf",
+          "id": "sim_41363181e72214637607ab7978486697ec96d80822ffd37b7219282d",
           "badge": "SIMULATED",
           "action": "bond_return",
-          "amount": 1.125,
+          "amount": 11.25,
           "from": "board",
           "to": "codepodcast",
-          "txHash": "sim_ee522800edfc08884dd5f82f23eb70115bb2f1d67f8c31193ea536bf",
+          "txHash": "sim_41363181e72214637607ab7978486697ec96d80822ffd37b7219282d",
           "explorerUrl": null,
           "state": "TransferSent",
           "supplier": "codepodcast",
           "verdict": "short_of_promise"
         },
         {
-          "id": "sim_0be0273b1c5e9286e29d7583f11302319de3008efd40e1f128f71998",
+          "id": "sim_e9a77fac0a3089d173a23a987dfc80638ce93c0e9823f89d47cc2f33",
           "badge": "SIMULATED",
           "action": "bond_forfeit",
-          "amount": 0.375,
+          "amount": 3.75,
           "from": "board",
           "to": "consumer",
-          "txHash": "sim_0be0273b1c5e9286e29d7583f11302319de3008efd40e1f128f71998",
+          "txHash": "sim_e9a77fac0a3089d173a23a987dfc80638ce93c0e9823f89d47cc2f33",
           "explorerUrl": null,
           "state": "TransferSent",
           "supplier": "codepodcast",
           "verdict": "short_of_promise"
         },
         {
-          "id": "sim_0817699c26e6bc30b66a6d2f38975affed3595d9f1a94194e726f8b4",
+          "id": "sim_66a8127cefbe138a2b6eaad4623538e03d95209d956c8dc972d5e893",
           "badge": "SIMULATED",
           "action": "award_release",
-          "amount": 7,
+          "amount": 70,
           "from": "consumer",
           "to": "techblog",
-          "txHash": "sim_0817699c26e6bc30b66a6d2f38975affed3595d9f1a94194e726f8b4",
+          "txHash": "sim_66a8127cefbe138a2b6eaad4623538e03d95209d956c8dc972d5e893",
           "explorerUrl": null,
           "state": "Withdrawn",
           "supplier": "techblog",
           "verdict": "pass"
         },
         {
-          "id": "sim_5721ba5dbf7420258c721044226c4afd639ece3b609d8b079b1d5dff",
+          "id": "sim_1b2a7325c0118ee88a50dd2311923e12bc1950b6fb4f27c1502dc2ce",
           "badge": "SIMULATED",
           "action": "bond_return",
-          "amount": 1.75,
+          "amount": 17.5,
           "from": "board",
           "to": "techblog",
-          "txHash": "sim_5721ba5dbf7420258c721044226c4afd639ece3b609d8b079b1d5dff",
+          "txHash": "sim_1b2a7325c0118ee88a50dd2311923e12bc1950b6fb4f27c1502dc2ce",
           "explorerUrl": null,
           "state": "Withdrawn",
           "supplier": "techblog",
@@ -688,221 +688,221 @@
     },
     "ledger": [
       {
-        "id": "sim_514978bc512aecb4120201cb7ed91a4c315f56f8f7843168770567a5",
+        "id": "sim_927eb35648e339b4b0cd6db45b2ed9e01c937377d6204a4cdf831c17",
         "badge": "SIMULATED",
         "action": "bid_fee",
-        "amount": 0.2,
+        "amount": 2,
         "from": "techblog",
         "to": "board",
-        "txHash": "sim_514978bc512aecb4120201cb7ed91a4c315f56f8f7843168770567a5",
+        "txHash": "sim_927eb35648e339b4b0cd6db45b2ed9e01c937377d6204a4cdf831c17",
         "explorerUrl": null,
         "state": "FundsLocked",
         "phase": "bid_fee",
         "supplier": "techblog"
       },
       {
-        "id": "sim_33f8ab000af6dc174790fb66017833e6595f7dd048214fbe054c9976",
+        "id": "sim_23265bec2318c3894eff624941eb30f272831f0d6361e78b5f4387bc",
         "badge": "SIMULATED",
         "action": "bid_fee",
-        "amount": 0.2,
+        "amount": 2,
         "from": "codepodcast",
         "to": "board",
-        "txHash": "sim_33f8ab000af6dc174790fb66017833e6595f7dd048214fbe054c9976",
+        "txHash": "sim_23265bec2318c3894eff624941eb30f272831f0d6361e78b5f4387bc",
         "explorerUrl": null,
         "state": "FundsLocked",
         "phase": "bid_fee",
         "supplier": "codepodcast"
       },
       {
-        "id": "sim_8020b74c49af1df9e9b3af52d9a2582aee47705f8335fbc46f922a7b",
+        "id": "sim_b2d9f8e8f5509fbc8975f2133ab43f97e1e8a20eee9bd88907808ea4",
         "badge": "SIMULATED",
         "action": "bid_fee",
-        "amount": 0.2,
+        "amount": 2,
         "from": "devnewsletter",
         "to": "board",
-        "txHash": "sim_8020b74c49af1df9e9b3af52d9a2582aee47705f8335fbc46f922a7b",
+        "txHash": "sim_b2d9f8e8f5509fbc8975f2133ab43f97e1e8a20eee9bd88907808ea4",
         "explorerUrl": null,
         "state": "FundsLocked",
         "phase": "bid_fee",
         "supplier": "devnewsletter"
       },
       {
-        "id": "sim_f47f85a9b7c253cd70aff82959b29b5723d241fa3b45ccaf56359c49",
+        "id": "sim_183fae4657b78e5d87515eb69f17c6b7392ce9e7fe48ca3f3b6300eb",
         "badge": "SIMULATED",
         "action": "bid_fee",
-        "amount": 0.2,
+        "amount": 2,
         "from": "gamingforum",
         "to": "board",
-        "txHash": "sim_f47f85a9b7c253cd70aff82959b29b5723d241fa3b45ccaf56359c49",
+        "txHash": "sim_183fae4657b78e5d87515eb69f17c6b7392ce9e7fe48ca3f3b6300eb",
         "explorerUrl": null,
         "state": "FundsLocked",
         "phase": "bid_fee",
         "supplier": "gamingforum"
       },
       {
-        "id": "sim_7a6c62f756255e569a7d1293174de5d5e50aba814afac97e6607ad96",
+        "id": "sim_bcddf7a250e747d5bb549263bdf421f9ad98023deac0abd2e5eaeab2",
         "badge": "SIMULATED",
         "action": "award",
-        "amount": 7,
+        "amount": 70,
         "from": "consumer",
         "to": "devnewsletter",
-        "txHash": "sim_7a6c62f756255e569a7d1293174de5d5e50aba814afac97e6607ad96",
+        "txHash": "sim_bcddf7a250e747d5bb549263bdf421f9ad98023deac0abd2e5eaeab2",
         "explorerUrl": null,
         "state": "FundsLocked",
         "phase": "lock",
         "supplier": "devnewsletter"
       },
       {
-        "id": "sim_4093bb3a00e637a36fed5ebd24b84fa1fcfb04c8a4aeabe24dc8e1d5",
+        "id": "sim_251282d5bcc85c5a945af7d95577ffe93a1a21fd770060f0253a1276",
         "badge": "SIMULATED",
         "action": "bond",
-        "amount": 1.75,
+        "amount": 17.5,
         "from": "devnewsletter",
         "to": "board",
-        "txHash": "sim_4093bb3a00e637a36fed5ebd24b84fa1fcfb04c8a4aeabe24dc8e1d5",
+        "txHash": "sim_251282d5bcc85c5a945af7d95577ffe93a1a21fd770060f0253a1276",
         "explorerUrl": null,
         "state": "FundsLocked",
         "phase": "lock",
         "supplier": "devnewsletter"
       },
       {
-        "id": "sim_adfd8ad8aef963131468cd5fd4509fc923f118e233c5c3c08dd76537",
+        "id": "sim_624a346c3a013332082c7b3bb8fbee44e9fcc9cb34c6733b0d7c61be",
         "badge": "SIMULATED",
         "action": "award",
-        "amount": 6,
+        "amount": 60,
         "from": "consumer",
         "to": "codepodcast",
-        "txHash": "sim_adfd8ad8aef963131468cd5fd4509fc923f118e233c5c3c08dd76537",
+        "txHash": "sim_624a346c3a013332082c7b3bb8fbee44e9fcc9cb34c6733b0d7c61be",
         "explorerUrl": null,
         "state": "FundsLocked",
         "phase": "lock",
         "supplier": "codepodcast"
       },
       {
-        "id": "sim_bbc2461ae829760693fecd5bf073f2076162dac34661517b92e2a2bc",
+        "id": "sim_188703c2c7a583246616d2fb669640ab719b3a50c5e02a4195fbc18c",
         "badge": "SIMULATED",
         "action": "bond",
-        "amount": 1.5,
+        "amount": 15,
         "from": "codepodcast",
         "to": "board",
-        "txHash": "sim_bbc2461ae829760693fecd5bf073f2076162dac34661517b92e2a2bc",
+        "txHash": "sim_188703c2c7a583246616d2fb669640ab719b3a50c5e02a4195fbc18c",
         "explorerUrl": null,
         "state": "FundsLocked",
         "phase": "lock",
         "supplier": "codepodcast"
       },
       {
-        "id": "sim_a0846b922076e7f632f3ee6736f029a8453b047e5290a59b463ff00f",
+        "id": "sim_76fc67a76dbb9d60b500a76717e5720d29dbda2d91e48499e7948cb8",
         "badge": "SIMULATED",
         "action": "award",
-        "amount": 7,
+        "amount": 70,
         "from": "consumer",
         "to": "techblog",
-        "txHash": "sim_a0846b922076e7f632f3ee6736f029a8453b047e5290a59b463ff00f",
+        "txHash": "sim_76fc67a76dbb9d60b500a76717e5720d29dbda2d91e48499e7948cb8",
         "explorerUrl": null,
         "state": "FundsLocked",
         "phase": "lock",
         "supplier": "techblog"
       },
       {
-        "id": "sim_1020b0ef9dfd04892b53babfe3d1ccfb415a42fe6793d83dec2ca327",
+        "id": "sim_7381ab638c72014b11066b5f611dd1e09b2b0f5a4069484efda75710",
         "badge": "SIMULATED",
         "action": "bond",
-        "amount": 1.75,
+        "amount": 17.5,
         "from": "techblog",
         "to": "board",
-        "txHash": "sim_1020b0ef9dfd04892b53babfe3d1ccfb415a42fe6793d83dec2ca327",
+        "txHash": "sim_7381ab638c72014b11066b5f611dd1e09b2b0f5a4069484efda75710",
         "explorerUrl": null,
         "state": "FundsLocked",
         "phase": "lock",
         "supplier": "techblog"
       },
       {
-        "id": "sim_b7a8f2afdf191fe18b982ecde6f5238ade05c2ffa82874a9e43f61c7",
+        "id": "sim_fa964d3e392795135f46fe00d0e82cf9e67403859d3848f3b5a4603c",
         "badge": "SIMULATED",
         "action": "award_reclaim",
-        "amount": 7,
+        "amount": 70,
         "from": "devnewsletter",
         "to": "consumer",
-        "txHash": "sim_b7a8f2afdf191fe18b982ecde6f5238ade05c2ffa82874a9e43f61c7",
+        "txHash": "sim_fa964d3e392795135f46fe00d0e82cf9e67403859d3848f3b5a4603c",
         "explorerUrl": null,
         "state": "Withdrawn",
         "phase": "settlement",
         "supplier": "devnewsletter"
       },
       {
-        "id": "sim_27eb840bafc62576f26cb9a3342729d388dfa97657cf2952e19157d1",
+        "id": "sim_c1c7bb9003e2b18cc69ddc8d899eb1e3f5e9849a45c1b0b50118de63",
         "badge": "SIMULATED",
         "action": "bond_forfeit",
-        "amount": 1.75,
+        "amount": 17.5,
         "from": "board",
         "to": "consumer",
-        "txHash": "sim_27eb840bafc62576f26cb9a3342729d388dfa97657cf2952e19157d1",
+        "txHash": "sim_c1c7bb9003e2b18cc69ddc8d899eb1e3f5e9849a45c1b0b50118de63",
         "explorerUrl": null,
         "state": "TransferSent",
         "phase": "settlement",
         "supplier": "devnewsletter"
       },
       {
-        "id": "sim_8b33dc76b599a5f560cdccedb3752ddbb9e07019e737d37393ac87f0",
+        "id": "sim_cf669b3aca93df2ea9b6f9c06e9ad7e0e5073ac072854d6b4a501d97",
         "badge": "SIMULATED",
         "action": "award_release",
-        "amount": 6,
+        "amount": 60,
         "from": "consumer",
         "to": "codepodcast",
-        "txHash": "sim_8b33dc76b599a5f560cdccedb3752ddbb9e07019e737d37393ac87f0",
+        "txHash": "sim_cf669b3aca93df2ea9b6f9c06e9ad7e0e5073ac072854d6b4a501d97",
         "explorerUrl": null,
         "state": "Withdrawn",
         "phase": "settlement",
         "supplier": "codepodcast"
       },
       {
-        "id": "sim_ee522800edfc08884dd5f82f23eb70115bb2f1d67f8c31193ea536bf",
+        "id": "sim_41363181e72214637607ab7978486697ec96d80822ffd37b7219282d",
         "badge": "SIMULATED",
         "action": "bond_return",
-        "amount": 1.125,
+        "amount": 11.25,
         "from": "board",
         "to": "codepodcast",
-        "txHash": "sim_ee522800edfc08884dd5f82f23eb70115bb2f1d67f8c31193ea536bf",
+        "txHash": "sim_41363181e72214637607ab7978486697ec96d80822ffd37b7219282d",
         "explorerUrl": null,
         "state": "TransferSent",
         "phase": "settlement",
         "supplier": "codepodcast"
       },
       {
-        "id": "sim_0be0273b1c5e9286e29d7583f11302319de3008efd40e1f128f71998",
+        "id": "sim_e9a77fac0a3089d173a23a987dfc80638ce93c0e9823f89d47cc2f33",
         "badge": "SIMULATED",
         "action": "bond_forfeit",
-        "amount": 0.375,
+        "amount": 3.75,
         "from": "board",
         "to": "consumer",
-        "txHash": "sim_0be0273b1c5e9286e29d7583f11302319de3008efd40e1f128f71998",
+        "txHash": "sim_e9a77fac0a3089d173a23a987dfc80638ce93c0e9823f89d47cc2f33",
         "explorerUrl": null,
         "state": "TransferSent",
         "phase": "settlement",
         "supplier": "codepodcast"
       },
       {
-        "id": "sim_0817699c26e6bc30b66a6d2f38975affed3595d9f1a94194e726f8b4",
+        "id": "sim_66a8127cefbe138a2b6eaad4623538e03d95209d956c8dc972d5e893",
         "badge": "SIMULATED",
         "action": "award_release",
-        "amount": 7,
+        "amount": 70,
         "from": "consumer",
         "to": "techblog",
-        "txHash": "sim_0817699c26e6bc30b66a6d2f38975affed3595d9f1a94194e726f8b4",
+        "txHash": "sim_66a8127cefbe138a2b6eaad4623538e03d95209d956c8dc972d5e893",
         "explorerUrl": null,
         "state": "Withdrawn",
         "phase": "settlement",
         "supplier": "techblog"
       },
       {
-        "id": "sim_5721ba5dbf7420258c721044226c4afd639ece3b609d8b079b1d5dff",
+        "id": "sim_1b2a7325c0118ee88a50dd2311923e12bc1950b6fb4f27c1502dc2ce",
         "badge": "SIMULATED",
         "action": "bond_return",
-        "amount": 1.75,
+        "amount": 17.5,
         "from": "board",
         "to": "techblog",
-        "txHash": "sim_5721ba5dbf7420258c721044226c4afd639ece3b609d8b079b1d5dff",
+        "txHash": "sim_1b2a7325c0118ee88a50dd2311923e12bc1950b6fb4f27c1502dc2ce",
         "explorerUrl": null,
         "state": "Withdrawn",
         "phase": "settlement",
@@ -911,14 +911,14 @@
     ],
     "receipt": {
       "consumer": {
-        "awardsLocked": 20,
-        "returned": 9.125,
-        "net": -10.875,
+        "awardsLocked": 200,
+        "returned": 91.25,
+        "net": -108.75,
         "signups": 14,
-        "costPerSignup": 0.776786
+        "costPerSignup": 7.767857
       },
       "board": {
-        "bidFees": 0.8
+        "bidFees": 8
       },
       "leaderboard": [
         {
@@ -930,16 +930,16 @@
           "delivered": 8,
           "verifiedSignups": 8,
           "countedSignups": 8,
-          "award": 7,
-          "paidToSupplier": 7,
+          "award": 70,
+          "paidToSupplier": 70,
           "awardReclaimed": 0,
-          "bond": 1.75,
-          "bondReturned": 1.75,
+          "bond": 17.5,
+          "bondReturned": 17.5,
           "bondForfeited": 0,
-          "consumerSpend": 7,
-          "costPerSignup": 0.875,
-          "supplierNet": 6.8,
-          "verdictHash": "2191f006023a4fe8c321d0077690479fb70d9eb9225a810c014fd7bc04a38a22"
+          "consumerSpend": 70,
+          "costPerSignup": 8.75,
+          "supplierNet": 68,
+          "verdictHash": "1d923c7372999044ea43075bc4611b20570e982340c0f337d301df4c216c03df"
         },
         {
           "rank": 2,
@@ -950,16 +950,16 @@
           "delivered": 6,
           "verifiedSignups": 6,
           "countedSignups": 6,
-          "award": 6,
-          "paidToSupplier": 6,
+          "award": 60,
+          "paidToSupplier": 60,
           "awardReclaimed": 0,
-          "bond": 1.5,
-          "bondReturned": 1.125,
-          "bondForfeited": 0.375,
-          "consumerSpend": 5.625,
-          "costPerSignup": 0.9375,
-          "supplierNet": 5.425,
-          "verdictHash": "4c65cfc515a77a36e970493a0aedb50291119d8307e97938fe5d438c3941e2d2"
+          "bond": 15,
+          "bondReturned": 11.25,
+          "bondForfeited": 3.75,
+          "consumerSpend": 56.25,
+          "costPerSignup": 9.375,
+          "supplierNet": 54.25,
+          "verdictHash": "ad70c18058dd3e10e6625381aa79ce448d50fc19ecf982e8ea985f871e8056fd"
         },
         {
           "rank": 3,
@@ -970,16 +970,16 @@
           "delivered": 0,
           "verifiedSignups": 0,
           "countedSignups": 0,
-          "award": 7,
+          "award": 70,
           "paidToSupplier": 0,
-          "awardReclaimed": 7,
-          "bond": 1.75,
+          "awardReclaimed": 70,
+          "bond": 17.5,
           "bondReturned": 0,
-          "bondForfeited": 1.75,
-          "consumerSpend": -1.75,
+          "bondForfeited": 17.5,
+          "consumerSpend": -17.5,
           "costPerSignup": null,
-          "supplierNet": -1.95,
-          "verdictHash": "f2fdb62a32e926a9898e66323f62cde99b913503665b6a0ea5394971d9825ac8"
+          "supplierNet": -19.5,
+          "verdictHash": "3297b1857ce7a267a3e5576ce8af2a69f6f28c8e912218e6aabd6a3d65cef855"
         },
         {
           "rank": 4,
@@ -998,7 +998,7 @@
           "bondForfeited": 0,
           "consumerSpend": 0,
           "costPerSignup": null,
-          "supplierNet": -0.2,
+          "supplierNet": -2,
           "verdictHash": null
         }
       ],
@@ -1056,11 +1056,11 @@
       "name": "tender.published",
       "data": {
         "tender": {
-          "budget": 20,
+          "budget": 200,
           "gate": 5,
           "bondRate": 0.25,
-          "bidFee": 0.2,
-          "currency": "tUSDM",
+          "bidFee": 2,
+          "currency": "tADA",
           "audience": "technical users"
         },
         "brief": {
@@ -1114,7 +1114,7 @@
       "name": "bid.committed",
       "data": {
         "supplier": "techblog",
-        "commit": "5ab05684c168d525dd6423bea19977e8722ab9d017226ea7b6e499d031ca1e78",
+        "commit": "5520dde29f2232d3f4706b83973b2267763f0daec8dcf0660774c6c82288a564",
         "committedAt": 1791496800070
       }
     },
@@ -1124,7 +1124,7 @@
       "name": "bid.committed",
       "data": {
         "supplier": "codepodcast",
-        "commit": "3cee85af48542a4d01429933d79c5f88559f1d156f28367c2d9b92ef0e13c6bd",
+        "commit": "c9abe29dc280c1d6494464d5e2512f46d327ca6b6bcd32b97a85b9f81c026e06",
         "committedAt": 1791496800080
       }
     },
@@ -1134,7 +1134,7 @@
       "name": "bid.committed",
       "data": {
         "supplier": "devnewsletter",
-        "commit": "8b148d40a0324b7424673dcb5d81fdbc41b81d29b0f4086b0c97af7a8320b0ee",
+        "commit": "88fab11a3d07d72c9a83ce6a9e47f215e916a8dd44dba580ea03db426d763183",
         "committedAt": 1791496800090
       }
     },
@@ -1144,7 +1144,7 @@
       "name": "bid.committed",
       "data": {
         "supplier": "gamingforum",
-        "commit": "741fe4f67645b3c1e020dc89a09fcafb7f20efd0911f577782c1cace93f85a38",
+        "commit": "2a1d98e0b6c62f5c4f51d09dc8d60ae59fba1c3a471ba574ff312664624af64e",
         "committedAt": 1791496800100
       }
     },
@@ -1155,13 +1155,13 @@
       "data": {
         "supplier": "techblog",
         "receipt": {
-          "id": "sim_514978bc512aecb4120201cb7ed91a4c315f56f8f7843168770567a5",
+          "id": "sim_927eb35648e339b4b0cd6db45b2ed9e01c937377d6204a4cdf831c17",
           "badge": "SIMULATED",
           "action": "bid_fee",
-          "amount": 0.2,
+          "amount": 2,
           "from": "techblog",
           "to": "board",
-          "txHash": "sim_514978bc512aecb4120201cb7ed91a4c315f56f8f7843168770567a5",
+          "txHash": "sim_927eb35648e339b4b0cd6db45b2ed9e01c937377d6204a4cdf831c17",
           "explorerUrl": null,
           "state": "FundsLocked"
         }
@@ -1174,13 +1174,13 @@
       "data": {
         "supplier": "codepodcast",
         "receipt": {
-          "id": "sim_33f8ab000af6dc174790fb66017833e6595f7dd048214fbe054c9976",
+          "id": "sim_23265bec2318c3894eff624941eb30f272831f0d6361e78b5f4387bc",
           "badge": "SIMULATED",
           "action": "bid_fee",
-          "amount": 0.2,
+          "amount": 2,
           "from": "codepodcast",
           "to": "board",
-          "txHash": "sim_33f8ab000af6dc174790fb66017833e6595f7dd048214fbe054c9976",
+          "txHash": "sim_23265bec2318c3894eff624941eb30f272831f0d6361e78b5f4387bc",
           "explorerUrl": null,
           "state": "FundsLocked"
         }
@@ -1193,13 +1193,13 @@
       "data": {
         "supplier": "devnewsletter",
         "receipt": {
-          "id": "sim_8020b74c49af1df9e9b3af52d9a2582aee47705f8335fbc46f922a7b",
+          "id": "sim_b2d9f8e8f5509fbc8975f2133ab43f97e1e8a20eee9bd88907808ea4",
           "badge": "SIMULATED",
           "action": "bid_fee",
-          "amount": 0.2,
+          "amount": 2,
           "from": "devnewsletter",
           "to": "board",
-          "txHash": "sim_8020b74c49af1df9e9b3af52d9a2582aee47705f8335fbc46f922a7b",
+          "txHash": "sim_b2d9f8e8f5509fbc8975f2133ab43f97e1e8a20eee9bd88907808ea4",
           "explorerUrl": null,
           "state": "FundsLocked"
         }
@@ -1212,13 +1212,13 @@
       "data": {
         "supplier": "gamingforum",
         "receipt": {
-          "id": "sim_f47f85a9b7c253cd70aff82959b29b5723d241fa3b45ccaf56359c49",
+          "id": "sim_183fae4657b78e5d87515eb69f17c6b7392ce9e7fe48ca3f3b6300eb",
           "badge": "SIMULATED",
           "action": "bid_fee",
-          "amount": 0.2,
+          "amount": 2,
           "from": "gamingforum",
           "to": "board",
-          "txHash": "sim_f47f85a9b7c253cd70aff82959b29b5723d241fa3b45ccaf56359c49",
+          "txHash": "sim_183fae4657b78e5d87515eb69f17c6b7392ce9e7fe48ca3f3b6300eb",
           "explorerUrl": null,
           "state": "FundsLocked"
         }
@@ -1230,7 +1230,7 @@
       "name": "bid.revealed",
       "data": {
         "supplier": "techblog",
-        "price": 7,
+        "price": 70,
         "impressions": 1000,
         "promisedPer1000": 7,
         "salt": "salt-techblog"
@@ -1242,7 +1242,7 @@
       "name": "bid.revealed",
       "data": {
         "supplier": "codepodcast",
-        "price": 6,
+        "price": 60,
         "impressions": 1000,
         "promisedPer1000": 8,
         "salt": "salt-codepodcast"
@@ -1254,7 +1254,7 @@
       "name": "bid.revealed",
       "data": {
         "supplier": "devnewsletter",
-        "price": 7,
+        "price": 70,
         "impressions": 1500,
         "promisedPer1000": 12,
         "salt": "salt-devnewsletter"
@@ -1266,7 +1266,7 @@
       "name": "bid.revealed",
       "data": {
         "supplier": "gamingforum",
-        "price": 2,
+        "price": 20,
         "impressions": 1000,
         "promisedPer1000": 4,
         "salt": "salt-gamingforum"
@@ -1305,33 +1305,33 @@
         "ranking": [
           {
             "supplier": "devnewsletter",
-            "price": 7,
+            "price": 70,
             "impressions": 1500,
             "promisedPer1000": 12,
-            "pricePerSignup": 0.3888888888888889,
+            "pricePerSignup": 3.888888888888889,
             "accepted": true,
-            "award": 7,
-            "bond": 1.75
+            "award": 70,
+            "bond": 17.5
           },
           {
             "supplier": "codepodcast",
-            "price": 6,
+            "price": 60,
             "impressions": 1000,
             "promisedPer1000": 8,
-            "pricePerSignup": 0.75,
+            "pricePerSignup": 7.5,
             "accepted": true,
-            "award": 6,
-            "bond": 1.5
+            "award": 60,
+            "bond": 15
           },
           {
             "supplier": "techblog",
-            "price": 7,
+            "price": 70,
             "impressions": 1000,
             "promisedPer1000": 7,
-            "pricePerSignup": 1,
+            "pricePerSignup": 10,
             "accepted": true,
-            "award": 7,
-            "bond": 1.75
+            "award": 70,
+            "bond": 17.5
           }
         ]
       }
@@ -1344,33 +1344,33 @@
         "accepted": [
           {
             "supplier": "devnewsletter",
-            "price": 7,
+            "price": 70,
             "impressions": 1500,
             "promisedPer1000": 12,
-            "pricePerSignup": 0.3888888888888889,
+            "pricePerSignup": 3.888888888888889,
             "accepted": true,
-            "award": 7,
-            "bond": 1.75
+            "award": 70,
+            "bond": 17.5
           },
           {
             "supplier": "codepodcast",
-            "price": 6,
+            "price": 60,
             "impressions": 1000,
             "promisedPer1000": 8,
-            "pricePerSignup": 0.75,
+            "pricePerSignup": 7.5,
             "accepted": true,
-            "award": 6,
-            "bond": 1.5
+            "award": 60,
+            "bond": 15
           },
           {
             "supplier": "techblog",
-            "price": 7,
+            "price": 70,
             "impressions": 1000,
             "promisedPer1000": 7,
-            "pricePerSignup": 1,
+            "pricePerSignup": 10,
             "accepted": true,
-            "award": 7,
-            "bond": 1.75
+            "award": 70,
+            "bond": 17.5
           }
         ],
         "rejected": [
@@ -1379,8 +1379,8 @@
             "reason": "below_gate"
           }
         ],
-        "totalAward": 20,
-        "budget": 20
+        "totalAward": 200,
+        "budget": 200
       }
     },
     {
@@ -1407,13 +1407,13 @@
         "supplier": "devnewsletter",
         "kind": "award",
         "receipt": {
-          "id": "sim_7a6c62f756255e569a7d1293174de5d5e50aba814afac97e6607ad96",
+          "id": "sim_bcddf7a250e747d5bb549263bdf421f9ad98023deac0abd2e5eaeab2",
           "badge": "SIMULATED",
           "action": "award",
-          "amount": 7,
+          "amount": 70,
           "from": "consumer",
           "to": "devnewsletter",
-          "txHash": "sim_7a6c62f756255e569a7d1293174de5d5e50aba814afac97e6607ad96",
+          "txHash": "sim_bcddf7a250e747d5bb549263bdf421f9ad98023deac0abd2e5eaeab2",
           "explorerUrl": null,
           "state": "FundsLocked"
         }
@@ -1427,13 +1427,13 @@
         "supplier": "devnewsletter",
         "kind": "bond",
         "receipt": {
-          "id": "sim_4093bb3a00e637a36fed5ebd24b84fa1fcfb04c8a4aeabe24dc8e1d5",
+          "id": "sim_251282d5bcc85c5a945af7d95577ffe93a1a21fd770060f0253a1276",
           "badge": "SIMULATED",
           "action": "bond",
-          "amount": 1.75,
+          "amount": 17.5,
           "from": "devnewsletter",
           "to": "board",
-          "txHash": "sim_4093bb3a00e637a36fed5ebd24b84fa1fcfb04c8a4aeabe24dc8e1d5",
+          "txHash": "sim_251282d5bcc85c5a945af7d95577ffe93a1a21fd770060f0253a1276",
           "explorerUrl": null,
           "state": "FundsLocked"
         }
@@ -1447,13 +1447,13 @@
         "supplier": "codepodcast",
         "kind": "award",
         "receipt": {
-          "id": "sim_adfd8ad8aef963131468cd5fd4509fc923f118e233c5c3c08dd76537",
+          "id": "sim_624a346c3a013332082c7b3bb8fbee44e9fcc9cb34c6733b0d7c61be",
           "badge": "SIMULATED",
           "action": "award",
-          "amount": 6,
+          "amount": 60,
           "from": "consumer",
           "to": "codepodcast",
-          "txHash": "sim_adfd8ad8aef963131468cd5fd4509fc923f118e233c5c3c08dd76537",
+          "txHash": "sim_624a346c3a013332082c7b3bb8fbee44e9fcc9cb34c6733b0d7c61be",
           "explorerUrl": null,
           "state": "FundsLocked"
         }
@@ -1467,13 +1467,13 @@
         "supplier": "codepodcast",
         "kind": "bond",
         "receipt": {
-          "id": "sim_bbc2461ae829760693fecd5bf073f2076162dac34661517b92e2a2bc",
+          "id": "sim_188703c2c7a583246616d2fb669640ab719b3a50c5e02a4195fbc18c",
           "badge": "SIMULATED",
           "action": "bond",
-          "amount": 1.5,
+          "amount": 15,
           "from": "codepodcast",
           "to": "board",
-          "txHash": "sim_bbc2461ae829760693fecd5bf073f2076162dac34661517b92e2a2bc",
+          "txHash": "sim_188703c2c7a583246616d2fb669640ab719b3a50c5e02a4195fbc18c",
           "explorerUrl": null,
           "state": "FundsLocked"
         }
@@ -1487,13 +1487,13 @@
         "supplier": "techblog",
         "kind": "award",
         "receipt": {
-          "id": "sim_a0846b922076e7f632f3ee6736f029a8453b047e5290a59b463ff00f",
+          "id": "sim_76fc67a76dbb9d60b500a76717e5720d29dbda2d91e48499e7948cb8",
           "badge": "SIMULATED",
           "action": "award",
-          "amount": 7,
+          "amount": 70,
           "from": "consumer",
           "to": "techblog",
-          "txHash": "sim_a0846b922076e7f632f3ee6736f029a8453b047e5290a59b463ff00f",
+          "txHash": "sim_76fc67a76dbb9d60b500a76717e5720d29dbda2d91e48499e7948cb8",
           "explorerUrl": null,
           "state": "FundsLocked"
         }
@@ -1507,13 +1507,13 @@
         "supplier": "techblog",
         "kind": "bond",
         "receipt": {
-          "id": "sim_1020b0ef9dfd04892b53babfe3d1ccfb415a42fe6793d83dec2ca327",
+          "id": "sim_7381ab638c72014b11066b5f611dd1e09b2b0f5a4069484efda75710",
           "badge": "SIMULATED",
           "action": "bond",
-          "amount": 1.75,
+          "amount": 17.5,
           "from": "techblog",
           "to": "board",
-          "txHash": "sim_1020b0ef9dfd04892b53babfe3d1ccfb415a42fe6793d83dec2ca327",
+          "txHash": "sim_7381ab638c72014b11066b5f611dd1e09b2b0f5a4069484efda75710",
           "explorerUrl": null,
           "state": "FundsLocked"
         }
@@ -1717,10 +1717,10 @@
         "delivered": 0,
         "promised": 12,
         "gate": 5,
-        "award": 7,
-        "bond": 1.75,
-        "hash": "f2fdb62a32e926a9898e66323f62cde99b913503665b6a0ea5394971d9825ac8",
-        "signature": "b453065b13236975cb42c2ed2c52115f31d98a0c48ba9469e7ca99743fee4b0f9aaad50c9277435065c71692e01989981d199fb87ae6847cdf795897f7754808"
+        "award": 70,
+        "bond": 17.5,
+        "hash": "3297b1857ce7a267a3e5576ce8af2a69f6f28c8e912218e6aabd6a3d65cef855",
+        "signature": "ccc0684d529216bb7816bc062098b01c25e22b1fafb7ee0a7388dd9447ae1743a4509e767a8a21f717298b635245c5b0f2b7b14c8ae0de54f67252ead033250c"
       }
     },
     {
@@ -1733,10 +1733,10 @@
         "delivered": 6,
         "promised": 8,
         "gate": 5,
-        "award": 6,
-        "bond": 1.5,
-        "hash": "4c65cfc515a77a36e970493a0aedb50291119d8307e97938fe5d438c3941e2d2",
-        "signature": "642c6e31b9c0abd93110f2b00515776d492beef37b739cee6070c0c250ad57b29331a1606459f10d61e42b055d9a7aed17779d3d59cf631ac5475da050763402"
+        "award": 60,
+        "bond": 15,
+        "hash": "ad70c18058dd3e10e6625381aa79ce448d50fc19ecf982e8ea985f871e8056fd",
+        "signature": "97f29d935da2e241ecb32a3528f2556ed3a3b84e84e042e36bb64b0e7550ca42e28df75889b378ec1753c49281302c7d0477c2cda64c019914cc7d7e0c4cc002"
       }
     },
     {
@@ -1749,10 +1749,10 @@
         "delivered": 8,
         "promised": 7,
         "gate": 5,
-        "award": 7,
-        "bond": 1.75,
-        "hash": "2191f006023a4fe8c321d0077690479fb70d9eb9225a810c014fd7bc04a38a22",
-        "signature": "006be4fb3b5b7508eff104b8c592b847319b31aa68f7c2c3da4fdcffd30a2d56e8c0dffed731188d2ddccd58a13c4f72b25564cce53bcad4d55eff6eff4ccb02"
+        "award": 70,
+        "bond": 17.5,
+        "hash": "1d923c7372999044ea43075bc4611b20570e982340c0f337d301df4c216c03df",
+        "signature": "be1eae888ee63a145f4a4466f36dd01ab35f239df35a987d2580a5c8e8aaf93ecd071352be1ba0be132b239b16bc555613530eb6357039a1671ff8b57a36ee0b"
       }
     },
     {
@@ -1787,13 +1787,13 @@
         "supplier": "devnewsletter",
         "verdict": "under_gate",
         "receipt": {
-          "id": "sim_b7a8f2afdf191fe18b982ecde6f5238ade05c2ffa82874a9e43f61c7",
+          "id": "sim_fa964d3e392795135f46fe00d0e82cf9e67403859d3848f3b5a4603c",
           "badge": "SIMULATED",
           "action": "award_reclaim",
-          "amount": 7,
+          "amount": 70,
           "from": "devnewsletter",
           "to": "consumer",
-          "txHash": "sim_b7a8f2afdf191fe18b982ecde6f5238ade05c2ffa82874a9e43f61c7",
+          "txHash": "sim_fa964d3e392795135f46fe00d0e82cf9e67403859d3848f3b5a4603c",
           "explorerUrl": null,
           "state": "Withdrawn"
         }
@@ -1807,13 +1807,13 @@
         "supplier": "devnewsletter",
         "verdict": "under_gate",
         "receipt": {
-          "id": "sim_27eb840bafc62576f26cb9a3342729d388dfa97657cf2952e19157d1",
+          "id": "sim_c1c7bb9003e2b18cc69ddc8d899eb1e3f5e9849a45c1b0b50118de63",
           "badge": "SIMULATED",
           "action": "bond_forfeit",
-          "amount": 1.75,
+          "amount": 17.5,
           "from": "board",
           "to": "consumer",
-          "txHash": "sim_27eb840bafc62576f26cb9a3342729d388dfa97657cf2952e19157d1",
+          "txHash": "sim_c1c7bb9003e2b18cc69ddc8d899eb1e3f5e9849a45c1b0b50118de63",
           "explorerUrl": null,
           "state": "TransferSent"
         }
@@ -1827,13 +1827,13 @@
         "supplier": "codepodcast",
         "verdict": "short_of_promise",
         "receipt": {
-          "id": "sim_8b33dc76b599a5f560cdccedb3752ddbb9e07019e737d37393ac87f0",
+          "id": "sim_cf669b3aca93df2ea9b6f9c06e9ad7e0e5073ac072854d6b4a501d97",
           "badge": "SIMULATED",
           "action": "award_release",
-          "amount": 6,
+          "amount": 60,
           "from": "consumer",
           "to": "codepodcast",
-          "txHash": "sim_8b33dc76b599a5f560cdccedb3752ddbb9e07019e737d37393ac87f0",
+          "txHash": "sim_cf669b3aca93df2ea9b6f9c06e9ad7e0e5073ac072854d6b4a501d97",
           "explorerUrl": null,
           "state": "Withdrawn"
         }
@@ -1847,13 +1847,13 @@
         "supplier": "codepodcast",
         "verdict": "short_of_promise",
         "receipt": {
-          "id": "sim_ee522800edfc08884dd5f82f23eb70115bb2f1d67f8c31193ea536bf",
+          "id": "sim_41363181e72214637607ab7978486697ec96d80822ffd37b7219282d",
           "badge": "SIMULATED",
           "action": "bond_return",
-          "amount": 1.125,
+          "amount": 11.25,
           "from": "board",
           "to": "codepodcast",
-          "txHash": "sim_ee522800edfc08884dd5f82f23eb70115bb2f1d67f8c31193ea536bf",
+          "txHash": "sim_41363181e72214637607ab7978486697ec96d80822ffd37b7219282d",
           "explorerUrl": null,
           "state": "TransferSent"
         }
@@ -1867,13 +1867,13 @@
         "supplier": "codepodcast",
         "verdict": "short_of_promise",
         "receipt": {
-          "id": "sim_0be0273b1c5e9286e29d7583f11302319de3008efd40e1f128f71998",
+          "id": "sim_e9a77fac0a3089d173a23a987dfc80638ce93c0e9823f89d47cc2f33",
           "badge": "SIMULATED",
           "action": "bond_forfeit",
-          "amount": 0.375,
+          "amount": 3.75,
           "from": "board",
           "to": "consumer",
-          "txHash": "sim_0be0273b1c5e9286e29d7583f11302319de3008efd40e1f128f71998",
+          "txHash": "sim_e9a77fac0a3089d173a23a987dfc80638ce93c0e9823f89d47cc2f33",
           "explorerUrl": null,
           "state": "TransferSent"
         }
@@ -1887,13 +1887,13 @@
         "supplier": "techblog",
         "verdict": "pass",
         "receipt": {
-          "id": "sim_0817699c26e6bc30b66a6d2f38975affed3595d9f1a94194e726f8b4",
+          "id": "sim_66a8127cefbe138a2b6eaad4623538e03d95209d956c8dc972d5e893",
           "badge": "SIMULATED",
           "action": "award_release",
-          "amount": 7,
+          "amount": 70,
           "from": "consumer",
           "to": "techblog",
-          "txHash": "sim_0817699c26e6bc30b66a6d2f38975affed3595d9f1a94194e726f8b4",
+          "txHash": "sim_66a8127cefbe138a2b6eaad4623538e03d95209d956c8dc972d5e893",
           "explorerUrl": null,
           "state": "Withdrawn"
         }
@@ -1907,13 +1907,13 @@
         "supplier": "techblog",
         "verdict": "pass",
         "receipt": {
-          "id": "sim_5721ba5dbf7420258c721044226c4afd639ece3b609d8b079b1d5dff",
+          "id": "sim_1b2a7325c0118ee88a50dd2311923e12bc1950b6fb4f27c1502dc2ce",
           "badge": "SIMULATED",
           "action": "bond_return",
-          "amount": 1.75,
+          "amount": 17.5,
           "from": "board",
           "to": "techblog",
-          "txHash": "sim_5721ba5dbf7420258c721044226c4afd639ece3b609d8b079b1d5dff",
+          "txHash": "sim_1b2a7325c0118ee88a50dd2311923e12bc1950b6fb4f27c1502dc2ce",
           "explorerUrl": null,
           "state": "Withdrawn"
         }
@@ -1943,14 +1943,14 @@
       "data": {
         "receipt": {
           "consumer": {
-            "awardsLocked": 20,
-            "returned": 9.125,
-            "net": -10.875,
+            "awardsLocked": 200,
+            "returned": 91.25,
+            "net": -108.75,
             "signups": 14,
-            "costPerSignup": 0.776786
+            "costPerSignup": 7.767857
           },
           "board": {
-            "bidFees": 0.8
+            "bidFees": 8
           },
           "leaderboard": [
             {
@@ -1962,16 +1962,16 @@
               "delivered": 8,
               "verifiedSignups": 8,
               "countedSignups": 8,
-              "award": 7,
-              "paidToSupplier": 7,
+              "award": 70,
+              "paidToSupplier": 70,
               "awardReclaimed": 0,
-              "bond": 1.75,
-              "bondReturned": 1.75,
+              "bond": 17.5,
+              "bondReturned": 17.5,
               "bondForfeited": 0,
-              "consumerSpend": 7,
-              "costPerSignup": 0.875,
-              "supplierNet": 6.8,
-              "verdictHash": "2191f006023a4fe8c321d0077690479fb70d9eb9225a810c014fd7bc04a38a22"
+              "consumerSpend": 70,
+              "costPerSignup": 8.75,
+              "supplierNet": 68,
+              "verdictHash": "1d923c7372999044ea43075bc4611b20570e982340c0f337d301df4c216c03df"
             },
             {
               "rank": 2,
@@ -1982,16 +1982,16 @@
               "delivered": 6,
               "verifiedSignups": 6,
               "countedSignups": 6,
-              "award": 6,
-              "paidToSupplier": 6,
+              "award": 60,
+              "paidToSupplier": 60,
               "awardReclaimed": 0,
-              "bond": 1.5,
-              "bondReturned": 1.125,
-              "bondForfeited": 0.375,
-              "consumerSpend": 5.625,
-              "costPerSignup": 0.9375,
-              "supplierNet": 5.425,
-              "verdictHash": "4c65cfc515a77a36e970493a0aedb50291119d8307e97938fe5d438c3941e2d2"
+              "bond": 15,
+              "bondReturned": 11.25,
+              "bondForfeited": 3.75,
+              "consumerSpend": 56.25,
+              "costPerSignup": 9.375,
+              "supplierNet": 54.25,
+              "verdictHash": "ad70c18058dd3e10e6625381aa79ce448d50fc19ecf982e8ea985f871e8056fd"
             },
             {
               "rank": 3,
@@ -2002,16 +2002,16 @@
               "delivered": 0,
               "verifiedSignups": 0,
               "countedSignups": 0,
-              "award": 7,
+              "award": 70,
               "paidToSupplier": 0,
-              "awardReclaimed": 7,
-              "bond": 1.75,
+              "awardReclaimed": 70,
+              "bond": 17.5,
               "bondReturned": 0,
-              "bondForfeited": 1.75,
-              "consumerSpend": -1.75,
+              "bondForfeited": 17.5,
+              "consumerSpend": -17.5,
               "costPerSignup": null,
-              "supplierNet": -1.95,
-              "verdictHash": "f2fdb62a32e926a9898e66323f62cde99b913503665b6a0ea5394971d9825ac8"
+              "supplierNet": -19.5,
+              "verdictHash": "3297b1857ce7a267a3e5576ce8af2a69f6f28c8e912218e6aabd6a3d65cef855"
             },
             {
               "rank": 4,
@@ -2030,7 +2030,7 @@
               "bondForfeited": 0,
               "consumerSpend": 0,
               "costPerSignup": null,
-              "supplierNet": -0.2,
+              "supplierNet": -2,
               "verdictHash": null
             }
           ],
@@ -2081,7 +2081,7 @@
       "name": "run.completed",
       "data": {
         "runId": "run_worked-example",
-        "net": -10.875,
+        "net": -108.75,
         "signups": 14,
         "badges": [
           "SIMULATED"

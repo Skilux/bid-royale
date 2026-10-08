@@ -12,9 +12,9 @@ const feed = () => generateFeed({ seed: 7, signingSecret: SHOP });
 const run = (events) => verify(events, { window: DEFAULT_WINDOW, shopPublicKey });
 
 const bids = [
-  { supplier: "techblog", promised: 7, award: 7 },
-  { supplier: "codepodcast", promised: 8, award: 6 },
-  { supplier: "devnewsletter", promised: 12, award: 7 },
+  { supplier: "techblog", promised: 7, award: 70 },
+  { supplier: "codepodcast", promised: 8, award: 60 },
+  { supplier: "devnewsletter", promised: 12, award: 70 },
 ];
 
 test("worked example verifies 8 / 6 / 0", () => {
@@ -32,7 +32,7 @@ test("verdicts are pass / short_of_promise / under_gate with delivered 8 / 6 / 0
   );
   assert.deepEqual(verdicts.map((v) => v.kind), ["pass", "short_of_promise", "under_gate"]);
   assert.deepEqual(verdicts.map((v) => v.delivered), [8, 6, 0]);
-  assert.deepEqual(verdicts.map((v) => v.bond), [1.75, 1.5, 1.75]);
+  assert.deepEqual(verdicts.map((v) => v.bond), [17.5, 15, 17.5]);
 });
 
 test("every invalid event is rejected with its expected reason", () => {

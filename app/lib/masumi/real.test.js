@@ -51,16 +51,16 @@ function fixture({ state = "FundsLocked", treasury } = {}) {
 }
 
 const verdicts = [
-  { supplier: "techblog", kind: "pass", promised: 7, delivered: 8, gate: 5, award: 7, bond: 1.75 },
-  { supplier: "codepodcast", kind: "short_of_promise", promised: 8, delivered: 6, gate: 5, award: 6, bond: 1.5 },
-  { supplier: "devnewsletter", kind: "under_gate", promised: 12, delivered: 0, gate: 5, award: 7, bond: 1.75 },
+  { supplier: "techblog", kind: "pass", promised: 7, delivered: 8, gate: 5, award: 70, bond: 17.5 },
+  { supplier: "codepodcast", kind: "short_of_promise", promised: 8, delivered: 6, gate: 5, award: 60, bond: 15 },
+  { supplier: "devnewsletter", kind: "under_gate", promised: 12, delivered: 0, gate: 5, award: 70, bond: 17.5 },
 ];
 
 test("award lock uses supplier payment then Consumer purchase with signed terms", async () => {
   const { adapter, calls } = fixture();
-  const locked = await adapter.lockAward({ supplier: "techblog", amount: 7 });
+  const locked = await adapter.lockAward({ supplier: "techblog", amount: 70 });
   assert.deepEqual(calls.map(({ path, key }) => [path, key]), [["/payment", "test-TECHBLOG"], ["/purchase", "test-CONSUMER"]]);
-  assert.deepEqual(calls[0].body.RequestedFunds, [{ amount: "7000000", unit: "" }]);
+  assert.deepEqual(calls[0].body.RequestedFunds, [{ amount: "70000000", unit: "" }]);
   assert.deepEqual(calls[1].body.Amounts, calls[0].body.RequestedFunds);
   assert.match(calls[0].body.identifierFromPurchaser, /^[a-f0-9]{24}$/);
   assert.equal(calls[1].body.identifierFromPurchaser, calls[0].body.identifierFromPurchaser);
@@ -74,15 +74,15 @@ test("award lock uses supplier payment then Consumer purchase with signed terms"
   assert.equal(locked.txHash, TX);
   assert.equal(locked.explorerUrl, `https://preprod.cardanoscan.io/transaction/${TX}`);
   assert.equal(await adapter.getEscrowStatus(locked.id), "FundsLocked");
-  await adapter.lockAward({ supplier: "techblog", amount: 7 });
+  await adapter.lockAward({ supplier: "techblog", amount: 70 });
   assert.notEqual(calls[0].body.identifierFromPurchaser, calls[3].body.identifierFromPurchaser);
 });
 
 test("bond uses Board seller and Supplier buyer; bid fee is entirely simulated", async () => {
   const { adapter, calls } = fixture();
-  await adapter.lockBond({ supplier: "codepodcast", amount: 1.5 });
+  await adapter.lockBond({ supplier: "codepodcast", amount: 15 });
   assert.deepEqual(calls.map(({ key }) => key), ["test-BOARD", "test-CODEPODCAST"]);
-  const fee = await adapter.lockBidFee({ supplier: "gamingforum", amount: 0.2 });
+  const fee = await adapter.lockBidFee({ supplier: "gamingforum", amount: 2 });
   assert.equal(fee.badge, "SIMULATED");
   assert.equal(calls.length, 2);
   assert.equal(await adapter.getEscrowStatus(fee.id), "FundsLocked");
@@ -130,8 +130,8 @@ test("portable ids resume status and settlement in another adapter instance", as
 
 test("repeated settlement reconciles queued result instead of resubmitting", async () => {
   const { adapter, calls } = fixture();
-  await adapter.lockAward({ supplier: "techblog", amount: 7 });
-  await adapter.lockBond({ supplier: "techblog", amount: 1.75 });
+  await adapter.lockAward({ supplier: "techblog", amount: 70 });
+  await adapter.lockBond({ supplier: "techblog", amount: 17.5 });
   await adapter.settle(verdicts[0]);
   calls.length = 0;
   await adapter.settle(verdicts[0]);
@@ -144,17 +144,17 @@ test("treasury waits for bond Withdrawn and gets the plan transfers", async () =
     const { adapter } = fixture({ state, treasury: async (move) => {
       transfers.push(move); return { state: "TransferSent", txHash: TX };
     } });
-    await adapter.lockAward({ supplier: "codepodcast", amount: 6 });
-    await adapter.lockBond({ supplier: "codepodcast", amount: 1.5 });
+    await adapter.lockAward({ supplier: "codepodcast", amount: 60 });
+    await adapter.lockBond({ supplier: "codepodcast", amount: 15 });
     const receipts = await adapter.settle(verdicts[1]);
     assert.equal(receipts[1].state, state === "Withdrawn" ? "TransferSent" : "TransferPending");
   }
-  assert.deepEqual(transfers.map(({ amount }) => amount), [1.125, 0.375]);
+  assert.deepEqual(transfers.map(({ amount }) => amount), [11.25, 3.75]);
 });
 
 test("missing configuration gives a clear Error receipt without network calls", async () => {
   const adapter = createRealAdapter({ env: {}, fetch: () => assert.fail("network used") });
-  const receipt = await adapter.lockAward({ supplier: "techblog", amount: 7 });
+  const receipt = await adapter.lockAward({ supplier: "techblog", amount: 70 });
   assert.equal(receipt.state, "Error");
   assert.match(receipt.error, /missing MASUMI_PAYMENT_BASE_URL/);
   assert.equal(receipt.txHash, null);
@@ -164,7 +164,7 @@ test("missing party key is validated before seller payment", async () => {
   const { env } = fixture();
   delete env.MASUMI_KEY_CONSUMER;
   const adapter = createRealAdapter({ env, fetch: () => assert.fail("network used") });
-  assert.match((await adapter.lockAward({ supplier: "techblog", amount: 7 })).error, /MASUMI_KEY_CONSUMER/);
+  assert.match((await adapter.lockAward({ supplier: "techblog", amount: 70 })).error, /MASUMI_KEY_CONSUMER/);
 });
 
 test("pending purchase has no invented hash or REAL badge", async () => {
@@ -174,14 +174,14 @@ test("pending purchase has no invented hash or REAL badge", async () => {
     if (url.pathname.endsWith("/purchase")) return { ok: true, text: async () => JSON.stringify({ data: { NextAction: { requestedAction: "FundsLockingRequested" } } }) };
     return response;
   } });
-  const receipt = await adapter.lockAward({ supplier: "techblog", amount: 7 });
+  const receipt = await adapter.lockAward({ supplier: "techblog", amount: 70 });
   assert.equal(receipt.state, "FundsLockingRequested");
   assert.equal(receipt.badge, "PENDING");
   assert.equal(receipt.txHash, null);
 });
 
 test("lovelace rejects fractional lovelace and converts exact ADA amounts", () => {
-  assert.equal(lovelace(1.125), "1125000");
+  assert.equal(lovelace(11.25), "11250000");
   for (const amount of [-1, 0, NaN, Infinity, 0.0000001, 1e20]) assert.throws(() => lovelace(amount), /amount/);
 });
 
@@ -345,8 +345,8 @@ for (const verdict of [verdicts[1], verdicts[2]]) {
 
 test("transfer advance without treasury stays pending even after bond Withdrawn", async () => {
   const { adapter } = fixture({ state: "Withdrawn" });
-  await adapter.lockAward({ supplier: "codepodcast", amount: 6 });
-  await adapter.lockBond({ supplier: "codepodcast", amount: 1.5 });
+  await adapter.lockAward({ supplier: "codepodcast", amount: 60 });
+  await adapter.lockBond({ supplier: "codepodcast", amount: 15 });
   const pending = (await adapter.settle(verdicts[1])).find(({ action }) => action === "bond_return");
   const advanced = await adapter.advance(pending.id);
   assert.equal(advanced.state, "TransferPending");
@@ -472,8 +472,8 @@ for (const [side, state, action] of [
 ]) {
   test(`early release waits for queued ${action} without issuing another mutation`, async () => {
     const { adapter, calls, records } = fixture();
-    const award = await adapter.lockAward({ supplier: "techblog", amount: 7 });
-    await adapter.lockBond({ supplier: "techblog", amount: 1.75 });
+    const award = await adapter.lockAward({ supplier: "techblog", amount: 70 });
+    await adapter.lockBond({ supplier: "techblog", amount: 17.5 });
     const pending = (await adapter.settle(verdicts[0])).find(({ action }) => action === "award_release");
     const id = escrowId(award);
     reconcile(records.get(id), state);
@@ -487,8 +487,8 @@ for (const [side, state, action] of [
 
 test("early release requires WaitingForExternalAction on the acting side", async () => {
   const { adapter, calls, records } = fixture();
-  const award = await adapter.lockAward({ supplier: "techblog", amount: 7 });
-  await adapter.lockBond({ supplier: "techblog", amount: 1.75 });
+  const award = await adapter.lockAward({ supplier: "techblog", amount: 70 });
+  await adapter.lockBond({ supplier: "techblog", amount: 17.5 });
   const pending = (await adapter.settle(verdicts[0])).find(({ action }) => action === "award_release");
   const id = escrowId(award);
   for (const state of ["FundsLocked", "ResultSubmitted", "Disputed"]) {
@@ -503,8 +503,8 @@ test("early release requires WaitingForExternalAction on the acting side", async
 
 test("cooperative refund returns buyer terminal proof even when seller status lags", async () => {
   const { adapter, records } = fixture();
-  const award = await adapter.lockAward({ supplier: "devnewsletter", amount: 7 });
-  await adapter.lockBond({ supplier: "devnewsletter", amount: 1.75 });
+  const award = await adapter.lockAward({ supplier: "devnewsletter", amount: 70 });
+  await adapter.lockBond({ supplier: "devnewsletter", amount: 17.5 });
   const pending = (await adapter.settle(verdicts[2])).find(({ action }) => action === "award_reclaim");
   const record = records.get(escrowId(award));
   record.purchase = { onChainState: "RefundWithdrawn", CurrentTransaction: { txHash: TX }, NextAction: { requestedAction: "WaitingForExternalAction" } };
@@ -517,8 +517,8 @@ test("cooperative refund returns buyer terminal proof even when seller status la
 
 test("timer withdrawal is recognized without further cooperative requests", async () => {
   const { adapter, calls, records } = fixture();
-  const award = await adapter.lockAward({ supplier: "techblog", amount: 7 });
-  await adapter.lockBond({ supplier: "techblog", amount: 1.75 });
+  const award = await adapter.lockAward({ supplier: "techblog", amount: 70 });
+  await adapter.lockBond({ supplier: "techblog", amount: 17.5 });
   const pending = (await adapter.settle(verdicts[0])).find(({ action }) => action === "award_release");
   reconcile(records.get(escrowId(award)), "Withdrawn");
   calls.length = 0;
@@ -530,8 +530,8 @@ test("timer withdrawal is recognized without further cooperative requests", asyn
 
 test("settle starts the first step; only advance drives an already submitted result", async () => {
   const { adapter, calls, records } = fixture();
-  const award = await adapter.lockAward({ supplier: "techblog", amount: 7 });
-  await adapter.lockBond({ supplier: "techblog", amount: 1.75 });
+  const award = await adapter.lockAward({ supplier: "techblog", amount: 70 });
+  await adapter.lockBond({ supplier: "techblog", amount: 17.5 });
   reconcile(records.get(escrowId(award)), "ResultSubmitted");
   calls.length = 0;
   const pending = (await adapter.settle(verdicts[0])).find(({ action }) => action === "award_release");
@@ -543,8 +543,8 @@ test("settle starts the first step; only advance drives an already submitted res
 for (const [sellerState, buyerState] of [["Disputed", "ResultSubmitted"], ["WithdrawAuthorized", "Disputed"]]) {
   test(`early release does not repeat an effect visible to seller ${sellerState} while buyer lags at ${buyerState}`, async () => {
     const { adapter, calls, records } = fixture();
-    const award = await adapter.lockAward({ supplier: "techblog", amount: 7 });
-    await adapter.lockBond({ supplier: "techblog", amount: 1.75 });
+    const award = await adapter.lockAward({ supplier: "techblog", amount: 70 });
+    await adapter.lockBond({ supplier: "techblog", amount: 17.5 });
     const pending = (await adapter.settle(verdicts[0])).find(({ action }) => action === "award_release");
     const id = escrowId(award);
     reconcile(records.get(id), buyerState);
@@ -561,8 +561,8 @@ for (const [sellerState, sellerAction, buyerState] of [
 ]) {
   test(`refund does not repeat a visible effect with seller ${sellerState}/${sellerAction} and buyer ${buyerState}`, async () => {
     const { adapter, calls, records } = fixture();
-    const award = await adapter.lockAward({ supplier: "devnewsletter", amount: 7 });
-    await adapter.lockBond({ supplier: "devnewsletter", amount: 1.75 });
+    const award = await adapter.lockAward({ supplier: "devnewsletter", amount: 70 });
+    await adapter.lockBond({ supplier: "devnewsletter", amount: 17.5 });
     const pending = (await adapter.settle(verdicts[2])).find(({ action }) => action === "award_reclaim");
     const id = escrowId(award);
     reconcile(records.get(id), buyerState);

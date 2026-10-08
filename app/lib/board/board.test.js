@@ -9,25 +9,25 @@ import { FIXTURE_RUN_ID, createFixtureBoard, recordWorkedExample } from "./worke
 
 const eventNames = (events) => events.map((e) => e.name);
 
-test("a scripted run ends with the worked-example ledger: Consumer net -10.875, 14 signups", async () => {
+test("a scripted run ends with the worked-example ledger: Consumer net -108.75, 14 signups", async () => {
   const { run, events } = await recordWorkedExample();
 
   assert.equal(run.status, "completed");
   assert.equal(run.nextStep, null);
-  assert.equal(run.receipt.consumer.net, -10.875);
+  assert.equal(run.receipt.consumer.net, -108.75);
   assert.equal(run.receipt.consumer.signups, 14);
-  assert.equal(run.receipt.consumer.awardsLocked, 20);
+  assert.equal(run.receipt.consumer.awardsLocked, 200);
 
   const kinds = Object.fromEntries(run.verdicts.map((v) => [v.supplier, v.kind]));
   assert.deepEqual(kinds, { techblog: "pass", codepodcast: "short_of_promise", devnewsletter: "under_gate" });
   assert.deepEqual(run.auction.rejected, [{ supplier: "gamingforum", reason: "below_gate" }]);
-  assert.equal(run.auction.totalAward, 20);
+  assert.equal(run.auction.totalAward, 200);
 
   const byName = Object.fromEntries(run.receipt.leaderboard.map((r) => [r.supplier, r]));
-  assert.equal(byName.codepodcast.bondForfeited, 0.375);
-  assert.equal(byName.codepodcast.bondReturned, 1.125);
-  assert.equal(byName.devnewsletter.awardReclaimed, 7);
-  assert.equal(byName.devnewsletter.bondForfeited, 1.75);
+  assert.equal(byName.codepodcast.bondForfeited, 3.75);
+  assert.equal(byName.codepodcast.bondReturned, 11.25);
+  assert.equal(byName.devnewsletter.awardReclaimed, 70);
+  assert.equal(byName.devnewsletter.bondForfeited, 17.5);
   assert.equal(byName.gamingforum.kind, "lost_bid");
   assert.equal(run.receipt.leaderboard[0].supplier, "techblog");
 
@@ -130,7 +130,7 @@ test("settlement is a job: token on start, running until the work finishes, then
   await deferred[0]();
   const done = await board.getSettlementJob(id, started.job);
   assert.equal(done.status, "done");
-  assert.equal(done.receipt.consumer.net, -10.875);
+  assert.equal(done.receipt.consumer.net, -108.75);
   await assert.rejects(board.getSettlementJob(id, "job_wrong"), (e) => e.status === 404);
 });
 
@@ -199,7 +199,7 @@ test("canned hook: a failing live step degrades to the replay and keeps the run 
   assert.equal(out.degraded, true);
   assert.equal(out.run.mode, "canned");
   assert.equal(out.run.id, "run_degrade");
-  assert.equal(out.run.receipt.consumer.net, -10.875);
+  assert.equal(out.run.receipt.consumer.net, -108.75);
   assert.equal(out.run.degradedFrom.step, "bids");
 
   const names = eventNames(await board.getEvents(id));

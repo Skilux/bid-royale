@@ -1,7 +1,7 @@
 <aside>
 🧭
 
-Who pays whom, and what happens at each step. Copied from the sequence diagram on the Miro financial flow board, plus the worked example (frame 4) and settlement rules (frame 5). Units are **tUSDM on Cardano preprod**, a sandbox currency, not real money. Escrows run on Masumi. **Updated 8 Oct 2026 (Danila):** verification runs inside the Tender Board service, not as a separate Validator agent, so there is no Validator fee. 10 escrows; the 6 on the critical path are REAL, the 4 bid fees start SIMULATED and become REAL if time allows.
+Who pays whom, and what happens at each step. Copied from the sequence diagram on the Miro financial flow board, plus the worked example (frame 4) and settlement rules (frame 5). Units are **tUSDM**, the spec's units. **The demo runs every amount ×10 in tADA on Cardano preprod (#24)**: awards 70 / 60 / 70, bonds 17.5 / 15 / 17.5, bid fee 2, Consumer net −108.75; see [`docs/money-flow.md`](docs/money-flow.md). Sandbox currency, not real money. Escrows run on Masumi. **Updated 8 Oct 2026 (Danila):** verification runs inside the Tender Board service, not as a separate Validator agent, so there is no Validator fee. 10 escrows; the 6 on the critical path are REAL, the 4 bid fees start SIMULATED and become REAL if time allows.
 
 </aside>
 
