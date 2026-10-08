@@ -15,8 +15,8 @@ Canonical terms for this repo (spec v3.1: Notion "Ad Slot Auction: Money Flow, S
 
 ## Tender and bids
 
-- **Tender**: the brief published by the Consumer agent to the Board. Example: "Budget 20 tUSDM, audience technical users, pay per verified signup."
-- **Tender terms**: gate 5 signups per 1,000 impressions, bond 25% of award, budget 20 tUSDM. Replaces "policy card".
+- **Tender**: the brief published by the Consumer agent to the Board. Example: "Budget 200 tADA, audience technical users, pay per verified signup."
+- **Tender terms**: gate 5 signups per 1,000 impressions, bond 25% of award, budget 200 tADA. Replaces "policy card".
 - **Outcome**: a verified signup. Replaces conversion and checkout.
 - **Signed signup event**: a signup event signed by the shop key.
 - **Sealed bid**: commit hash `SHA-256(price, impressions, promised signups, salt)` sent before the deadline. After close, suppliers reveal the plain bid plus salt, and the Board recomputes and rejects mismatches.
@@ -28,10 +28,10 @@ Canonical terms for this repo (spec v3.1: Notion "Ad Slot Auction: Money Flow, S
 
 ## Money
 
-- **tUSDM**: test USDM, the demo currency. Availability on Cardano preprod is unverified. Fallback is tADA with scaled amounts. Replaces €.
+- **tADA**: test ADA on Cardano preprod, the demo currency. Amounts are the spec ×10 (#24): Masumi transfers have a 2 ADA minimum and small escrows risk min-UTxO errors. Replaces tUSDM, which replaced €.
 - **Award**: the winning bid price, locked by the Consumer in escrow. Supplier is seller.
 - **Bond**: 25% × award, locked by a winner in escrow. Board is seller.
-- **Bid fee**: 0.2 tUSDM per bidder, never returned. Board is seller. Stays with the Board as an anti-spam fee.
+- **Bid fee**: 2 tADA per bidder, never returned. Board is seller. Stays with the Board as an anti-spam fee.
 - **Forfeit**: bond × (promised − delivered) ÷ promised, for Short of promise. Escrows cannot split, so the remainder returns as a plain transfer, and the Board forwards the forfeit to the Consumer as a plain transfer (trust assumption on the Board).
 - **Escrow count**: 10 per run. 3 awards and 3 bonds on the critical path, REAL. 4 bid fees in the background, SIMULATED first and REAL if time allows (PRD D13).
 

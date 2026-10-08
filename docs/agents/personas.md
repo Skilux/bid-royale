@@ -26,23 +26,23 @@ Confirmed: `app/lib/outcome-feed/index.js` `WORKED_EXAMPLE`, `scenario.js`.
 
 ## Persona seed config and clamps
 
-Costs are tUSDM per 1,000 impressions. Prices are multiples of 0.5, impressions multiples of 100, promised per 1,000 integers (keeps the commit string and the budget fill free of float noise).
+Costs are tADA per 1,000 impressions, the spec ×10 (#24). Prices are multiples of 5, impressions multiples of 100, promised per 1,000 integers (keeps the commit string and the budget fill free of float noise).
 
 | Persona | Cost | Min margin | Impressions | Price | Promised per 1,000 | Pinned quote (price / impressions / promised) |
 |---|---|---|---|---|---|---|
-| `techblog`, conservative | 5 | 0.5 | 500–1500 | 5.5–8 | 5–8 | 7 / 1000 / 7 |
-| `codepodcast`, moderate | 4 | 0.5 | 500–1500 | 4.5–8 | 6–10 | 6 / 1000 / 8 |
-| `devnewsletter`, aggressive over-promiser | 3 | 0.5 | 1000–2000 | 5–9 | 10–15 | 7 / 1500 / 12 |
-| `gamingforum`, passive low-baller | 2 | 0.5 | 500–1500 | 1–4 | 2–4 | 3 / 1000 / 4 |
+| `techblog`, conservative | 50 | 5 | 500–1500 | 55–80 | 5–8 | 70 / 1000 / 7 |
+| `codepodcast`, moderate | 40 | 5 | 500–1500 | 45–80 | 6–10 | 60 / 1000 / 8 |
+| `devnewsletter`, aggressive over-promiser | 30 | 5 | 1000–2000 | 50–90 | 10–15 | 70 / 1500 / 12 |
+| `gamingforum`, passive low-baller | 20 | 5 | 500–1500 | 10–40 | 2–4 | 30 / 1000 / 4 |
 
 Rules the clamps encode:
 - GamingForum cannot promise 5 or more. Its audience is its capacity, so it ends below the gate by persona, not by a guard.
 - DevNewsletter's promised range is above any realistic rate. Delivery is scripted at 0.
-- Anchors (the pinned quotes) all pass the D12 gate at `R = 1.00`: win chance 1 for all four, margins 2, 2, 2.5, 1 against the 0.2 fee.
+- Anchors (the pinned quotes) all pass the D12 gate at `R = 10`: win chance 1 for all four, margins 20, 20, 25, 10 against the 2 fee.
 
-Known risk with wide clamps (inferred): the budget is 20 with zero slack at the anchors. Examples that change the winners: TechBlog 8 + CodePodcast 8 + DevNewsletter 9 = 25, so D11 drops the lowest-ranked bid that does not fit. A CodePodcast promise of 6 or less makes it Pass. A TechBlog promise above 8 makes it Short of promise. The receipt value -10.875 holds only at the anchors. A live run can differ. Canned mode replays the exact example.
+Known risk with wide clamps (inferred): the budget is 200 with zero slack at the anchors. Examples that change the winners: TechBlog 80 + CodePodcast 80 + DevNewsletter 90 = 250, so D11 drops the lowest-ranked bid that does not fit. A CodePodcast promise of 6 or less makes it Pass. A TechBlog promise above 8 makes it Short of promise. The receipt value -108.75 holds only at the anchors. A live run can differ. Canned mode replays the exact example.
 
-Note for #12: `app/lib/board/scenario.js` `PINNED` has GamingForum at price 2. Notion and this spec say 3. Either change it to 3 and regenerate the fixture (`node lib/board/record-fixture.js`), or leave it. It only affects the lost-bid display.
+Note for #12: `app/lib/board/scenario.js` `PINNED` has GamingForum at price 20. Notion and this spec say 30. Either change it to 30 and regenerate the fixture (`node lib/board/record-fixture.js`), or leave it. It only affects the lost-bid display.
 
 ## Decision rule (D12, needs Vladimir)
 
@@ -56,7 +56,7 @@ ev             = winChance * margin - tender.bidFee
 passed         = ev > 0 && margin >= minMargin
 ```
 
-- `R`: env `REFERENCE_PRICE`, default 1.00 for auction 1. From the next auction, the highest winning price per promised signup of the last run. The demo has one auction, so `history` is `[]`.
+- `R`: env `REFERENCE_PRICE`, default 10 for auction 1 (1.00 before the ×10 switch, #24). From the next auction, the highest winning price per promised signup of the last run. The demo has one auction, so `history` is `[]`.
 - `passed` false after the LLM's last turn: `decision: "skip"`.
 
 What the LLM sees: its persona prompt, the tender (budget, gate, bond rate, bid fee, currency, audience, deadline), its operator config (cost per 1,000, min margin, clamps), `R`, and its own past results (`history`). It does not see other suppliers, other bids, the scripted delivery, or the expected winners.
@@ -172,7 +172,7 @@ The UI shows `source`, `rationale` and `gate` per supplier. Rationale is shown a
 | `OPENROUTER_API_KEY` | Vercel | LLM calls (already in `.env.example`) |
 | `OPENROUTER_MODELS` | Vercel | comma list of model ids, first is primary (already in `.env.example`) |
 | `AGENT_SHARED_SECRET` | Vercel | `x-agent-secret` on `/run` and `/tender-invite` |
-| `REFERENCE_PRICE` | Vercel | `R`, default `1` |
+| `REFERENCE_PRICE` | Vercel | `R`, default `10` |
 | `PERSONA_MODE` | Vercel | `llm` (default) or `pinned` |
 | `SUPPLIER_INVITE_URLS` | Vercel | JSON map supplier id to agent base URL (`<app>/api/agents/<name>`). Set = HTTP path |
 | `SUPPLIER_AGENTS` | Vercel | `local` runs the brains in-process. Ignored when `SUPPLIER_INVITE_URLS` is set |
@@ -181,7 +181,7 @@ Badge note: the agent returns no money. The bid fee is locked by the Board throu
 
 ## Needs Vladimir
 
-1. **D12.** Confirm the formula, `R = 1.00` for auction 1, and that code (not the LLM) applies the gate.
+1. **D12.** Confirm the formula, `R = 10` for auction 1, and that code (not the LLM) applies the gate.
 2. **`/tender-invite` on Vercel (done in #38, ADR 0002).** The Board calling its own app over HTTP adds a cold-start risk per supplier. `SUPPLIER_AGENTS=local` avoids the hop. Confirm which one production uses.
 3. **Bid fee in REAL mode.** Today the Board locks the bid fee on the supplier's behalf. A REAL fee escrow has the supplier as buyer. Out of scope here, tracked with the Masumi lane.
 4. **Free-tier models.** Confirm the `OPENROUTER_MODELS` list and that a rehearsal of four parallel agents stays inside the free-tier rate limits.
@@ -196,6 +196,6 @@ Badge note: the agent returns no money. The bid fee is locked by the Board throu
 
 - Each persona returns a zod-valid bid inside its clamps, or a skip, from `POST /api/agents/<name>/run`.
 - A forced failure per supplier (an unset or bad `OPENROUTER_API_KEY`) returns the pinned quote with `source: "pinned"`.
-- `PERSONA_MODE=pinned` over the `/tender-invite` path (or `SUPPLIER_AGENTS=local`) reproduces Consumer net -10.875 and 14 signups.
+- `PERSONA_MODE=pinned` over the `/tender-invite` path (or `SUPPLIER_AGENTS=local`) reproduces Consumer net -108.75 and 14 signups.
 - One live LLM run is recorded in the closing comment: quotes, `gate` numbers, winners, whether it matched the worked example.
 - `cd app && npm run build` and `node --test` pass.
