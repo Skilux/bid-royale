@@ -6,3 +6,7 @@ out/
 .env*.local
 *.log
 .DS_Store
+
+# Python
+.venv/
+__pycache__/
