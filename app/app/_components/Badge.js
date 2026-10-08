@@ -2,9 +2,10 @@ const STYLE = {
   REAL: "border border-pass bg-pass-bg text-pass",
   SIMULATED: "border border-dashed border-short text-short",
   "PRE-RECORDED": "border border-ink bg-ink text-white",
+  PENDING: "border border-dotted border-ink-3 bg-wash text-ink-2",
 };
 
-/** Money badge, DESIGN.md section 6. `kind` is the badge derived in lib/receipt-view. */
+/** Money badge, DESIGN.md section 6. `kind` is the badge derived in lib/receipt-view. PENDING means not moved yet. */
 export function Badge({ kind, className = "" }) {
   const label = STYLE[kind] ? kind : "SIMULATED";
   return (

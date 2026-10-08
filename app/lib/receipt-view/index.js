@@ -4,7 +4,7 @@ const round = (n) => Math.round(n * 1e6) / 1e6;
 const sum = (list, pick = (x) => x.amount) => round(list.reduce((t, x) => t + pick(x), 0));
 
 const KIND_ORDER = { pass: 0, short_of_promise: 1, under_gate: 2 };
-const BADGE_ORDER = ["REAL", "PRE-RECORDED", "SIMULATED"];
+const BADGE_ORDER = ["REAL", "PENDING", "PRE-RECORDED", "SIMULATED"];
 
 export const KIND_LABEL = {
   pass: "Pass",
@@ -17,11 +17,13 @@ export const KIND_LABEL = {
  * Badge for one money entry, derived from the transfer and the run mode.
  * REAL needs a badge of REAL and a real tx hash (the simulated adapter prefixes `sim_`).
  * A canned replay shows PRE-RECORDED for everything that is not a real tx. Anything else is SIMULATED.
+ * PENDING (a real operation submitted, no tx yet, #49) stays PENDING: it is never money moved.
  */
 export function deriveBadge(entry, { mode = "live" } = {}) {
   const hash = entry?.txHash;
   const hasHash = typeof hash === "string" && hash.length > 0 && !hash.startsWith("sim_");
   if (entry?.badge === "REAL" && hasHash) return "REAL";
+  if (entry?.badge === "PENDING") return "PENDING";
   if (entry?.badge === "PRE-RECORDED" || mode === "canned") return "PRE-RECORDED";
   return "SIMULATED";
 }
