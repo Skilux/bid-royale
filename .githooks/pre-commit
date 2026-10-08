@@ -1,0 +1,21 @@
+#!/bin/sh
+# Versioned pre-commit hook. Enable once per clone: `npm run setup:hooks` in app/
+# (core.hooksPath lives in the shared .git/config, so worktrees inherit it).
+# Never blocks on a missing tool, a crash or a timeout. Only a failed check blocks.
+
+root=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+cd "$root" || exit 0
+
+command -v node >/dev/null 2>&1 || { echo "pre-commit: node not found, skipping checks" >&2; exit 0; }
+[ -f app/scripts/check.mjs ] || exit 0
+
+# Skip when every staged file is docs or tooling prose (docs/, *.md, .agents/, output/).
+code=$(git diff --cached --name-only --diff-filter=ACMR | grep -Ev '(^docs/|^\.agents/|^output/|\.md$)' | head -n 1)
+[ -n "$code" ] || exit 0
+
+cd app || exit 0
+node scripts/check.mjs --hook
+status=$?
+# 10 = a check failed. Anything else (crash, signal) must not block a commit.
+[ "$status" -eq 10 ] && exit 1
+exit 0

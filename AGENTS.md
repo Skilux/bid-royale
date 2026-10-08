@@ -129,6 +129,22 @@ The Vercel project builds with **`app/` as its root directory**. Files outside
   push to `main` as you go — the repo is private for now (flip to public at
   code freeze) and commit history is evidence.
 
+## Checks before every commit (mandatory)
+
+- Run `npm run check` in `app/` before every commit. It takes about a second:
+  tests (`node --test` over `app/lib`), secrets scan, layout rule (no root
+  `lib/`, `src/`, `data/`; no import that leaves `app/`), badge guard on
+  `app/app/` UI code, and ESLint (`no-undef`, `no-unused-vars`,
+  `no-unreachable`).
+- Run `npm run check:full` (same plus `next build`) before pushing to `main`.
+- Enable the versioned pre-commit hook once per clone with
+  `npm run setup:hooks` in `app/`. It runs the staged-files variant, skips
+  docs-only commits, and never blocks on a crash or timeout.
+- Never use `--no-verify`. Fix the failure. If a check is wrong for your file,
+  change the check in `app/scripts/` and say so in the issue.
+- A fresh worktree has no `node_modules`: run `npm ci` in `app/` once, or the
+  hook skips lint with a warning.
+
 ## Every change has a GitHub issue (mandatory)
 
 No work starts or lands without a GitHub issue. This applies to every agent and
