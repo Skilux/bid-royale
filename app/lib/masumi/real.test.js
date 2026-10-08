@@ -180,6 +180,36 @@ test("pending purchase has no invented hash or REAL badge", async () => {
   assert.equal(receipt.txHash, null);
 });
 
+test("advance on a lock id stays PENDING until the buyer side is FundsLocked, then REAL with the lock tx", async () => {
+  const { adapter, env, fetch, records } = fixture({ state: "FundsLocked" });
+  const locked = await adapter.lockAward({ supplier: "techblog", amount: 70 });
+  const record = records.get(locked.escrow);
+  record.purchase = { onChainState: null, NextAction: { requestedAction: "FundsLockingInitiated" }, CurrentTransaction: { txHash: TX } };
+  const resumed = createRealAdapter({ env, fetch });
+  const waiting = await resumed.advance(locked.id);
+  assert.equal(waiting.badge, "PENDING");
+  assert.equal(waiting.txHash, null);
+  assert.equal(waiting.state, "FundsLockingInitiated");
+
+  record.purchase = { onChainState: "FundsLocked", NextAction: { requestedAction: "WaitingForExternalAction" }, CurrentTransaction: { txHash: TX } };
+  const confirmed = await resumed.advance(locked.id);
+  assert.equal(confirmed.id, locked.id);
+  assert.equal(confirmed.badge, "REAL");
+  assert.equal(confirmed.txHash, TX);
+  assert.deepEqual([confirmed.action, confirmed.amount, confirmed.from, confirmed.to], ["award", 70, "consumer", "techblog"]);
+});
+
+test("settlement receipts name their escrow and the treasury gets the verdict without escrow ids", async () => {
+  const sent = [];
+  const { adapter } = fixture({ state: "Withdrawn", treasury: async (move) => (sent.push(move), { state: "TransferSent", txHash: TX }) });
+  const award = await adapter.lockAward({ supplier: "codepodcast", amount: 60 });
+  const bond = await adapter.lockBond({ supplier: "codepodcast", amount: 15 });
+  const receipts = await adapter.settle({ ...verdicts[1], awardEscrowId: award.id, bondEscrowId: bond.id });
+  assert.deepEqual(receipts.map((r) => r.escrow), [award.escrow, bond.escrow, bond.escrow]);
+  assert.equal(sent.length, 2);
+  assert.ok(sent.every(({ verdict }) => !("awardEscrowId" in verdict) && !("bondEscrowId" in verdict)));
+});
+
 test("lovelace rejects fractional lovelace and converts exact ADA amounts", () => {
   assert.equal(lovelace(11.25), "11250000");
   for (const amount of [-1, 0, NaN, Infinity, 0.0000001, 1e20]) assert.throws(() => lovelace(amount), /amount/);

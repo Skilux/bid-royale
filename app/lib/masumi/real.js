@@ -11,6 +11,9 @@ const OPERATIONS = {
   "request-refund": { side: "purchase", queued: ["SetRefundRequestedRequested", "SetRefundRequestedInitiated"] },
   "cancel-refund-request": { side: "purchase", queued: ["UnSetRefundRequestedRequested", "UnSetRefundRequestedInitiated"] },
 };
+// A lock is confirmed once the escrow holds the funds; later states mean it was locked first.
+const LOCKED = ["FundsLocked", "ResultSubmitted", "RefundRequested", "Disputed", "WithdrawAuthorized", "RefundAuthorized",
+  "Withdrawn", "RefundWithdrawn", "DisputedWithdrawn"];
 const hash = (value) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
 const encode = (job) => `masumi_${Buffer.from(JSON.stringify(job)).toString("base64url")}`;
 function decode(id) {
@@ -34,6 +37,8 @@ function receipt(job, action, amount, from, to, data = {}, error) {
   const txHash = /^[0-9a-f]{64}$/i.test(candidate ?? "") ? candidate : null;
   return {
     id: encode(job), badge: txHash ? "REAL" : "PENDING", action, amount, from, to,
+    // The escrow this receipt drives, so callers never step one escrow twice at once.
+    escrow: job.blockchainIdentifier ?? job.bondIdentifier ?? null,
     txHash, explorerUrl: txHash ? `https://preprod.cardanoscan.io/transaction/${txHash}` : null,
     state: error ? "Error" : data.onChainState ?? data.NextAction?.requestedAction ?? "Pending",
     ...(error || data.stepError ? { error: error?.message ?? data.stepError } : {}),
@@ -66,7 +71,7 @@ export function createRealAdapter({ env = process.env, fetch, timeoutMs, now = D
   async function lock(action, { supplier, amount }) {
     const seller = action === "award" ? supplier : "board";
     const buyer = action === "award" ? "consumer" : supplier;
-    const job = { supplier, action, seller, buyer, nonce: randomBytes(12).toString("hex") };
+    const job = { supplier, action, seller, buyer, amount, nonce: randomBytes(12).toString("hex") };
     try {
       // Validate both parties before creating seller-side terms.
       const sell = client(seller);
@@ -105,7 +110,7 @@ export function createRealAdapter({ env = process.env, fetch, timeoutMs, now = D
       return receipt(job, action, amount, buyer, seller, {}, error);
     }
   }
-  function escrow(verdict, action) {
+  function escrowFor(verdict, action) {
     const job = decode(verdict[`${action}EscrowId`]) ?? locks.get(`${verdict.supplier}:${action}`);
     if (!job?.blockchainIdentifier || job.supplier !== verdict.supplier || job.action !== action) {
       throw new Error(`Masumi ${action} escrow missing for ${verdict.supplier}`);
@@ -163,9 +168,18 @@ export function createRealAdapter({ env = process.env, fetch, timeoutMs, now = D
     if (/^[0-9a-f]{64}$/i.test(transfer?.txHash ?? "")) transferResults.set(id, data);
     return data;
   }
+  /** Lock confirmation: REAL with the lock transaction once the buyer side reports the funds locked. */
+  async function lockStep(job) {
+    const data = await status(job, "purchase");
+    return LOCKED.includes(data.onChainState) ? data : { ...data, CurrentTransaction: null };
+  }
   async function advance(id) {
     const job = decode(id);
     const followup = job?.followup;
+    if (!followup && job?.blockchainIdentifier && ["award", "bond"].includes(job.action)) {
+      try { return receipt(job, job.action, job.amount, job.buyer, job.seller, await lockStep(job)); }
+      catch (error) { return receipt(job, job.action, job.amount, job.buyer, job.seller, {}, error); }
+    }
     if (!followup || !(followup.operation === "transfer" ? followup.bond?.blockchainIdentifier : job.blockchainIdentifier)) return receipt(job ?? {}, "advance", 0, "", "", {}, new Error("Masumi follow-up receipt id required"));
     try {
       const data = followup.operation === "transfer" ? await transferStep(job)
@@ -179,7 +193,11 @@ export function createRealAdapter({ env = process.env, fetch, timeoutMs, now = D
     lockAward: (input) => lock("award", input),
     lockBond: (input) => lock("bond", input),
     advance,
-    async settle(verdict) {
+    async settle(input) {
+      // Escrow ids only locate the locks; the treasury gets the signed verdict without them.
+      const { awardEscrowId, bondEscrowId, ...verdict } = input;
+      const ids = { awardEscrowId, bondEscrowId };
+      const escrow = (v, action) => escrowFor({ ...v, ...ids }, action);
       const moves = planSettlement(verdict);
       const resultHash = verdict.hash ?? hash(verdict);
       const results = [];

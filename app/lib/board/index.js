@@ -21,8 +21,11 @@ const STEP_LOCK_SECONDS = 120;
 const iso = (ms) => new Date(ms).toISOString();
 const round = (n) => Math.round(n * 1e6) / 1e6;
 
+/** PENDING: a real Masumi operation was submitted, no transaction yet. It never counts as money moved. */
+const BADGES = ["REAL", "SIMULATED", "PRE-RECORDED", "PENDING"];
+
 function assertBadged(receipt) {
-  if (!["REAL", "SIMULATED", "PRE-RECORDED"].includes(receipt?.badge)) {
+  if (!BADGES.includes(receipt?.badge)) {
     throw new Error(`money receipt without a badge: ${JSON.stringify(receipt)}`);
   }
 }
@@ -67,6 +70,13 @@ export function createBoard({
       assertBadged(receipt);
       run.ledger.push({ ...receipt, phase, supplier });
     }
+  }
+
+  /** The lock receipt ids let the adapter find the escrows in a later serverless invocation. */
+  function withEscrowIds(run, verdict) {
+    const lockId = (action) =>
+      run.ledger.find((l) => l.phase === "lock" && l.supplier === verdict.supplier && l.action === action)?.id;
+    return { ...verdict, awardEscrowId: lockId("award"), bondEscrowId: lockId("bond") };
   }
 
   function pendingStep(run) {
@@ -351,7 +361,7 @@ export function createBoard({
   async function executeSettlement(runId, job) {
     const run = await need(runId);
     try {
-      const results = await Promise.all(run.verdicts.map((v) => adapter.settle(v)));
+      const results = await Promise.all(run.verdicts.map((v) => adapter.settle(withEscrowIds(run, v))));
       for (const [i, receipts] of results.entries()) {
         const v = run.verdicts[i];
         addToLedger(run, receipts, "settlement", v.supplier);

@@ -6,6 +6,7 @@ import { commit } from "../auction/index.js";
 import { BoardError, EVENTS, STEPS } from "./index.js";
 import { fixtureDocument } from "./record-fixture.js";
 import { FIXTURE_RUN_ID, createFixtureBoard, recordWorkedExample } from "./worked-example.js";
+import { installNextResolution } from "./test-alias.js";
 
 const eventNames = (events) => events.map((e) => e.name);
 
@@ -234,4 +235,27 @@ test("the committed fixture matches a fresh run (regenerate with node lib/board/
   const fresh = JSON.parse(JSON.stringify(fixtureDocument(await recordWorkedExample())));
   assert.deepEqual(committed, fresh);
   assert.equal(committed.run.id, FIXTURE_RUN_ID);
+});
+
+test("PENDING lock receipts enter the ledger and settle gets the lock ids as escrow ids", async () => {
+  installNextResolution();
+  const { simulatedAdapter } = await import("../masumi/simulated.js");
+  const settled = [];
+  const pending = (action) => async ({ supplier, amount }) => ({
+    id: `lock_${action}_${supplier}`, badge: "PENDING", action, amount, from: "x", to: "y", txHash: null, explorerUrl: null, state: "FundsLockingRequested",
+  });
+  const adapter = {
+    ...simulatedAdapter,
+    lockAward: pending("award"),
+    lockBond: pending("bond"),
+    settle: async (v) => (settled.push(v), simulatedAdapter.settle(v)),
+  };
+  const board = await createFixtureBoard({ adapter });
+  const { id } = await board.createRun();
+  await board.runAll(id);
+  const run = await board.getRun(id);
+  assert.ok(run.ledger.filter((l) => l.phase === "lock").every((l) => l.badge === "PENDING"));
+  const tech = settled.find((v) => v.supplier === "techblog");
+  assert.equal(tech.awardEscrowId, "lock_award_techblog");
+  assert.equal(tech.bondEscrowId, "lock_bond_techblog");
 });
