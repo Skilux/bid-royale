@@ -7,7 +7,7 @@ export { FAST_BUDGET_MS, SPEEDS, paceEvents, readSpeed } from "./pacing.js";
 export { BUNDLED_PATH, clearRecordingCache, loadRecording, prepareRecording, validateRecording } from "./recording.js";
 
 /**
- * The Board's `canned` dependency: `async ({ runId }) => ({ run, events })`.
+ * The Board's `canned` dependency: `async ({ runId }) => ({ run, events, evidence })`.
  * Events keep their recorded `ts`, and get a `dueAt` that the paced store (withReplayPacing) honours.
  * Reads no network. Recording and speed come from REPLAY_RECORDING and REPLAY_SPEED, see docs/demo-runbook.md.
  */
@@ -27,7 +27,7 @@ export function createReplay({ env = process.env, now = Date.now, load = loadRec
       id: runId,
       replay: { ...recording.info, speed, startedAt: new Date(startedAt).toISOString(), durationMs: offsets.at(-1) },
     };
-    return { run, events };
+    return { run, events, evidence: structuredClone(recording.evidence ?? []) };
   };
 }
 

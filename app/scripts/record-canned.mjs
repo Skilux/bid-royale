@@ -40,10 +40,24 @@ if (run.mode === "canned") {
   process.exit(1);
 }
 
+// Evidence bundle (#47): manifest, then each item with its exact bytes. An older deployment has no route: record without it.
+let evidence = [];
+try {
+  const manifest = await getJson(`/api/run/${encodeURIComponent(runId)}/evidence`);
+  for (const entry of manifest.items) {
+    const { item } = await getJson(`/api/run/${encodeURIComponent(runId)}/evidence/${encodeURIComponent(entry.name)}`);
+    evidence.push(item);
+  }
+} catch (err) {
+  console.error(`warning: no evidence bundle recorded (${err.message})`);
+  evidence = [];
+}
+
 const doc = {
   _note: `Recorded from ${base} run ${runId} on ${new Date().toISOString()}. Replayed with DEMO_MODE=canned, badged PRE-RECORDED. REAL tx hashes and explorer links are kept.`,
   run,
   events: events.map(({ ts, name, data }) => ({ ts, name, data })),
+  evidence,
 };
 
 const { validateRecording, prepareRecording } = await import("../lib/replay/recording.js");
@@ -53,5 +67,6 @@ const { info } = prepareRecording(doc, out);
 mkdirSync(dirname(out), { recursive: true });
 writeFileSync(out, `${JSON.stringify(doc, null, 2)}\n`);
 console.log(`wrote ${out}`);
+console.log(`evidence items ${evidence.length}`);
 console.log(`events ${info.events}, REAL transfers ${info.realTransfers}, REAL downgraded to PRE-RECORDED ${info.downgradedToPreRecorded}`);
 console.log("Review the file for secrets, then run: npm run check");

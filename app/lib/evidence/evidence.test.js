@@ -189,3 +189,29 @@ test("the committed worked-example fixture carries a bundle that verifies offlin
   const tampered = { ...fixture.evidence[0], bytes: `${fixture.evidence[0].bytes} ` };
   assert.equal((await verifyItem(tampered)).ok, false);
 });
+
+test("a canned replay restores the recorded bundle, labelled PRE-RECORDED, and Verify matches", async () => {
+  const { readFileSync } = await import("node:fs");
+  const { createReplay, prepareRecording } = await import("../replay/index.js");
+  const doc = JSON.parse(readFileSync(new URL("../../data/seeds/board-run.worked-example.json", import.meta.url), "utf8"));
+  const replay = createReplay({ env: {}, load: () => prepareRecording(doc, "test") });
+  const board = await createFixtureBoard({ flags: { simulatePayments: true, demoMode: "canned" }, canned: replay });
+
+  const run = await board.createRun();
+  assert.equal(run.mode, "canned");
+  const manifest = await board.evidenceManifest(run.id);
+  assert.equal(manifest.source, "PRE-RECORDED");
+  assert.deepEqual(manifest.items.map((i) => i.name), EXPECTED);
+  for (const entry of manifest.items) assert.equal((await verifyItem(await board.evidenceItem(run.id, entry.name))).ok, true, entry.name);
+});
+
+test("a recording without a bundle replays with an empty bundle instead of failing", async () => {
+  const { readFileSync } = await import("node:fs");
+  const { createReplay, prepareRecording } = await import("../replay/index.js");
+  const doc = JSON.parse(readFileSync(new URL("../../data/seeds/board-run.worked-example.json", import.meta.url), "utf8"));
+  delete doc.evidence;
+  const replay = createReplay({ env: {}, load: () => prepareRecording(doc, "test") });
+  const board = await createFixtureBoard({ flags: { simulatePayments: true, demoMode: "canned" }, canned: replay });
+  const run = await board.createRun();
+  assert.equal((await board.evidenceManifest(run.id)).count, 0);
+});

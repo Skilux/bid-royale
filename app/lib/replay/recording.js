@@ -83,6 +83,8 @@ export function prepareRecording(doc, source) {
     source,
     run,
     events,
+    // Evidence bytes are hashed, so they are kept exactly as recorded and never relabelled.
+    evidence: Array.isArray(doc.evidence) ? structuredClone(doc.evidence) : [],
     info: {
       source,
       recordedRunId: doc.run.id,
@@ -91,6 +93,7 @@ export function prepareRecording(doc, source) {
       events: events.length,
       realTransfers: proof.length,
       downgradedToPreRecorded: stats.downgraded,
+      evidenceItems: Array.isArray(doc.evidence) ? doc.evidence.length : 0,
     },
   };
 }
