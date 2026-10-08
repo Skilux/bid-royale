@@ -78,14 +78,107 @@ test("award lock uses supplier payment then Consumer purchase with signed terms"
   assert.notEqual(calls[0].body.identifierFromPurchaser, calls[3].body.identifierFromPurchaser);
 });
 
-test("bond uses Board seller and Supplier buyer; bid fee is entirely simulated", async () => {
+test("bond uses Board seller and Supplier buyer", async () => {
   const { adapter, calls } = fixture();
   await adapter.lockBond({ supplier: "codepodcast", amount: 15 });
   assert.deepEqual(calls.map(({ key }) => key), ["test-BOARD", "test-CODEPODCAST"]);
-  const fee = await adapter.lockBidFee({ supplier: "gamingforum", amount: 2 });
-  assert.equal(fee.badge, "SIMULATED");
-  assert.equal(calls.length, 2);
+});
+
+const COMMIT = "c".repeat(64);
+const jobOf = (id) => JSON.parse(Buffer.from(id.slice(7), "base64url"));
+
+test("bid fee is a REAL Board-seller escrow whose inputHash is the bid's commit", async () => {
+  const { adapter, calls } = fixture();
+  const fee = await adapter.lockBidFee({ supplier: "gamingforum", amount: 2, commit: COMMIT.toUpperCase() });
+  assert.deepEqual(calls.map(({ path, key }) => [path, key]), [["/payment", "test-BOARD"], ["/purchase", "test-GAMINGFORUM"]]);
+  assert.equal(calls[0].body.agentIdentifier, "board".repeat(12));
+  assert.equal(calls[0].body.inputHash, COMMIT);
+  assert.equal(calls[1].body.inputHash, COMMIT);
+  assert.deepEqual(calls[0].body.RequestedFunds, [{ amount: "2000000", unit: "" }]);
+  assert.deepEqual([fee.badge, fee.action, fee.amount, fee.from, fee.to], ["REAL", "bid_fee", 2, "gamingforum", "board"]);
+  assert.equal(fee.inputHash, COMMIT);
+  assert.equal(fee.explorerUrl, `https://preprod.cardanoscan.io/transaction/${TX}`);
   assert.equal(await adapter.getEscrowStatus(fee.id), "FundsLocked");
+});
+
+test("bid fee without a commit hash is an Error receipt and creates no escrow", async () => {
+  const { adapter, calls } = fixture();
+  for (const commit of [undefined, "", "abc", "g".repeat(64)]) {
+    const fee = await adapter.lockBidFee({ supplier: "techblog", amount: 2, commit });
+    assert.equal(fee.state, "Error");
+    assert.equal(fee.badge, "PENDING");
+    assert.match(fee.error, /commit hash/);
+  }
+  assert.equal(calls.length, 0);
+});
+
+test("a payment that registers a different inputHash is rejected before the supplier pays", async () => {
+  const { env, fetch: base } = fixture();
+  const calls = [];
+  const fetch = async (url, init) => {
+    const res = await base(url, init);
+    calls.push(url.pathname);
+    if (!url.pathname.endsWith("/payment")) return res;
+    const body = JSON.parse(await res.text());
+    body.data.inputHash = "d".repeat(64);
+    return { ...res, text: async () => JSON.stringify(body) };
+  };
+  const fee = await createRealAdapter({ env, fetch }).lockBidFee({ supplier: "techblog", amount: 2, commit: COMMIT });
+  assert.equal(fee.state, "Error");
+  assert.match(fee.error, /inputHash/);
+  assert.ok(!calls.some((path) => path.endsWith("/purchase")));
+});
+
+test("MASUMI_BID_FEES=simulated falls back to a SIMULATED bid fee with no Masumi call", async () => {
+  const { env, fetch, calls } = fixture();
+  const adapter = createRealAdapter({ env: { ...env, MASUMI_BID_FEES: "simulated" }, fetch });
+  const fee = await adapter.lockBidFee({ supplier: "gamingforum", amount: 2, commit: COMMIT });
+  assert.equal(fee.badge, "SIMULATED");
+  assert.equal(calls.length, 0);
+  assert.equal((await adapter.lockBond({ supplier: "gamingforum", amount: 5 })).badge, "REAL", "only bid fees fall back");
+});
+
+test("bid-fee lock confirmation, then the Board collects it: submit-result with the result hash, REAL at Withdrawn", async () => {
+  const { adapter, calls, records, env, fetch } = fixture({ state: "FundsLocked" });
+  const fee = await adapter.lockBidFee({ supplier: "devnewsletter", amount: 2, commit: COMMIT });
+  const escrow = jobOf(fee.id).blockchainIdentifier;
+  const resumed = createRealAdapter({ env, fetch });
+  const confirmed = await resumed.advance(fee.id);
+  assert.deepEqual([confirmed.badge, confirmed.action, confirmed.inputHash], ["REAL", "bid_fee", COMMIT]);
+
+  const result = "e".repeat(64);
+  calls.length = 0;
+  const collect = await resumed.collectBidFee({ supplier: "devnewsletter", bidFeeEscrowId: fee.id, resultHash: result });
+  const writes = calls.filter(({ path }) => !path.includes("resolve-blockchain-identifier"));
+  assert.deepEqual(writes.map(({ path, key }) => [path, key]), [["/payment/submit-result", "test-BOARD"]]);
+  assert.equal(writes[0].body.submitResultHash, result);
+  assert.equal(writes[0].body.blockchainIdentifier, escrow);
+  assert.deepEqual([collect.action, collect.amount, collect.from, collect.to, collect.badge], ["bid_fee_collect", 2, "devnewsletter", "board", "PENDING"]);
+  assert.equal(collect.escrow, escrow);
+  assert.equal(collect.inputHash, undefined, "only the lock row carries the commit");
+
+  records.get(escrow).payment = { onChainState: "Withdrawn", NextAction: { requestedAction: "WaitingForExternalAction" }, CurrentTransaction: { txHash: TX } };
+  const done = await createRealAdapter({ env, fetch }).advance(collect.id);
+  assert.deepEqual([done.id, done.badge, done.state, done.txHash], [collect.id, "REAL", "Withdrawn", TX]);
+});
+
+test("collectBidFee refuses another supplier's escrow, a non-fee escrow and a missing result hash", async () => {
+  const { adapter, calls } = fixture();
+  const fee = await adapter.lockBidFee({ supplier: "techblog", amount: 2, commit: COMMIT });
+  const bond = await adapter.lockBond({ supplier: "techblog", amount: 17.5 });
+  calls.length = 0;
+  const cases = [
+    [{ supplier: "codepodcast", bidFeeEscrowId: fee.id, resultHash: "e".repeat(64) }, /escrow missing/],
+    [{ supplier: "techblog", bidFeeEscrowId: bond.id, resultHash: "e".repeat(64) }, /escrow missing/],
+    [{ supplier: "techblog", bidFeeEscrowId: "sim_x", resultHash: "e".repeat(64) }, /escrow missing/],
+    [{ supplier: "techblog", bidFeeEscrowId: fee.id }, /result hash/],
+  ];
+  for (const [input, error] of cases) {
+    const out = await adapter.collectBidFee(input);
+    assert.equal(out.state, "Error");
+    assert.match(out.error, error);
+  }
+  assert.equal(calls.length, 0);
 });
 
 for (const verdict of verdicts) {

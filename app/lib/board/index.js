@@ -176,7 +176,10 @@ export function createBoard({
       }
 
       // Bid fees: every bidder pays, the Board keeps it. Locked in parallel, not returned.
-      const fees = await Promise.all(bids.map((b) => adapter.lockBidFee({ supplier: b.supplier, amount: run.tender.bidFee })));
+      // A real bid-fee escrow records the commit as its inputHash, so the commit is on Masumi before the reveal.
+      const fees = await Promise.all(
+        bids.map((b) => adapter.lockBidFee({ supplier: b.supplier, amount: run.tender.bidFee, commit: b.commit })),
+      );
       for (const [i, receipt] of fees.entries()) {
         addToLedger(run, [receipt], "bid_fee", bids[i].supplier);
         await emit(run.id, EVENTS.bidFeeLocked, { supplier: bids[i].supplier, receipt });
@@ -196,7 +199,10 @@ export function createBoard({
     },
 
     async allocation(run) {
-      const result = evaluateBids({ tender: run.tender, bids: run.bids });
+      // The commit registered on the bid-fee escrow wins over the Board's copy: a reveal must match what is on Masumi.
+      const anchored = (b) => run.ledger.find((l) => l.phase === "bid_fee" && l.supplier === b.supplier)?.inputHash;
+      const bids = run.bids.map((b) => (anchored(b) ? { ...b, commit: anchored(b) } : b));
+      const result = evaluateBids({ tender: run.tender, bids });
       run.auction = { ...result, totalAward: round(result.accepted.reduce((t, b) => t + b.award, 0)) };
       for (const r of result.rejected) await emit(run.id, EVENTS.bidRejected, r);
       await emit(run.id, EVENTS.auctionRanked, { ranking: result.ranking });

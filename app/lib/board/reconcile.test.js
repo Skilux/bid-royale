@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { planSettlement } from "../settlement/plan.js";
 import { EVENTS, STEPS } from "./index.js";
-import { within } from "./reconcile.js";
+import { bidFeeResultHash, within } from "./reconcile.js";
 import { createFixtureBoard } from "./worked-example.js";
 
 const TX = "b".repeat(64);
@@ -11,8 +11,9 @@ const SUPPLIERS = ["techblog", "codepodcast", "devnewsletter"];
 /**
  * A real-shaped adapter on a script: locks confirm after `lockAfter` advances, each settlement row turns REAL after
  * `rowAfter` advances. Receipt ids in `hang` never answer, ids in `stuck` never finish. Every call is recorded.
+ * With `realFees`, bid fees lock PENDING with the commit as inputHash and the Board collects them (`collectBidFee`).
  */
-function scriptedAdapter({ lockAfter = 2, rowAfter = 3, hang = new Set(), stuck = new Set() } = {}) {
+function scriptedAdapter({ lockAfter = 2, rowAfter = 3, hang = new Set(), stuck = new Set(), realFees = false } = {}) {
   const calls = [];
   const rows = new Map();
   const advances = new Map();
@@ -31,13 +32,27 @@ function scriptedAdapter({ lockAfter = 2, rowAfter = 3, hang = new Set(), stuck 
     rows.set(id, { action, amount, from, to, escrow: `esc:${action}:${supplier}`, lock: true });
     return receipt(id, false, "FundsLockingRequested");
   };
+  const realFee = async ({ supplier, amount, commit }) => {
+    const id = `fee:${supplier}`;
+    rows.set(id, { action: "bid_fee", amount, from: supplier, to: "board", escrow: `esc:fee:${supplier}`, lock: true });
+    return { ...receipt(id, false, "FundsLockingRequested"), inputHash: commit };
+  };
   return {
     calls,
     badge: "PENDING",
-    lockBidFee: async ({ supplier, amount }) => ({
+    lockBidFee: realFees ? realFee : async ({ supplier, amount }) => ({
       id: `fee:${supplier}`, badge: "SIMULATED", action: "bid_fee", amount, from: supplier, to: "board",
       txHash: `sim_${supplier}`, explorerUrl: null, state: "FundsLocked",
     }),
+    ...(realFees ? {
+      async collectBidFee({ supplier, bidFeeEscrowId, resultHash }) {
+        calls.push({ op: "collect", supplier, bidFeeEscrowId, resultHash });
+        const fee = rows.get(bidFeeEscrowId);
+        const id = `row:bid_fee_collect:${supplier}`;
+        rows.set(id, { action: "bid_fee_collect", amount: fee.amount, from: supplier, to: "board", escrow: fee.escrow });
+        return receipt(id, false, "Pending");
+      },
+    } : {}),
     lockAward: lock("award"),
     lockBond: lock("bond"),
     async settle(verdict) {
@@ -253,4 +268,63 @@ test("runAll with waitForSettlement false returns after the first tick, with set
   const run = await board.runAll(id, { waitForSettlement: false });
   assert.equal(run.steps.settlement.status, "running");
   assert.equal(run.settlement.ticks, 1);
+});
+
+test("REAL bid fees: each lock is confirmed, then collected once for the Board with its result hash; the receipt math is unchanged", async () => {
+  const adapter = scriptedAdapter({ realFees: true });
+  const { board, id, job, firstTick } = await atSettlement(adapter);
+  await firstTick();
+  let state = await board.getSettlementJob(id, job);
+  for (let i = 0; i < 20 && state.status === "running"; i++) state = await board.pollSettlement(id, job);
+  assert.equal(state.status, "done");
+  assert.equal(state.phase, "settled");
+
+  const run = await board.getRun(id);
+  const fees = run.ledger.filter((l) => l.phase === "bid_fee");
+  assert.equal(fees.length, 4, "every bidder, the lost bid included");
+  assert.ok(fees.every((l) => l.badge === "REAL" && l.explorerUrl && /^[0-9a-f]{64}$/.test(l.inputHash)));
+
+  const collects = adapter.calls.filter((c) => c.op === "collect");
+  assert.deepEqual(collects.map((c) => c.supplier).sort(), fees.map((l) => l.supplier).sort(), "collected once per bidder");
+  for (const c of collects) {
+    const fee = fees.find((l) => l.supplier === c.supplier);
+    assert.equal(c.bidFeeEscrowId, fee.id);
+    assert.equal(c.resultHash, bidFeeResultHash(run, fee));
+  }
+  const lost = run.bids.find((b) => !run.auction.accepted.some((a) => a.supplier === b.supplier)).supplier;
+  assert.notEqual(collects.find((c) => c.supplier === lost).resultHash, collects.find((c) => c.supplier === "techblog").resultHash);
+
+  const collected = run.ledger.filter((l) => l.phase === "bid_fee_collect");
+  assert.equal(collected.length, 4);
+  assert.ok(collected.every((l) => l.badge === "REAL" && l.to === "board"));
+  assert.deepEqual(run.settlement.feeTransfers.map((t) => t.id).sort(), collected.map((l) => l.id).sort());
+  assert.ok(run.settlement.transfers.every((t) => t.action !== "bid_fee_collect"), "supplier transfers stay verdict-only");
+  assert.equal(run.receipt.consumer.net, -108.75);
+  assert.equal(run.receipt.board.bidFees, 4 * run.tender.bidFee);
+  assert.deepEqual(run.receipt.badges, ["REAL"]);
+});
+
+test("a stuck bid fee never holds back supplier settlement; the run times out with it PENDING, then collects it late", async () => {
+  const stuck = new Set(["fee:devnewsletter"]);
+  const adapter = scriptedAdapter({ realFees: true, stuck });
+  const { board, id, job, firstTick } = await atSettlement(adapter, { settlement: { timeoutMs: 2_000 } });
+  await firstTick();
+  await board.pollSettlement(id, job);
+  assert.equal(adapter.calls.filter((c) => c.op === "settle").length, 3, "all three verdicts settle while the fee lock is stuck");
+
+  let state = await board.getSettlementJob(id, job);
+  for (let i = 0; i < 200 && state.status === "running"; i++) state = await board.pollSettlement(id, job);
+  assert.equal(state.phase, "timer_fallback");
+  assert.equal(state.pending, 1, "the stuck fee is the only open row");
+  let run = await board.getRun(id);
+  assert.ok(run.ledger.filter((l) => l.phase === "settlement").every((l) => l.badge === "REAL"), "refund and releases finish");
+  assert.equal(run.ledger.find((l) => l.id === "fee:devnewsletter").badge, "PENDING");
+  assert.ok(!adapter.calls.some((c) => c.op === "collect" && c.supplier === "devnewsletter"), "an unconfirmed fee is never collected");
+
+  stuck.clear();
+  for (let i = 0; i < 20 && (await board.store.listSettling()).length; i++) await board.reconcileActive();
+  run = await board.getRun(id);
+  assert.equal(run.settlement.phase, "settled");
+  assert.equal(adapter.calls.filter((c) => c.op === "collect" && c.supplier === "devnewsletter").length, 1);
+  assert.ok(!run.receipt.badges.includes("PENDING"));
 });

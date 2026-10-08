@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { EVENTS } from "./events.js";
 import { buildReceipt } from "./receipt.js";
 
@@ -56,15 +57,25 @@ export function withEscrowIds(run, verdict) {
   return { ...verdict, awardEscrowId: lockId("award"), bondEscrowId: lockId("bond") };
 }
 
+/** What the Board did with a proposal, hashed as the bid-fee escrow's result: the commit and the auction outcome. */
+export function bidFeeResultHash(run, row) {
+  const accepted = run.auction?.accepted?.some((a) => a.supplier === row.supplier);
+  const outcome = accepted ? "accepted" : (run.auction?.rejected?.find((r) => r.supplier === row.supplier)?.reason ?? "not_allocated");
+  const result = { action: "bid_fee", supplier: row.supplier, commit: row.inputHash ?? null, outcome };
+  return createHash("sha256").update(JSON.stringify(result)).digest("hex");
+}
+
 /**
  * The validator service's reconciler: drives every settlement escrow to its final state, one bounded tick at a time.
- * A tick confirms locks, settles each supplier once its award and bond are locked, then advances one PENDING row per
- * escrow. The adapter's `advance` does at most one state-changing call, so repeated ticks are safe.
+ * A tick confirms locks (bid fees included), settles each supplier once its award and bond are locked, collects each
+ * confirmed bid fee for the Board, then advances one PENDING row per escrow. Supplier settlement never waits on a bid
+ * fee. The adapter's `advance` does at most one state-changing call, so repeated ticks are safe.
  * Without `adapter.advance` (simulated) the first tick settles and finishes, as before.
  */
 export function createReconciler({ adapter, now, emit, clock = Date.now, options = {} }) {
   const { budgetMs, timeoutMs, reconcileMs } = { ...SETTLEMENT, ...options };
   const canAdvance = typeof adapter.advance === "function";
+  const canCollect = canAdvance && typeof adapter.collectBidFee === "function";
 
   const pick = ({ badge, state, txHash, explorerUrl, error }) => ({ badge, state, txHash, explorerUrl, ...(error ? { error } : {}) });
   const omit = (obj, keys) => Object.fromEntries(Object.entries(obj).filter(([k]) => !keys.includes(k)));
@@ -88,6 +99,9 @@ export function createReconciler({ adapter, now, emit, clock = Date.now, options
     const verdict = run.verdicts.find((v) => v.supplier === row.supplier)?.kind ?? null;
     if (phase === "settlement") {
       run.settlement.transfers = run.settlement.transfers.map((t) => (same(t) ? apply(t) : t));
+    }
+    if (phase === "bid_fee_collect") {
+      run.settlement.feeTransfers = run.settlement.feeTransfers.map((t) => (same(t) ? apply(t) : t));
     }
     await emit(run.id, EVENTS.settlementProgress, {
       supplier: row.supplier,
@@ -115,13 +129,16 @@ export function createReconciler({ adapter, now, emit, clock = Date.now, options
     // Locks and settle get a third of the budget each, so one slow call cannot starve the later phases.
     const share = () => Math.min(left(), budgetMs / 3);
     const settled = new Set(s.settled);
+    s.feeTransfers ??= [];
+    const collected = new Set(s.feesCollected ?? []);
     const locks = () => run.ledger.filter((l) => l.phase === "lock");
+    const fees = () => run.ledger.filter((l) => l.phase === "bid_fee");
 
-    // 1. Locks: settlement steps only start at FundsLocked.
+    // 1. Locks: settlement steps only start at FundsLocked. Bid-fee locks are confirmed the same way.
     if (canAdvance) {
-      const open = locks().filter((l) => !isTerminal(l));
+      const open = [...locks(), ...fees()].filter((l) => !isTerminal(l));
       const out = await within(share(), open.map((l) => () => adapter.advance(l.id)));
-      for (const [i, r] of out.entries()) await update(run, "lock", open[i], r?.value);
+      for (const [i, r] of out.entries()) await update(run, open[i].phase, open[i], r?.value);
     }
 
     // 2. Settle every supplier whose award and bond are locked. Once per supplier.
@@ -145,25 +162,52 @@ export function createReconciler({ adapter, now, emit, clock = Date.now, options
       }
     }
 
+    // 2b. The Board keeps every bid fee, won or lost: collect each REAL fee once its lock is confirmed.
+    const feesReady = canCollect ? fees().filter((l) => l.badge === "REAL" && !collected.has(l.supplier)) : [];
+    if (feesReady.length && left() > 0) {
+      const out = await within(share(), feesReady.map((l) => () =>
+        adapter.collectBidFee({ supplier: l.supplier, bidFeeEscrowId: l.id, resultHash: bidFeeResultHash(run, l) })));
+      for (const [i, r] of out.entries()) {
+        // A failed call is retried next tick; a bid fee never stops settlement.
+        if (!r?.value) continue;
+        const { supplier } = feesReady[i];
+        assertBadged(r.value);
+        run.ledger.push({ ...r.value, phase: "bid_fee_collect", supplier });
+        s.feeTransfers.push({ ...r.value, supplier });
+        fresh.add(r.value.id);
+        collected.add(supplier);
+        await emit(run.id, EVENTS.settlementProgress, {
+          supplier, verdict: null, phase: "bid_fee_collect", action: r.value.action, receiptId: r.value.id,
+          state: r.value.state, badge: r.value.badge, txHash: r.value.txHash, explorerUrl: r.value.explorerUrl,
+          ...(r.value.error ? { error: r.value.error } : {}),
+        });
+      }
+    }
+
     // 3. Advance one PENDING row per escrow: two transfers on one bond must not both step it.
     if (canAdvance && left() > 0) {
       const groups = new Map();
-      for (const t of s.transfers.filter((t) => !isTerminal(t) && !fresh.has(t.id))) {
-        const key = t.escrow ?? t.id;
-        groups.set(key, [...(groups.get(key) ?? []), t]);
+      const rows = [
+        ...s.transfers.map((t) => ({ t, phase: "settlement" })),
+        ...s.feeTransfers.map((t) => ({ t, phase: "bid_fee_collect" })),
+      ];
+      for (const row of rows.filter(({ t }) => !isTerminal(t) && !fresh.has(t.id))) {
+        const key = row.t.escrow ?? row.t.id;
+        groups.set(key, [...(groups.get(key) ?? []), row]);
       }
       // Rotate inside a group, so a stuck row cannot starve its neighbour.
       const picks = [...groups.values()].map((g) => g[s.ticks % g.length]);
-      const out = await within(left(), picks.map((t) => () => adapter.advance(t.id)));
-      for (const [i, r] of out.entries()) await update(run, "settlement", picks[i], r?.value);
+      const out = await within(left(), picks.map(({ t }) => () => adapter.advance(t.id)));
+      for (const [i, r] of out.entries()) await update(run, picks[i].phase, picks[i].t, r?.value);
     }
 
     s.settled = [...settled];
+    s.feesCollected = [...collected];
     s.ticks += 1;
     s.lastTickAt = iso(now());
     const unsettled = run.verdicts.filter((v) => !settled.has(v.supplier)).length;
     // Without `advance` nothing PENDING can change any more, so only unsettled suppliers are left.
-    const open = canAdvance ? [...locks(), ...s.transfers].filter((r) => !isTerminal(r)).length : 0;
+    const open = canAdvance ? [...locks(), ...fees(), ...s.transfers, ...s.feeTransfers].filter((r) => !isTerminal(r)).length : 0;
     s.pending = unsettled + open;
 
     if (s.pending === 0) {
@@ -238,6 +282,8 @@ export function createReconciler({ adapter, now, emit, clock = Date.now, options
       reconcileUntil: iso(at + reconcileMs),
       settled: [],
       transfers: [],
+      feesCollected: [],
+      feeTransfers: [],
       pending: null,
       ticks: 0,
     };

@@ -24,9 +24,9 @@ See ADR 0002 (`docs/adr/0002-seller-agents-on-vercel.md`).
 | Party | Wallet | Pays | Receives |
 |---|---|---|---|
 | Consumer (NeoRack) | purchasing | 3 awards | Under-gate award refund, forfeits |
-| Tender Board | selling | — | bid fees (SIMULATED), bonds it collects for forfeits |
+| Tender Board | selling | — | bid fees, bonds it collects for forfeits |
 | TechBlog, CodePodcast, DevNewsletter | selling + purchasing | bid fee, bond (purchasing) | award (selling), bond back |
-| GamingForum | selling + purchasing | bid fee only (SIMULATED) | nothing: Lost bid |
+| GamingForum | selling + purchasing | bid fee only | nothing: Lost bid |
 
 All 5 agents (TechBlog, CodePodcast, DevNewsletter, GamingForum, Tender Board)
 are registered on Preprod: `RegistrationConfirmed`, 6.5 min each.
@@ -58,7 +58,7 @@ Payment Service on Railway signs and submits; the contract holds the money.
 |---|---|---|---|---|---|---|---|---|
 | 1 | Brief + tender | Consumer → Board | Vercel | Board API, no Masumi call | — | — | seconds | no money |
 | 2 | Discovery | Board → 4 suppliers | Vercel → Vercel | `POST /registry-entry-search` (Board key), read each `apiBaseUrl`, `POST <apiBaseUrl>/tender-invite` | — | — | seconds | no money |
-| 3 | Sealed bids | each supplier → Board | Vercel | commit hash, then reveal; Board recomputes and rejects mismatches | 4 bid fees × 2 = 8 | none (ledger only) | seconds | **SIMULATED** |
+| 3 | Sealed bids | each supplier → Board | Vercel + payment node | commit hash is the bid-fee escrow's `inputHash`, then reveal; Board recomputes and rejects a reveal that does not match the escrow | 4 bid fees × 2 = 8 | 4 bid-fee escrows (Board seller, supplier buyer); the Board collects each by `submit-result` + early release | lock ~2–3 min in parallel, collect ~13 min inside settlement | **REAL** (#50; `MASUMI_BID_FEES=simulated` falls back to SIMULATED) |
 | 4 | Allocation | Board | Vercel | rank by price per promised signup, fill the budget (D11); GamingForum is below the gate | 70 + 60 + 70 = 200 | — | seconds | no money |
 | 5a | Award locks (3, in parallel) | Consumer → each winner | Vercel → Railway → Preprod | supplier `POST /payment` (supplier key), Consumer `POST /purchase` (Consumer key) | 70 / 60 / 70 | `FundsLocked` | 1.6–3.2 min | **PENDING** until the tx hash exists, then **REAL** + explorer link |
 | 5b | Bond locks (3, in parallel with 5a) | each winner → Board | Vercel → Railway → Preprod | Board `POST /payment` (Board key), supplier `POST /purchase` (supplier key) | 17.5 / 15 / 17.5 | `FundsLocked` | 1.6–3.2 min | **PENDING**, then **REAL** |
@@ -93,7 +93,8 @@ Payment Service on Railway signs and submits; the contract holds the money.
 | Treasury transfer | treasury worker, Board-signed verdict required | 17.5 to the Consumer | — | not measured yet |
 
 **Lost bid, GamingForum (promised 4 per 1,000, below the gate)**: no escrow.
-Only the 2 tADA bid fee, SIMULATED, not returned.
+Only the 2 tADA bid fee, REAL, not returned: the Board collects it like every
+other bid fee.
 
 ## How long a full run takes
 
@@ -117,7 +118,9 @@ About **15 min** end to end, measured per path:
   escrows: a trust assumption on the Board, and only for a Board-signed verdict.
   Badge **PENDING** until the transfer has a tx hash, **REAL** with an explorer
   link after.
-- Bid fees are **SIMULATED** (labelled ledger rows). Traffic is **SIMULATED**.
+- Bid fees are **REAL** escrows (inputHash = the bid's commit), **PENDING** until
+  the lock and the Board's collection have tx hashes; **SIMULATED** only if the
+  fallback flag is set. Traffic is **SIMULATED**.
   Anything replayed in canned mode is **PRE-RECORDED**.
 - Awards, bonds and their settlement are **REAL** once a tx hash exists, with
   `https://preprod.cardanoscan.io/transaction/<hash>`; **PENDING** before.

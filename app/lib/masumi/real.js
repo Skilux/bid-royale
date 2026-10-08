@@ -15,6 +15,7 @@ const OPERATIONS = {
 const LOCKED = ["FundsLocked", "ResultSubmitted", "RefundRequested", "Disputed", "WithdrawAuthorized", "RefundAuthorized",
   "Withdrawn", "RefundWithdrawn", "DisputedWithdrawn"];
 const hash = (value) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
+const COMMIT = /^[0-9a-f]{64}$/;
 const encode = (job) => `masumi_${Buffer.from(JSON.stringify(job)).toString("base64url")}`;
 function decode(id) {
   if (!id?.startsWith("masumi_")) return null;
@@ -39,6 +40,8 @@ function receipt(job, action, amount, from, to, data = {}, error) {
     id: encode(job), badge: txHash ? "REAL" : "PENDING", action, amount, from, to,
     // The escrow this receipt drives, so callers never step one escrow twice at once.
     escrow: job.blockchainIdentifier ?? job.bondIdentifier ?? null,
+    // A bid-fee lock carries the commit hash registered on Masumi; the reveal is checked against it.
+    ...(job.inputHash && !job.followup ? { inputHash: job.inputHash } : {}),
     txHash, explorerUrl: txHash ? `https://preprod.cardanoscan.io/transaction/${txHash}` : null,
     state: error ? "Error" : data.onChainState ?? data.NextAction?.requestedAction ?? "Pending",
     ...(error || data.stepError ? { error: error?.message ?? data.stepError } : {}),
@@ -68,11 +71,14 @@ export function createRealAdapter({ env = process.env, fetch, timeoutMs, now = D
       ...config(), blockchainIdentifier: job.blockchainIdentifier,
     });
   }
-  async function lock(action, { supplier, amount }) {
+  /** `commit` (bid fee only) becomes the escrow's inputHash; award and bond hash their own terms. */
+  async function lock(action, { supplier, amount, commit }) {
     const seller = action === "award" ? supplier : "board";
     const buyer = action === "award" ? "consumer" : supplier;
     const job = { supplier, action, seller, buyer, amount, nonce: randomBytes(12).toString("hex") };
+    if (action === "bid_fee") job.inputHash = typeof commit === "string" ? commit.toLowerCase() : commit;
     try {
+      if (action === "bid_fee" && !COMMIT.test(job.inputHash ?? "")) throw new Error("Masumi bid fee needs the bid's commit hash (64 hex)");
       // Validate both parties before creating seller-side terms.
       const sell = client(seller);
       const buy = client(buyer);
@@ -80,7 +86,7 @@ export function createRealAdapter({ env = process.env, fetch, timeoutMs, now = D
       if (!env[agentName]) throw new Error(`Masumi configuration missing ${agentName}`);
       const deadlines = paymentDeadlines({ now: now(), marginMs });
       const funds = [{ amount: lovelace(amount), unit: "" }];
-      const inputHash = hash({ action, supplier, amount, nonce: job.nonce });
+      const inputHash = job.inputHash ?? hash({ action, supplier, amount, nonce: job.nonce });
       const payment = await sell.post("/payment", {
         network: config().network, agentIdentifier: env[agentName], inputHash,
         identifierFromPurchaser: job.nonce, paymentSourceType: "Web3CardanoV2",
@@ -92,6 +98,9 @@ export function createRealAdapter({ env = process.env, fetch, timeoutMs, now = D
       }
       if (payment.PaymentSource?.smartContractAddress !== env.MASUMI_SMART_CONTRACT_ADDRESS) {
         throw new Error("Masumi payment source does not match configured V2 contract");
+      }
+      if (payment.inputHash !== undefined && payment.inputHash !== inputHash) {
+        throw new Error("Masumi payment inputHash does not match the submitted hash");
       }
       locks.set(`${supplier}:${action}`, job);
       const purchase = await buy.post("/purchase", {
@@ -176,7 +185,7 @@ export function createRealAdapter({ env = process.env, fetch, timeoutMs, now = D
   async function advance(id) {
     const job = decode(id);
     const followup = job?.followup;
-    if (!followup && job?.blockchainIdentifier && ["award", "bond"].includes(job.action)) {
+    if (!followup && job?.blockchainIdentifier && ["award", "bond", "bid_fee"].includes(job.action)) {
       try { return receipt(job, job.action, job.amount, job.buyer, job.seller, await lockStep(job)); }
       catch (error) { return receipt(job, job.action, job.amount, job.buyer, job.seller, {}, error); }
     }
@@ -189,10 +198,26 @@ export function createRealAdapter({ env = process.env, fetch, timeoutMs, now = D
   }
   return {
     badge: "PENDING",
-    lockBidFee: (input) => simulatedAdapter.lockBidFee(input),
+    // MASUMI_BID_FEES=simulated is the fallback if bid-fee escrows stall: awards, bonds and the refund never wait on them.
+    lockBidFee: (input) => env.MASUMI_BID_FEES === "simulated" ? simulatedAdapter.lockBidFee(input) : lock("bid_fee", input),
     lockAward: (input) => lock("award", input),
     lockBond: (input) => lock("bond", input),
     advance,
+    /** The Board keeps every bid fee: Board submit-result, then the cooperative early release (like a forfeited bond). */
+    async collectBidFee({ supplier, bidFeeEscrowId, resultHash }) {
+      let job = decode(bidFeeEscrowId) ?? {};
+      const amount = job.amount ?? 0;
+      try {
+        if (!job.blockchainIdentifier || job.action !== "bid_fee" || job.supplier !== supplier) {
+          throw new Error(`Masumi bid_fee escrow missing for ${supplier}`);
+        }
+        if (!COMMIT.test(resultHash ?? "")) throw new Error("Masumi bid fee collection needs a result hash (64 hex)");
+        job = { ...job, followup: { action: "bid_fee_collect", amount, from: supplier, to: "board", operation: "release", resultHash } };
+        return receipt(job, "bid_fee_collect", amount, supplier, "board", await escrowStep(job, "release", resultHash, true));
+      } catch (error) {
+        return receipt(job, "bid_fee_collect", amount, supplier, "board", {}, error);
+      }
+    },
     async settle(input) {
       // Escrow ids only locate the locks; the treasury gets the signed verdict without them.
       const { awardEscrowId, bondEscrowId, ...verdict } = input;

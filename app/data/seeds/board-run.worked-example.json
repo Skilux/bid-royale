@@ -692,6 +692,8 @@
           "verdict": "pass"
         }
       ],
+      "feesCollected": [],
+      "feeTransfers": [],
       "pending": 0,
       "ticks": 1,
       "lastTickAt": "2026-10-08T22:00:00.740Z",

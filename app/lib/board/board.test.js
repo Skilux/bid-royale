@@ -149,6 +149,44 @@ test("a bid whose reveal does not match its commit is rejected as hash_mismatch"
   assert.deepEqual(run.auction.accepted.map((a) => a.supplier), ["techblog"]);
 });
 
+test("the bid fee carries the commit, and a reveal is checked against the escrow's inputHash, not the Board's copy", async () => {
+  installNextResolution();
+  const { simulatedAdapter } = await import("../masumi/simulated.js");
+  const locked = [];
+  const adapter = {
+    ...simulatedAdapter,
+    lockBidFee: async (input) => (locked.push(input), { ...(await simulatedAdapter.lockBidFee(input)), inputHash: input.commit }),
+  };
+  const allocate = async (tamper) => {
+    const board = await createFixtureBoard({ adapter });
+    const { id } = await board.createRun();
+    await board.runStep(id, "bids");
+    const run = await board.store.getRun(id);
+    if (tamper) {
+      // The reveal and the Board's stored commit are both rewritten after the fee locked; the escrow still has the original.
+      const bid = run.bids.find((b) => b.supplier === "codepodcast");
+      bid.price = round2(bid.price * 0.5);
+      bid.commit = commit(bid);
+      await board.store.setRun(run);
+    }
+    return (await board.runStep(id, "allocation")).run;
+  };
+  const round2 = (n) => Math.round(n * 100) / 100;
+
+  const honest = await allocate(false);
+  assert.equal(locked.length, 4);
+  for (const input of locked) {
+    assert.equal(input.commit, honest.bids.find((b) => b.supplier === input.supplier).commit);
+    assert.match(input.commit, /^[0-9a-f]{64}$/);
+  }
+  assert.ok(!honest.auction.rejected.some((r) => r.reason === "hash_mismatch"));
+  assert.ok(honest.auction.accepted.some((a) => a.supplier === "codepodcast"));
+
+  const tampered = await allocate(true);
+  assert.deepEqual(tampered.auction.rejected.find((r) => r.supplier === "codepodcast"), { supplier: "codepodcast", reason: "hash_mismatch" });
+  assert.ok(!tampered.auction.accepted.some((a) => a.supplier === "codepodcast"));
+});
+
 test("a late bid is rejected", async () => {
   const bidSource = async ({ tender }) => [
     { supplier: "techblog", price: 7, impressions: 1000, promisedPer1000: 7, salt: "s1", committedAt: tender.deadline + 1 },

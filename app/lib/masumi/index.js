@@ -7,7 +7,7 @@ let treasuryAdapter;
 
 /**
  * Contract shared with the real adapter (Masumi checkpoint 6):
- *   lockBidFee({ supplier, amount }) -> Receipt
+ *   lockBidFee({ supplier, amount, commit }) -> Receipt   (real: commit is the escrow inputHash)
  *   lockAward({ supplier, amount })  -> Receipt
  *   lockBond({ supplier, amount })   -> Receipt
  *   settle(verdict)                  -> Receipt[]

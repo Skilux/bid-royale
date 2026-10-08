@@ -37,7 +37,7 @@ All JSON. Errors are `{ error, message, ... }` with the status below.
 |---|---|---|
 | `POST /api/run` | Create run, publish tender. Body optional: `{ brief?, seed? }` | 201 `{ run }` |
 | `GET /api/run/:id` | Full run state | 200 `{ run }` |
-| `POST /api/run/:id/bids` | 4 sealed commits, 4 bid fees locked (SIMULATED), then reveals | 200 `{ step, repeated, run }` |
+| `POST /api/run/:id/bids` | 4 sealed commits, 4 bid fees locked (each escrow's inputHash = the commit), then reveals | 200 `{ step, repeated, run }` |
 | `POST /api/run/:id/allocation` | Recompute commits, reject, rank, fill the 200 budget | same |
 | `POST /api/run/:id/locks` | Lock award and bond per winner, in parallel | same |
 | `POST /api/run/:id/feed` | NeoRack signed signup feed (scripted delivery) | same |
@@ -91,7 +91,7 @@ Rules:
                 pending,                       // rows not yet final + suppliers not yet settled
                 settled: [supplier],           // suppliers whose settle() has run
                 transfers: [Receipt & { supplier, verdict }] } | null,
-  ledger: [Receipt & { phase: "bid_fee" | "lock" | "settlement", supplier }],   // every money movement
+  ledger: [Receipt & { phase: "bid_fee" | "lock" | "settlement" | "bid_fee_collect", supplier }],   // every money movement
   receipt: { consumer: { awardsLocked, returned, net, signups, costPerSignup },
              board: { bidFees }, badges: ["SIMULATED"],
              leaderboard: [{ rank, supplier, name, kind, promised, delivered, verifiedSignups, countedSignups,
@@ -154,7 +154,7 @@ data: {"seq":12,"runId":"run_ab12cd34","name":"bid.committed","ts":"2026-10-08T2
 | `verdict.signed` | `{ supplier, kind, delivered, promised, gate, award, bond, hash, signature }` |
 | `settlement.started` | `{ job }` |
 | `settlement.transfer` | `{ supplier, verdict, receipt }`, when a row is created and again when it turns REAL |
-| `settlement.progress` | `{ supplier, verdict, phase: "lock" \| "settlement", action, receiptId, state, badge, txHash, explorerUrl, error? }`, on every state change of a lock or settlement row |
+| `settlement.progress` | `{ supplier, verdict, phase: "lock" \| "bid_fee" \| "settlement" \| "bid_fee_collect", action, receiptId, state, badge, txHash, explorerUrl, error? }`, on every state change of a lock, bid fee or settlement row |
 | `settlement.completed` | `{ job, transfers }`; on timeout `{ job, transfers, fallback: "timer", pending }`; when a timed-out run's last row turns REAL later `{ job, transfers, late: true }` (after `run.completed`) |
 | `receipt.ready` | `{ receipt }` |
 | `round2.decided` | `{ allocations }` |
@@ -170,11 +170,15 @@ Names are exported as `EVENTS` and `EVENT_NAMES` from `app/lib/board`.
 (`docs/research/masumi-settlement-timing.md`). Nothing waits inside a request: every settlement poll and every
 `/api/settlement/tick` runs one **tick** per run, claimed for 55 s so concurrent polls are no-ops:
 
-1. Advance unconfirmed locks (`adapter.advance(lockId)`). Phase `waiting_for_lock` until both a supplier's
-   award and bond are `FundsLocked` (REAL).
+1. Advance unconfirmed locks (`adapter.advance(lockId)`), bid fees included. Phase `waiting_for_lock` until both
+   a supplier's award and bond are `FundsLocked` (REAL). Supplier settlement never waits on a bid fee.
 2. `settle()` each supplier once its locks are confirmed, with `awardEscrowId` / `bondEscrowId` from the ledger.
+   Then `collectBidFee()` once per confirmed REAL bid fee (#50): the Board keeps it, with
+   `bidFeeResultHash(run, row)` (commit + auction outcome) as the result hash. Rows go to `settlement.feeTransfers`
+   and ledger phase `bid_fee_collect`, outside the Consumer and supplier sums (the fee counted at lock).
 3. `advance()` one PENDING row per escrow (Short of promise has two transfers on one bond; they take turns).
-4. Rows are updated in place in `ledger` and `settlement.transfers`; each change emits `settlement.progress`.
+4. Rows are updated in place in `ledger`, `settlement.transfers` and `settlement.feeTransfers`; each change emits
+   `settlement.progress`.
 5. All rows final: receipt, `run.completed`. At `deadline` (40 min): the run completes anyway with phase
    `timer_fallback` and its PENDING rows labelled; it stays in `bidroyale:settling` and ticks keep advancing
    it until `reconcileUntil` (3 h). The escrows finish on chain by timer, but treasury transfers need a tick.

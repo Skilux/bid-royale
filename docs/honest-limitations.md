@@ -7,8 +7,9 @@ and it's the cheapest 10 points available.
 
 - Escrow locks and settlements on Masumi **preprod** (Cardano testnet):
   real state transitions, real tx hashes, real explorer links. 10 escrows per
-  run: 3 awards and 3 bonds are REAL; 4 bid fees are SIMULATED (labelled)
-  unless time allows making them REAL.
+  run: 3 awards, 3 bonds and 4 bid fees are REAL. The bid-fee escrows carry
+  each sealed bid's commit hash as their input hash. A flag can fall back to
+  SIMULATED (labelled) bid fees if their escrows stall.
 - Supplier agents are identified via the registry (agent identifiers,
   service cards).
 - The auction mechanism is real: tender → commit-reveal sealed bids →

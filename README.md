@@ -28,7 +28,7 @@ badge is a bug. Source: [`docs/honest-limitations.md`](docs/honest-limitations.m
 | 3 bond escrows (17.5 / 15 / 17.5 tADA) | **REAL** once a tx hash exists | Same rail, same rule |
 | Settlement per verdict (release, refund, bond return) | **REAL** once a tx hash exists | [`docs/money-flow.md`](docs/money-flow.md), step 7 |
 | Forfeit and bond-remainder transfers | **REAL** once a tx hash exists | Plain transfers from the Board treasury, not escrow outputs |
-| 4 bid fees (2 tADA each) | **SIMULATED** | Labelled ledger rows, REAL only if time allows |
+| 4 bid fees (2 tADA each) | **REAL** once a tx hash exists | Escrow input hash = the sealed bid's commit; the Board collects each fee. Fallback flag: SIMULATED |
 | NeoRack shop, signups, traffic and impressions | **SIMULATED** | Signed signup events from a simulated shop, "no funds moved" |
 | DevNewsletter's zero signups | **SIMULATED** | Scripted. The verdict mechanism is what is on show |
 | Round 2 reallocation | **SIMULATED** | Shown on the receipt, no chain operations |
@@ -172,7 +172,7 @@ no escrow contracts, no DID, no explorer.
 ## The demo run (tADA, the spec ×10)
 
 Budget 200. The Board invites 4 suppliers through the Masumi registry, takes 4
-commit-reveal sealed bids (2 bid fee each, SIMULATED), and picks 3 winners:
+commit-reveal sealed bids (2 bid fee each, in escrow with the commit hash), and picks 3 winners:
 TechBlog 70, CodePodcast 60, DevNewsletter 70. The Consumer locks 3 awards,
 winners lock 3 bonds (25% of award). The NeoRack feed emits signed signups, the
 verifier counts them, the Board signs one verdict per supplier:
@@ -184,7 +184,7 @@ verifier counts them, the Board signs one verdict per supplier:
 
 Receipt: Consumer net −108.75 tADA for 14 verified signups (about 7.77 each),
 plus an illustrative round-2 allocation. 10 escrows: 3 awards and 3 bonds on the
-critical path (REAL), 4 bid fees (SIMULATED first). A full run settles in about
+critical path, 4 bid fees, all REAL. A full run settles in about
 15 min on preprod (measured 8 Oct 2026, [`docs/money-flow.md`](docs/money-flow.md)).
 
 ## Judging and schedule

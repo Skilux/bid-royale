@@ -6,7 +6,16 @@ Plain JS REST wrapper for the Masumi 0.29.0 V2 payment service. No chain code.
 
 ## Contract
 
-- `lockBidFee({ supplier, amount }) → Promise<Receipt>`: always SIMULATED until #31.
+- `lockBidFee({ supplier, amount, commit }) → Promise<Receipt>`: Supplier buys from
+  Board (#50). The escrow's `inputHash` is the bid's `commit` (64 hex), so the
+  sealed bid is on Masumi before the reveal; the receipt carries it as
+  `inputHash` and the Board checks the reveal against it. No valid commit → an
+  `Error` receipt and no escrow. `MASUMI_BID_FEES=simulated` falls back to
+  SIMULATED bid fees (awards and bonds stay real) if bid-fee escrows stall.
+- Real `collectBidFee({ supplier, bidFeeEscrowId, resultHash }) → Promise<Receipt>`:
+  the Board keeps the fee. Board `submit-result` with `resultHash`, then the same
+  cooperative early release as a forfeited bond; `advance` drives the
+  `bid_fee_collect` receipt to `Withdrawn` (REAL).
 - `lockAward({ supplier, amount }) → Promise<Receipt>`: Consumer buys from Supplier.
 - `lockBond({ supplier, amount }) → Promise<Receipt>`: Supplier buys from Board.
 - `settle(verdict) → Promise<Receipt[]>`: follows `planSettlement` without changing
@@ -15,7 +24,7 @@ Plain JS REST wrapper for the Masumi 0.29.0 V2 payment service. No chain code.
 - Real `advance(id) → Promise<Receipt>`: the follow-up driver for settlement;
   reads both sides and issues at most one state-changing request per escrow.
   No loops or sleeps. Portable ids work across adapter instances. On a lock
-  receipt id it confirms the lock instead: buyer-side read, REAL with the lock
+  receipt id (award, bond or bid fee) it confirms the lock instead: buyer-side read, REAL with the lock
   tx once the escrow is `FundsLocked` (or later). The Board's reconciler
   (`app/lib/board/reconcile.js`, #49) is the caller: it ticks every PENDING row.
 - Real receipts also carry `escrow`: the blockchain identifier of the escrow the
@@ -35,7 +44,8 @@ PENDING = real Masumi operation submitted, no transaction yet. For the Product
 lane, the UI must never show it as money moved; it becomes REAL with an explorer link once a hash exists.
 Pending hashes and links are null. HTTP success does not mean paid: seller payment must reach `Withdrawn`.
 Configuration and API failures return `Error` receipts, without throwing into the
-caller or silently creating simulated money. Bid fees retain SIMULATED receipts.
+caller or silently creating simulated money. Bid fees are SIMULATED only with
+`MASUMI_BID_FEES=simulated`.
 
 The real receipt `id` is a portable job token containing only public escrow
 references and party names, never credentials. Save the award/bond lock ids and
