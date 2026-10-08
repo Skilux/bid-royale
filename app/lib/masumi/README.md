@@ -12,14 +12,18 @@ Plain JS REST wrapper for the Masumi 0.29.0 V2 payment service. No chain code.
 - `settle(verdict) → Promise<Receipt[]>`: follows `planSettlement` without changing
   its amounts. Verdict fields: `supplier`, `kind`, `award`, `bond`, `promised`,
   `delivered`, `gate`, optional Board verdict `hash` and `signature`.
-- Real `advance(id) → Promise<Receipt>`: advances a settlement receipt without
-  waiting for chain confirmation. Portable ids work across adapter instances.
+- Real `advance(id) → Promise<Receipt>`: the follow-up driver for settlement;
+  reads both sides and issues at most one state-changing request per escrow.
+  No loops or sleeps. Portable ids work across adapter instances.
 - `getEscrowStatus(id) → Promise<string>`: resolve the seller-side payment by
   blockchain identifier; returns its on-chain state, queued action, or `Error`.
 
 Receipt fields: `id`, `action`, `amount`, `from`, `to`, `state`, `badge`,
 `txHash`, `explorerUrl`, optional `error`. Real receipts use `REAL` only with a
-service-reported 64-character tx hash and a preprod Cardanoscan link. Until then
+service-reported 64-character tx hash and a preprod Cardanoscan link. Settlement
+receipts remain PENDING until the goal side has its terminal transaction hash
+(seller `Withdrawn` for release, buyer `RefundWithdrawn` for refund); earlier lock
+and intermediate hashes do not count as settlement proof. Until then
 PENDING = real Masumi operation submitted, no transaction yet. For the Product
 lane, the UI must never show it as money moved; it becomes REAL with an explorer link once a hash exists.
 Pending hashes and links are null. HTTP success does not mean paid: seller payment must reach `Withdrawn`.
@@ -79,25 +83,42 @@ submits its result. `input_hash` is sha256 of `<identifier_from_purchaser>;<key-
 
 ## Settlement and treasury
 
-Pass submits the award result and requests the bond refund using the Supplier's
-buyer key. Under gate requests the award refund using the Consumer key; it never
-submits the award result. Both return `RefundRequestedPending` while the request
-is queued. Persist the settlement receipt `id` and call `advance(id)` on later
-polls. Only once seller-side state is `RefundRequested` or `Disputed` does the
-Board (bond) or Supplier (award) authorize the refund, using the same key that
-created the payment. Queued authorizations are reconciled rather than repeated.
-`RefundWithdrawn` is the refund's terminal state. A2 automatic refund remains the
-fallback if the Supplier never authorizes; no result is submitted on that award.
+Fast paths are measured on our V2 source in
+`docs/research/masumi-settlement-timing.md`, “Fast (cooperative) paths, measured”.
+Each `settle` starts the first eligible step. Save its receipt ids and call
+`advance(id)` on later polls; repeating `settle` is not required. Both sides are
+re-read before each step, and visible effects or queued Requested/Initiated
+actions prevent resubmission. Every acting side must have
+`NextAction.requestedAction=WaitingForExternalAction`.
 
-Short of promise submits both award and full bond results; Under gate also
-submits the full bond result. Result submission waits for `FundsLocked`.
-Pending award result receipts can also be progressed with `advance(id)`;
-repeat `settle(verdict)` with the saved lock ids to progress bond collection.
-Plain-transfer receipts also carry portable follow-ups: `advance(id)` re-reads
-the Board-side bond state and sends the transfer once it reaches `Withdrawn`. Calls return current states, with no chain confirmation loop.
-All seller mutations use the payment creator's key; refund requests use the
-purchase creator's buyer key. The default HTTP path takes at most two sequential
-15-second calls per progress step (status reads run in parallel).
+| Path | Calls and required acting-side state | Goal |
+|---|---|---|
+| Award release (Pass / Short) | Supplier `submit-result` from seller `FundsLocked` → Consumer `request-refund` from buyer `ResultSubmitted` → Consumer `cancel-refund-request` from buyer `Disputed` | Seller `Withdrawn` |
+| Bond collection (Short / Under gate) | Board `submit-result` from seller `FundsLocked` → Supplier `request-refund` from buyer `ResultSubmitted` → Supplier `cancel-refund-request` from buyer `Disputed` | Seller `Withdrawn` |
+| Award reclaim (Under gate) | Consumer `request-refund` from buyer `FundsLocked`/`ResultSubmitted` → Supplier `authorize-refund` from seller `RefundRequested`/`Disputed` | Buyer `RefundWithdrawn` |
+| Bond return (Pass) | Supplier `request-refund` from buyer `FundsLocked`/`ResultSubmitted` → Board `authorize-refund` from seller `RefundRequested`/`Disputed` | Buyer `RefundWithdrawn` |
+
+Early release passes through **Disputed on chain**: this is the cooperative V2
+flow, followed by buyer authorization of seller withdrawal (`WithdrawAuthorized`).
+The UI must explain that state and keep the money pending until `Withdrawn`.
+Measured early release took 13.1 min, cooperative award refund 5.9 min; these are
+observations, not guarantees. A cancel can be rejected during the buyer window;
+return the current pending receipt with its `error`, then retry on a later
+advance after re-reading both sides. There is no immediate mutation retry.
+
+The timer path remains the automatic fallback: after `submit-result`, the node
+can collect for the seller at `unlockTime` if the cooperative sequence is not
+completed. No manual release endpoint is called. A2 automatic refund remains
+available if the Supplier never authorizes the Under-gate award; no result is
+submitted on that award. Each seller mutation uses the payment creator's key;
+request and cancel use the purchase creator's buyer key.
+
+Plain-transfer follow-ups drive the bond's early-release steps themselves, then
+send the forfeit/remainder once the Board-side bond is `Withdrawn`. Without a
+treasury they still progress bond collection but remain `TransferPending`.
+Each advance performs at most one escrow mutation. Default status reads run in
+parallel (15-second timeout), followed by one bounded request; no confirmation
+loop runs inside the adapter.
 
 The plan's plain transfers (forfeit and bond remainder) return `TransferPending`
 with null hashes by default. An injected `treasury({ id, ...transfer, verdict,

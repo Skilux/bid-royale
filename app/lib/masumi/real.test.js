@@ -29,19 +29,20 @@ function fixture({ state = "FundsLocked", treasury } = {}) {
         ...Object.fromEntries(["payByTime", "submitResultTime", "unlockTime", "externalDisputeUnlockTime"].map((key) => [key, String(Date.parse(body[key]))])),
       };
       records.set(data.blockchainIdentifier, {
-        payment: { onChainState: state, CurrentTransaction: { txHash: TX } },
-        purchase: { onChainState: state, CurrentTransaction: { txHash: TX } },
+        payment: { onChainState: state, NextAction: { requestedAction: "WaitingForExternalAction" }, CurrentTransaction: { txHash: TX } },
+        purchase: { onChainState: state, NextAction: { requestedAction: "WaitingForExternalAction" }, CurrentTransaction: { txHash: TX } },
       });
     } else {
       const record = records.get(body.blockchainIdentifier);
       const side = path.startsWith("/purchase") ? "purchase" : "payment";
       data = record[side];
       if (path.endsWith("submit-result")) data = { ...data, NextAction: { requestedAction: "SubmitResultRequested" }, resultHash: body.submitResultHash };
-      if (path.endsWith("request-refund")) data = { ...data, NextAction: { requestedAction: "SetRefundRequestedRequested" } };
+      if (path === "/purchase/request-refund") data = { ...data, NextAction: { requestedAction: "SetRefundRequestedRequested" } };
       if (path.endsWith("authorize-refund")) {
         assert.ok(["RefundRequested", "Disputed"].includes(data.onChainState), "seller authorization before RefundRequested");
         data = { ...data, NextAction: { requestedAction: "AuthorizeRefundRequested" } };
       }
+      if (path.endsWith("cancel-refund-request")) data = { ...data, NextAction: { requestedAction: "UnSetRefundRequestedRequested" } };
       record[side] = data;
     }
     return { ok: true, status: 200, text: async () => JSON.stringify({ status: "Success", data }) };
@@ -264,6 +265,8 @@ for (const verdict of [verdicts[0], verdicts[2]]) {
     calls.length = 0;
     const advanced = await resumed.advance(waiting.id);
     assert.equal(advanced.state, "RefundRequested");
+    assert.equal(advanced.badge, "PENDING");
+    assert.equal(advanced.txHash, null);
     const writes = calls.filter(({ path }) => path.endsWith("authorize-refund"));
     assert.equal(writes.length, 1);
     assert.equal(writes[0].key, verdict.kind === "pass" ? "test-BOARD" : "test-DEVNEWSLETTER");
@@ -350,3 +353,223 @@ test("transfer advance without treasury stays pending even after bond Withdrawn"
   assert.equal(advanced.txHash, null);
   assert.equal(advanced.explorerUrl, null);
 });
+
+const escrowId = (receipt) => JSON.parse(Buffer.from(receipt.id.slice(7), "base64url")).blockchainIdentifier;
+function reconcile(record, state, action = "WaitingForExternalAction") {
+  for (const side of ["payment", "purchase"]) {
+    record[side] = { ...record[side], onChainState: state, NextAction: { requestedAction: action } };
+  }
+}
+const mutations = (calls, id) => calls.filter(({ path, body }) => body.blockchainIdentifier === id && !path.endsWith("resolve-blockchain-identifier"));
+
+for (const verdict of [verdicts[0], verdicts[1]]) {
+  test(`${verdict.kind}: award early release submits, requests, cancels once and exposes only terminal proof`, async () => {
+    const { adapter, calls, records, env, fetch } = fixture();
+    const award = await adapter.lockAward({ supplier: verdict.supplier, amount: verdict.award });
+    await adapter.lockBond({ supplier: verdict.supplier, amount: verdict.bond });
+    const id = escrowId(award);
+    calls.length = 0;
+    const pending = (await adapter.settle(verdict)).find(({ action }) => action === "award_release");
+    assert.equal(pending.badge, "PENDING");
+    assert.equal(pending.txHash, null);
+    const record = records.get(id);
+    const resumed = createRealAdapter({ env, fetch });
+    await resumed.advance(pending.id); // Submitted request is queued: no duplicate.
+    reconcile(record, "ResultSubmitted");
+    const requested = await resumed.advance(pending.id);
+    assert.equal(requested.badge, "PENDING");
+    assert.equal(requested.txHash, null);
+    await resumed.advance(requested.id); // Refund request queued: no duplicate.
+    reconcile(record, "Disputed");
+    const cancelled = await resumed.advance(requested.id);
+    assert.equal(cancelled.state, "Disputed");
+    assert.equal(cancelled.badge, "PENDING");
+    await resumed.advance(cancelled.id); // Cancel request queued: no duplicate.
+    reconcile(record, "WithdrawAuthorized");
+    await resumed.advance(cancelled.id);
+    reconcile(record, "Withdrawn");
+    const terminal = await resumed.advance(cancelled.id);
+    assert.equal(terminal.badge, "REAL");
+    assert.equal(terminal.txHash, TX);
+    assert.equal(terminal.explorerUrl, `https://preprod.cardanoscan.io/transaction/${TX}`);
+    assert.deepEqual(mutations(calls, id).map(({ path, key }) => [path, key]), [
+      ["/payment/submit-result", `test-${verdict.supplier.toUpperCase()}`],
+      ["/purchase/request-refund", "test-CONSUMER"],
+      ["/purchase/cancel-refund-request", "test-CONSUMER"],
+    ]);
+    await resumed.advance(terminal.id);
+    assert.equal(mutations(calls, id).length, 3);
+  });
+}
+
+test("a rejected cancel is retried only on a later advance after both sides are read", async () => {
+  const { adapter, calls, records, env, fetch } = fixture();
+  const verdict = verdicts[0];
+  const award = await adapter.lockAward({ supplier: "techblog", amount: verdict.award });
+  await adapter.lockBond({ supplier: "techblog", amount: verdict.bond });
+  const pending = (await adapter.settle(verdict)).find(({ action }) => action === "award_release");
+  reconcile(records.get(escrowId(award)), "Disputed");
+  let attempts = 0;
+  const resumed = createRealAdapter({ env, fetch: async (url, init) => {
+    if (url.pathname.endsWith("cancel-refund-request") && ++attempts === 1) {
+      calls.push({ path: "/purchase/cancel-refund-request", body: JSON.parse(init.body), key: init.headers.token });
+      return new Response(JSON.stringify({ message: "buyer window still open" }), { status: 400 });
+    }
+    return fetch(url, init);
+  } });
+  const rejected = await resumed.advance(pending.id);
+  assert.equal(attempts, 1);
+  assert.equal(rejected.state, "Disputed");
+  assert.equal(rejected.badge, "PENDING");
+  assert.match(rejected.error, /buyer window still open/);
+  calls.length = 0;
+  const retried = await resumed.advance(rejected.id);
+  assert.equal(attempts, 2);
+  assert.ok(!retried.error);
+  assert.deepEqual(calls.map(({ path }) => path).sort(), [
+    "/payment/resolve-blockchain-identifier", "/purchase/cancel-refund-request", "/purchase/resolve-blockchain-identifier",
+  ]);
+});
+
+for (const verdict of [verdicts[1], verdicts[2]]) {
+  test(`${verdict.kind}: transfer follow-up drives Board early release with supplier approval then pays once`, async () => {
+    let payments = 0;
+    const { adapter, calls, records } = fixture({ treasury: async () => {
+      payments++; return { state: "TransferSent", txHash: TX };
+    } });
+    await adapter.lockAward({ supplier: verdict.supplier, amount: verdict.award });
+    const bond = await adapter.lockBond({ supplier: verdict.supplier, amount: verdict.bond });
+    const id = escrowId(bond);
+    calls.length = 0;
+    const pending = (await adapter.settle(verdict)).find(({ action }) => action === "bond_forfeit");
+    reconcile(records.get(id), "ResultSubmitted");
+    assert.equal((await adapter.advance(pending.id)).state, "TransferPending");
+    reconcile(records.get(id), "Disputed");
+    await adapter.advance(pending.id);
+    assert.equal(payments, 0);
+    reconcile(records.get(id), "WithdrawAuthorized");
+    await adapter.advance(pending.id);
+    assert.equal(payments, 0);
+    reconcile(records.get(id), "Withdrawn");
+    const paid = await adapter.advance(pending.id);
+    assert.equal(paid.state, "TransferSent");
+    assert.equal(paid.badge, "REAL");
+    assert.equal(payments, 1);
+    await adapter.advance(paid.id);
+    assert.equal(payments, 1);
+    assert.deepEqual(mutations(calls, id).map(({ path, key }) => [path, key]), [
+      ["/payment/submit-result", "test-BOARD"],
+      ["/purchase/request-refund", `test-${verdict.supplier.toUpperCase()}`],
+      ["/purchase/cancel-refund-request", `test-${verdict.supplier.toUpperCase()}`],
+    ]);
+  });
+}
+
+for (const [side, state, action] of [
+  ["payment", "FundsLocked", "SubmitResultRequested"], ["payment", "FundsLocked", "SubmitResultInitiated"],
+  ["purchase", "ResultSubmitted", "SetRefundRequestedRequested"], ["purchase", "ResultSubmitted", "SetRefundRequestedInitiated"],
+  ["purchase", "Disputed", "UnSetRefundRequestedRequested"], ["purchase", "Disputed", "UnSetRefundRequestedInitiated"],
+]) {
+  test(`early release waits for queued ${action} without issuing another mutation`, async () => {
+    const { adapter, calls, records } = fixture();
+    const award = await adapter.lockAward({ supplier: "techblog", amount: 7 });
+    await adapter.lockBond({ supplier: "techblog", amount: 1.75 });
+    const pending = (await adapter.settle(verdicts[0])).find(({ action }) => action === "award_release");
+    const id = escrowId(award);
+    reconcile(records.get(id), state);
+    records.get(id)[side].NextAction.requestedAction = action;
+    calls.length = 0;
+    await adapter.advance(pending.id);
+    assert.equal(mutations(calls, id).length, 0);
+    assert.equal(calls.filter(({ body }) => body.blockchainIdentifier === id).length, 2);
+  });
+}
+
+test("early release requires WaitingForExternalAction on the acting side", async () => {
+  const { adapter, calls, records } = fixture();
+  const award = await adapter.lockAward({ supplier: "techblog", amount: 7 });
+  await adapter.lockBond({ supplier: "techblog", amount: 1.75 });
+  const pending = (await adapter.settle(verdicts[0])).find(({ action }) => action === "award_release");
+  const id = escrowId(award);
+  for (const state of ["FundsLocked", "ResultSubmitted", "Disputed"]) {
+    reconcile(records.get(id), state, "WaitingForManualAction");
+    records.get(id).payment.resultHash = null;
+    calls.length = 0;
+    const waiting = await adapter.advance(pending.id);
+    assert.equal(waiting.badge, "PENDING");
+    assert.equal(mutations(calls, id).length, 0);
+  }
+});
+
+test("cooperative refund returns buyer terminal proof even when seller status lags", async () => {
+  const { adapter, records } = fixture();
+  const award = await adapter.lockAward({ supplier: "devnewsletter", amount: 7 });
+  await adapter.lockBond({ supplier: "devnewsletter", amount: 1.75 });
+  const pending = (await adapter.settle(verdicts[2])).find(({ action }) => action === "award_reclaim");
+  const record = records.get(escrowId(award));
+  record.purchase = { onChainState: "RefundWithdrawn", CurrentTransaction: { txHash: TX }, NextAction: { requestedAction: "WaitingForExternalAction" } };
+  record.payment = { onChainState: "RefundAuthorized", CurrentTransaction: null, NextAction: { requestedAction: "WaitingForExternalAction" } };
+  const refunded = await adapter.advance(pending.id);
+  assert.equal(refunded.state, "RefundWithdrawn");
+  assert.equal(refunded.badge, "REAL");
+  assert.equal(refunded.txHash, TX);
+});
+
+test("timer withdrawal is recognized without further cooperative requests", async () => {
+  const { adapter, calls, records } = fixture();
+  const award = await adapter.lockAward({ supplier: "techblog", amount: 7 });
+  await adapter.lockBond({ supplier: "techblog", amount: 1.75 });
+  const pending = (await adapter.settle(verdicts[0])).find(({ action }) => action === "award_release");
+  reconcile(records.get(escrowId(award)), "Withdrawn");
+  calls.length = 0;
+  const paid = await adapter.advance(pending.id);
+  assert.equal(paid.badge, "REAL");
+  assert.equal(paid.state, "Withdrawn");
+  assert.equal(mutations(calls, escrowId(award)).length, 0);
+});
+
+test("settle starts the first step; only advance drives an already submitted result", async () => {
+  const { adapter, calls, records } = fixture();
+  const award = await adapter.lockAward({ supplier: "techblog", amount: 7 });
+  await adapter.lockBond({ supplier: "techblog", amount: 1.75 });
+  reconcile(records.get(escrowId(award)), "ResultSubmitted");
+  calls.length = 0;
+  const pending = (await adapter.settle(verdicts[0])).find(({ action }) => action === "award_release");
+  assert.equal(mutations(calls, escrowId(award)).length, 0);
+  await adapter.advance(pending.id);
+  assert.equal(mutations(calls, escrowId(award))[0].path, "/purchase/request-refund");
+});
+
+for (const [sellerState, buyerState] of [["Disputed", "ResultSubmitted"], ["WithdrawAuthorized", "Disputed"]]) {
+  test(`early release does not repeat an effect visible to seller ${sellerState} while buyer lags at ${buyerState}`, async () => {
+    const { adapter, calls, records } = fixture();
+    const award = await adapter.lockAward({ supplier: "techblog", amount: 7 });
+    await adapter.lockBond({ supplier: "techblog", amount: 1.75 });
+    const pending = (await adapter.settle(verdicts[0])).find(({ action }) => action === "award_release");
+    const id = escrowId(award);
+    reconcile(records.get(id), buyerState);
+    records.get(id).payment.onChainState = sellerState;
+    calls.length = 0;
+    await adapter.advance(pending.id);
+    assert.equal(mutations(calls, id).length, 0);
+  });
+}
+
+for (const [sellerState, sellerAction, buyerState] of [
+  ["RefundRequested", "WaitingForManualAction", "FundsLocked"],
+  ["RefundRequested", "WaitingForExternalAction", "RefundAuthorized"],
+]) {
+  test(`refund does not repeat a visible effect with seller ${sellerState}/${sellerAction} and buyer ${buyerState}`, async () => {
+    const { adapter, calls, records } = fixture();
+    const award = await adapter.lockAward({ supplier: "devnewsletter", amount: 7 });
+    await adapter.lockBond({ supplier: "devnewsletter", amount: 1.75 });
+    const pending = (await adapter.settle(verdicts[2])).find(({ action }) => action === "award_reclaim");
+    const id = escrowId(award);
+    reconcile(records.get(id), buyerState);
+    records.get(id).payment.onChainState = sellerState;
+    records.get(id).payment.NextAction.requestedAction = sellerAction;
+    calls.length = 0;
+    await adapter.advance(pending.id);
+    assert.equal(mutations(calls, id).length, 0);
+  });
+}
