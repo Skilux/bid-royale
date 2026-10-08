@@ -15,7 +15,24 @@ const ENV_KEYS = [
   "BOARD_SIGNING_KEY",
   "KV_REST_API_URL",
   "KV_REST_API_TOKEN",
+  "TREASURY_URL",
+  "TREASURY_TOKEN",
+  "SUPPLIER_AGENTS",
+  "DEMO_MODE",
+  "SIMULATE_PAYMENTS",
+  "MASUMI_NETWORK",
+  "MASUMI_SMART_CONTRACT_ADDRESS",
+  ...["BOARD", "CONSUMER", "TECHBLOG", "CODEPODCAST", "DEVNEWSLETTER", "GAMINGFORUM"].map((n) => `MASUMI_KEY_${n}`),
+  ...["BOARD", "TECHBLOG", "CODEPODCAST", "DEVNEWSLETTER", "GAMINGFORUM"].map((n) => `MASUMI_AGENT_${n}`),
+  "MASUMI_REGISTRY_BASE_URL",
+  "MASUMI_REGISTRY_API_KEY",
 ];
+
+/** Names only, never values. Any other MASUMI_REGISTRY_* var that is set shows up too. */
+function envPresence() {
+  const extra = Object.keys(process.env).filter((k) => k.startsWith("MASUMI_REGISTRY_"));
+  return Object.fromEntries([...new Set([...ENV_KEYS, ...extra])].map((k) => [k, Boolean(process.env[k])]));
+}
 
 export function GET() {
   return Response.json({
@@ -24,7 +41,7 @@ export function GET() {
     paymentAdapter: getAdapter().badge,
     boardStore: createStoreFromEnv().kind,
     replay: describeReplay(),
-    env: Object.fromEntries(ENV_KEYS.map((k) => [k, Boolean(process.env[k])])),
+    env: envPresence(),
     time: new Date().toISOString(),
   });
 }
