@@ -244,7 +244,7 @@ Never block the demo on a synchronous chain call — job-token + poll.
 - The Board discovers them via registry query (`POST /registry-entry-search/`),
   reads each entry's `apiBaseUrl` and sends the tender to our custom
   `POST /tender-invite`. MIP-003 `/start_job` is NOT used: calling it would make
-  the Board a paying buyer. (Reading `apiBaseUrl` implies registering as
+  the Board a paying buyer. Each agent still exposes the MIP-003 routes on Vercel (ADR 0002, #37). (Reading `apiBaseUrl` implies registering as
   `Standard`, not `OpenApi`: confirm at preflight.) The registry is passive: it
   doesn't run bidding; the Tender Board + sealed-bid auction is our product layer.
   Proactive supplier discovery (GamingForum finds the Board) is pitch only.

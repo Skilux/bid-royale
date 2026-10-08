@@ -62,3 +62,8 @@ and it's the cheapest 10 points available.
 - Signed signups assume the shop key is safe — a compromised shop mints
   signups.
 - On-chain data is hashes and references only; raw reports stay off-chain.
+- The four suppliers and the Board are team-operated demonstration agents: all
+  run in one Vercel project, and all wallets sit on our own Masumi node, whose
+  operator can move every wallet (operator-managed custody, ADR 0002).
+- Forfeits and bond remainders are plain transfers from the Board's treasury,
+  not escrow outputs: a trust assumption on the Board.

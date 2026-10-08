@@ -17,7 +17,8 @@
     "start": "next start",
     "check": "node scripts/check.mjs",
     "check:full": "node scripts/check.mjs --full",
-    "setup:hooks": "git config core.hooksPath .githooks"
+    "setup:hooks": "git config core.hooksPath .githooks",
+    "poc:masumi": "node scripts/poc-masumi.mjs"
   },
   "version": "0.0.0",
   "devDependencies": {

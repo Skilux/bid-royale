@@ -23,16 +23,118 @@ Scope: payment logic only. No UI, agents or verifier. Rails stay Masumi's (see
 
 ## Progress
 
-Status as of 2026-10-08 ~21:35. Checkpoint 1 partly done.
+Status as of 2026-10-08 ~22:08. V2 source created (#21); all ten party wallets funded and six scoped keys tested (#26). Registry check remains W3.
 
 | Checkpoint 1 item | Status |
 |---|---|
 | Payment service deployed on Railway and reachable | Done. Upgraded to 0.29.0, `/api/v1/health` ok. `https://masumi-payment-service-production-5263.up.railway.app` (`/api/v1`, `/admin`, `/docs`), project `bid-royale-masumi` |
-| Base URL and key work | Admin key works on 0.29.0 (`MASUMI_ADMIN_API_KEY` in gitignored `app/.env.local`, local scripts only). Scoped `ReadAndPay` key for `techblog-agent` not re-checked since the upgrade |
-| Wallets exist and are funded | Partly. Seeded selling wallet (`…kewhxz`) and purchasing wallet (`…8cp47j`) hold 10,000 tADA each (checked on chain). Mnemonics backed up off-repo. Per-party wallets (Consumer, 4 Suppliers, Board) not created yet |
-| Contract version (D9) | Seeded source is V1 (`Web3CardanoV1`, `addr_test1wz7j4kmg2cs7yf92uat3ed4a3u97kr7axxr4avaz0lhwdsqukgwfm`, 5% fee). Decided: run on a new V2 source (L1 below); closes when W1 is done |
+| Base URL and key work | Admin key works on 0.29.0 (`MASUMI_ADMIN_API_KEY` in gitignored `app/.env.local`, local scripts only). Six new Preprod wallet-scoped `ReadAndPay` party keys created and tested (#26), including `key-techblog`; details below |
+| Wallets exist and are funded | Done (#21, #26). Ten V2 party wallets: Consumer purchasing 400 tADA, Board selling 150 tADA, four Suppliers each purchasing 60 and selling 20 tADA; admin 20 tADA separately. REAL balances checked on chain; tx links below. Mnemonics backed up off-repo. Seeded V1 wallets used only for funding |
+| Contract version (D9) | Done (#21). New Preprod `Web3CardanoV2` source `cmuzylds0000347p4qfsw0ed3`, contract `addr_test1wzqgalcd93sfjrc5tsc4ycwx80a8lt0s3767a4g8nh45lrg044nd9`, fee 0 permille; `cooldownTime: 60000` (60 s) accepted. Status `custom_address` accepted by operator on 8 Oct: current V2 policy with our fresh admin wallet. Seeded V1 remains unchanged as fallback |
 | Asset decided (tUSDM or tADA) | Decided: tADA, spec amounts × 10 (L2 below) |
 | `GET /registry/wallet` returns a wallet | Not run yet |
+
+### V2 source wallets
+
+REAL Preprod funding (#21), 570 tADA total plus transaction fees, below the
+600 tADA cap. #26 adds 320 tADA plus transaction fees, below its 400 tADA cap.
+All funding balances in the table were confirmed on chain. Mnemonics saved by
+the Admin helper under `v2-admin`, `v2-consumer-purchasing`, `v2-board-selling`,
+and `v2-<supplier>-purchasing` / `v2-<supplier>-selling` in protected off-repo
+storage.
+
+| Role | Address suffix (last 6) | tADA | Funding tx (REAL) |
+|---|---|---|---|
+| Consumer purchasing | p3w6p0 | 400 | [Preprod transaction](https://preprod.cardanoscan.io/transaction/9ad346c54eab9cf3470b0ce9532d91300f6a89249bb886272aa3d84b1db971e5) |
+| Board selling | h0ydnc | 150 | [Preprod transaction](https://preprod.cardanoscan.io/transaction/293af6ac60a335f5e55aaf596bfe13657edc2a1dbca9d6f71406ee7b4850ebde) |
+| Admin | h0vwhn | 20 | [Preprod transaction](https://preprod.cardanoscan.io/transaction/a3dc68b55227b2264d2cafde3ede9de8d0e236f0b26c7b7d84fd1b93df3c5dc2) |
+| TechBlog purchasing | 2ke9r8 | 60 | [Preprod transaction](https://preprod.cardanoscan.io/transaction/b197d0649b61afee43befaef1de20eb1255a5e7ffc408441eef7d47ae13ea7f3) |
+| TechBlog selling | s3lh2d | 20 | [Preprod transaction](https://preprod.cardanoscan.io/transaction/fb0f19b915c123bc0d4782dab163d15c16a7bf3370c5ac60016115ae24d930a8) |
+| CodePodcast purchasing | k5ung2 | 60 | [Preprod transaction](https://preprod.cardanoscan.io/transaction/40909a228fffe3bce38f88aa112ff1b264723a0729f3e81009acd0f2e8523f5c) |
+| CodePodcast selling | mhc2yn | 20 | [Preprod transaction](https://preprod.cardanoscan.io/transaction/919cf05dbecf0f79315949cb2049240b6ad472de1cb19fb3f4aca101f202ec30) |
+| DevNewsletter purchasing | xh22lg | 60 | [Preprod transaction](https://preprod.cardanoscan.io/transaction/2780923cc0e7ea37052355672f2ae1920edfc56bd12d496a68fbeb900fc6b38e) |
+| DevNewsletter selling | 4mvm9y | 20 | [Preprod transaction](https://preprod.cardanoscan.io/transaction/993cf61dc77422b8970e3e0ef04e96091200da6074ece1344444c4d8a6c9e3b0) |
+| GamingForum purchasing | c5aaas | 60 | [Preprod transaction](https://preprod.cardanoscan.io/transaction/3880c6534784038c4bf5d1bdce14c5b050e7e773527492b73694807d2c85354b) |
+| GamingForum selling | s8kj8x | 20 | [Preprod transaction](https://preprod.cardanoscan.io/transaction/36ece361e06d716fd45b6a8565838d7d48e9a6fb12cf024cab51354d4f8cf130) |
+
+Registry policy: `67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b`.
+One admin slot, `requiredAdminSignatures: 1`. The API returned HTTP 200 for
+`cooldownTime: 60000`; its extended response does not expose cooldown.
+
+The source reports `custom_address`, not literal `in_sync`. Masumi 0.29.0's
+[status classifier](https://github.com/masumi-network/masumi-payment-service/blob/0.29.0/src/utils/v2-contract-sync.ts)
+defines this as the current registry policy with a custom payment address,
+which is expected with fresh admin wallets. The operator explicitly accepted
+this status to close D9 on 8 Oct; it is not an outdated contract.
+
+[Masumi ADR 0007](https://github.com/masumi-network/masumi-payment-service/blob/0.29.0/docs/adr/0007-v2-collateral-readiness-invariant.md)
+requires two wallet UTxOs and a collateral candidate of at least 5 ADA before
+V2 script spends. Its helper automatically submits a reserve-preparation
+transaction at first use when needed (minimum funding 7 ADA). The three initial
+#21 wallets are funded above that threshold; no script spend or collateral-prep transaction
+was invoked in #21. First use may defer one scheduler tick for preparation.
+
+### Party keys
+
+Six active `ReadAndPay` keys (#26), each with `canRead: true`, `canPay: true`,
+`canAdmin: false`, `NetworkLimit: [Preprod]`, `walletScopeEnabled: true`, and
+`usageLimited: false`. Values are saved only by the Admin helper in protected
+off-repo storage; the labels below identify them without exposing tokens.
+
+| Party | Key label | Scoped wallet roles | Scope-test result |
+|---|---|---|---|
+| Consumer | `key-consumer` | Consumer purchasing | Own read 200; Board hidden (200, empty list); direct Board read 401 |
+| Board | `key-board` | Board selling | Own read 200 |
+| TechBlog | `key-techblog` | TechBlog selling + purchasing | Both own reads 200; Consumer hidden (200, empty list); direct Consumer read 401 |
+| CodePodcast | `key-codepodcast` | CodePodcast selling + purchasing | Both own reads 200 |
+| DevNewsletter | `key-devnewsletter` | DevNewsletter selling + purchasing | Both own reads 200 |
+| GamingForum | `key-gamingforum` | GamingForum selling + purchasing | Both own reads 200 |
+
+Positive tests used `GET /wallet/list?walletType=<type>&searchQuery=<wallet id>`
+with each party key: every owned wallet was returned, with the expected ID.
+The same query targeting another party returned `Wallets: []` for TechBlog →
+Consumer and Consumer → Board. These are HTTP 200 responses with scope-filtered
+results, not HTTP authorization errors. Direct `GET /wallet` returned 401
+`Unauthorized, admin access required` even for Consumer's own wallet, so that
+endpoint's 401 alone does not prove wallet isolation.
+
+On V2, only the key that created a payment (or Admin) may later call
+`submit-result` / `authorize-refund`. Keep exactly one seller key per party,
+covering its selling wallet; reuse it throughout the payment lifecycle.
+
+### Registered agents
+
+#27 part A smoke registration: TechBlog and Tender Board only, on V2 source
+`cmuzylds0000347p4qfsw0ed3`. Both reached `RegistrationConfirmed`, with
+`CurrentTransaction.status: Confirmed` and one confirmation at the final poll.
+
+| Agent | Selling wallet suffix | apiBaseUrl | agentIdentifier | Registration tx (REAL) | Minutes to confirm |
+|---|---|---|---|---|---|
+| TechBlog | s3lh2d | https://ad-slot-auction.vercel.app/api/agents/techblog | `67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b10adaaad1ba6f00b23a439dcb64cc022e13ae3e4ac093f9e5a56facd1f000000` | [REAL Preprod transaction](https://preprod.cardanoscan.io/transaction/abb55b8172cbdca48f366ea49f9b8108df07324423e77eda54b8033c1589e437) | 6.49 |
+| Tender Board | h0ydnc | https://ad-slot-auction.vercel.app/api/agents/board | `67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b1034612d96631d8349e3cab3d745d0af73ba378996ba49ef94c3649f34000000` | [REAL Preprod transaction](https://preprod.cardanoscan.io/transaction/734ed64ea3f150715dd670150bb5ffebb3d7553feb779bef1e7fcbf782c6b281) | 6.49 |
+
+Registry request IDs: TechBlog `cmuzzhmkk002g47p4ccootv5z`; Tender Board
+`cmuzzhmy6002j47p47lwfm9v4`. Minutes above use each request's `createdAt` and
+confirmed response's `updatedAt`; confirmation was first observed at
+20:30:00.303 UTC (6.58 min after submission).
+
+Observed state timeline, 8 Oct 2026 (UTC):
+
+| Agent | RegistrationRequested (POST) | RegistrationInitiated (first observed) | RegistrationConfirmed (node updatedAt; first observed) |
+|---|---|---|---|
+| TechBlog | 20:23:25.316 | 20:28:59.423 | 20:29:54.913; 20:30:00.303 |
+| Tender Board | 20:23:25.806 | 20:28:59.423 | 20:29:54.906; 20:30:00.303 |
+
+Every Admin call returned HTTP 200; no registration errors or retries.
+Both registrations are `Standard`, advertise only our Preprod V2 address,
+and use Dynamic pricing inside `supportedPaymentSources[].pricing`.
+The 0.29.0 schema forbids top-level `AgentPricing` for V2; it was omitted.
+Empty `ExampleOutputs` was accepted.
+
+The published Vercel URLs are agreed metadata placeholders; their routes do
+not exist yet and were not tested. No Railway service was stopped or changed.
+The remaining three supplier registrations and discovery search remain part B;
+#27 as a whole is not complete.
 
 Done so far:
 
@@ -48,8 +150,8 @@ Done so far:
   (`Cannot find package '@masumi/payment-core'`) and the DB is already seeded,
   so the start command is `pnpm run prisma:migrate && pnpm run start` with no
   seed. Slow template polling vars removed, so the defaults apply (payment
-  and refund checks every ~30 s). Protocol fee on the payment source: 50
-  permille (5%).
+  and refund checks every ~30 s). Protocol fee on the seeded V1 payment source: 50
+  permille (5%); the new V2 source (#21) uses 0 permille.
 - **Fund transfers** go through the Payment Service, not our code:
   `POST /wallet/transfer-funds` (Admin key, min 2 ADA, queued as `Pending`,
   poll `GET /wallet/transfer-funds` for the tx hash). Use it to fund
@@ -59,6 +161,7 @@ Done so far:
   deployed as Railway service at `https://techblog-agent-production.up.railway.app`.
   `/availability` and `/input_schema` answer publicly. Not registered yet
   (no `AGENT_IDENTIFIER`). Business logic is still the scaffold echo + HITL stub.
+  **Retired by ADR 0002** (seller agents live on Vercel); stop the service in #27.
 - **Local sandbox**: Docker Compose quickstart (`~/Documents/masumi-services-dev-quickstart`,
   still on 0.22.0, needs the same bump) with its own funded wallets. Not used for the demo.
 - Secrets live only in Railway variables, gitignored `.env` files and
@@ -78,7 +181,7 @@ Next: the work plan below.
 | L1 | **Run the money flow on a new `Web3CardanoV2` payment source** on our 0.29.0 node. The seeded V1 source stays as a fallback. Closes D9 by choice: V2. | V2 is Masumi's current default. Its fee must be 0 (V1 takes 5% per escrow, which breaks the spec ledger). V2 allows `authorize-refund` from any state, and its cooldown is configurable. | Lane-internal |
 | L2 | **Amounts are the spec × 10, in tADA.** Awards 70 / 60 / 70, bonds 17.5 / 15 / 17.5, bid fee 2, Short-of-promise forfeit 3.75 (11.25 back to the Supplier), Consumer net −108.75 tADA. tUSDM dropped. | `transfer-funds` has a 2 ADA minimum, and small escrows risk min-UTxO errors. tUSDM on Preprod is unverified. We hold 20,000 tADA. | **Danila**: changes the numbers in `app/lib/settlement/plan.js` and on the receipt |
 | L3 | **Settlement timing for the demo is decided after the measured run** (W4–W6). Warm run + attach, video time cut, or live wait. | The 41 min / 26 min floors come from code, not measurement. | Danila, once numbers exist |
-| L4 | **"Hall" topology: one node, one scoped key per party, suppliers live on Vercel (#12).** All wallets sit on our Railway node. The Board's settlement engine calls Masumi with each party's wallet-scoped `ReadAndPay` key. 4 suppliers + Board register via `POST /registry` with `apiBaseUrl` on Vercel. The Python `techblog-agent` is retired. | Supplier logic already lives in #8 / #12, the Python SDK hardcodes 24 h deadlines, and `/start_job` is unused. Fewer services to keep alive overnight. | Matches #12; tell Danila the Python agent is retired |
+| L4 | **"Hall" topology: one node, one scoped key per party, suppliers live on Vercel (#12).** All wallets sit on our Railway node. The Board's settlement engine calls Masumi with each party's wallet-scoped `ReadAndPay` key. 4 suppliers + Board register via `POST /registry` with `apiBaseUrl` on Vercel. The Python `techblog-agent` is retired. | Supplier logic already lives in #8 / #12, the Python SDK hardcodes 24 h deadlines, and `/start_job` is unused. Fewer services to keep alive overnight. | Decided by Vladimir, [ADR 0002](../adr/0002-seller-agents-on-vercel.md) |
 
 Honest limitations this adds: team-operated suppliers, operator-managed custody
 (the node admin can move every wallet), plain transfers trust the Board.
@@ -106,9 +209,10 @@ W1 V2 source ─► W2 wallets + keys ─► W3 register agents ─┬─► W4 
   `requiredAdminSignatures: 1`, `feeRatePermille: 0`, `cooldownTime` lowered
   from the 7 min default (try 60 s, record what the contract accepts).
 - Fund collateral where V2 requires it (Masumi ADR 0007).
-- **Done when:** the source is `in_sync`, its `smartContractAddress` is
-  recorded here, mnemonics are backed up off-repo, D9 is marked closed (V2) in
-  `docs/plan/README.md`.
+- **Done when:** the source is `in_sync` or current-policy `custom_address`
+  (operator-approved exception for #21 on 8 Oct), its `smartContractAddress`
+  is recorded here, mnemonics are backed up off-repo, D9 is marked closed (V2)
+  in `docs/plan/README.md`.
 
 ### W2. Party wallets, funding, scoped keys (≈22:40)
 
