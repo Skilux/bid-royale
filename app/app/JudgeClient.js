@@ -194,8 +194,8 @@ function DiscoveryBar({ view }) {
   if (view.suppliers.length === 0) return null;
   return (
     <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border border-line bg-card px-3 py-2 text-[13px]" data-testid="discovery">
-      <Chip tone="cobalt">Discovery: Masumi registry</Chip>
-      <span className="text-ink-2">{view.suppliers.length} supplier agents found:</span>
+      <Chip tone={view.discovery?.source === "seeded" ? "neutral" : "cobalt"}>{view.discovery?.chip ?? "Discovery: Masumi registry"}</Chip>
+      <span className="text-ink-2">{view.suppliers.length} supplier agents:</span>
       {view.suppliers.map((s) => (
         <span key={s.id} className="rounded-full border border-line px-2.5 py-px text-[12px]">
           <b>{s.name}</b> <span className="text-ink-3">{s.persona}</span>
