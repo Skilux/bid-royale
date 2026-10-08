@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NeoRack ad creatives, contact sheet</title>
+<style>
+  :root { --cream:#eee6d8; --muted:rgba(238,230,216,.66); --faint:rgba(238,230,216,.38); --line:rgba(242,228,201,.13); --line-strong:rgba(242,228,201,.28); --amber:#e7a84b; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; background:#050404; color:var(--cream); font:13px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; -webkit-font-smoothing:antialiased; }
+  main { padding:28px 40px 24px; }
+  h1 { margin:0; font:800 26px/1 Inter, ui-sans-serif, system-ui, sans-serif; letter-spacing:.04em; text-transform:uppercase; }
+  .sub { margin:8px 0 22px; color:var(--muted); }
+  .note { color:var(--amber); }
+  .row { display:grid; grid-template-columns:repeat(4, 1fr); gap:28px; align-items:start; }
+  figure { margin:0; }
+  .full { display:block; width:100%; max-width:330px; aspect-ratio:9/16; border-radius:12px; border:1px solid var(--line-strong); background:#0b0908; }
+  figcaption { display:flex; gap:14px; align-items:flex-start; margin-top:12px; max-width:330px; }
+  .meta { flex:1; min-width:0; }
+  .name { font:800 16px/1.1 Inter, ui-sans-serif, system-ui, sans-serif; letter-spacing:.04em; text-transform:uppercase; }
+  .persona { color:var(--muted); margin-top:3px; }
+  .file { color:var(--faint); margin-top:6px; font-size:11px; word-break:break-all; }
+  .sw { display:inline-block; width:10px; height:10px; border-radius:2px; vertical-align:-1px; margin-right:4px; border:1px solid var(--line-strong); }
+  .thumb { flex:0 0 120px; }
+  .thumb img { display:block; width:120px; height:213px; border-radius:7px; border:1px solid var(--line-strong); }
+  .thumb small { display:block; margin-top:4px; color:var(--faint); font-size:10px; text-align:center; }
+  .grey img { filter:grayscale(1); }
+</style>
+</head>
+<body>
+<main>
+  <h1>NeoRack ad creatives</h1>
+  <p class="sub">One ad per supplier channel, 360x640 (9:16). <span class="note">Illustrative mock creatives. No real campaign ran.</span> Small thumbnails show the 120 px card size.</p>
+  <div class="row">
+    <figure>
+      <img class="full" src="../../../app/public/creatives/techblog.svg" alt="TechBlog creative">
+      <figcaption>
+        <div class="meta"><div class="name">TechBlog</div><div class="persona">conservative, blog inline banner</div><div class="file"><span class="sw" style="background:#1e5f74"></span>teal to mint<br>creatives/techblog.svg</div></div>
+        <div class="thumb"><img src="../../../app/public/creatives/techblog.svg" alt=""><small>120 px</small></div>
+      </figcaption>
+    </figure>
+    <figure>
+      <img class="full" src="../../../app/public/creatives/codepodcast.svg" alt="CodePodcast creative">
+      <figcaption>
+        <div class="meta"><div class="name">CodePodcast</div><div class="persona">moderate, sponsored read card</div><div class="file"><span class="sw" style="background:#7a3fa0"></span>purple stripes<br>creatives/codepodcast.svg</div></div>
+        <div class="thumb"><img src="../../../app/public/creatives/codepodcast.svg" alt=""><small>120 px</small></div>
+      </figcaption>
+    </figure>
+    <figure>
+      <img class="full" src="../../../app/public/creatives/devnewsletter.svg" alt="DevNewsletter creative">
+      <figcaption>
+        <div class="meta"><div class="name">DevNewsletter</div><div class="persona">aggressive over-promiser, sponsor block</div><div class="file"><span class="sw" style="background:#c9362e"></span>cream + red<br>creatives/devnewsletter.svg</div></div>
+        <div class="thumb"><img src="../../../app/public/creatives/devnewsletter.svg" alt=""><small>120 px</small></div>
+      </figcaption>
+    </figure>
+    <figure>
+      <img class="full" src="../../../app/public/creatives/gamingforum.svg" alt="GamingForum creative">
+      <figcaption>
+        <div class="meta"><div class="name">GamingForum</div><div class="persona">passive low-baller, loses the bid, forum banner</div><div class="file"><span class="sw" style="background:#ff3df0"></span>magenta glow<br>creatives/gamingforum.svg</div></div>
+        <div class="thumb grey"><img src="../../../app/public/creatives/gamingforum.svg" alt=""><small>greyed, lost bid</small></div>
+      </figcaption>
+    </figure>
+  </div>
+</main>
+</body>
+</html>

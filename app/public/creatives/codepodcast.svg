@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 640" width="360" height="640" role="img" aria-labelledby="t d">
+  <title id="t">NeoRack ad on CodePodcast</title>
+  <desc id="d">Illustrative mock creative: NeoRack sponsored read card on a weekly podcast cover with a waveform.</desc>
+  <defs><pattern id="st" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="#4b2a6b"/><rect x="4" width="3" height="10" fill="#7a3fa0"/></pattern>
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b0d2b" stop-opacity="0"/><stop offset="1" stop-color="#1b0d2b" stop-opacity="0.92"/></linearGradient></defs>
+  <rect width="360" height="640" fill="url(#st)"/>
+  <rect y="120" width="360" height="520" fill="url(#fade)"/>
+  <rect x="24" y="24" width="38" height="38" rx="9" fill="#c9a0ff"/>
+  <path d="M38 34 l14 9 l-14 9 z" fill="#2a1540"/>
+  <text x="74" y="40" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="20" font-weight="800" fill="#ffffff">CodePodcast</text>
+  <text x="74" y="58" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#e6d4ff">Weekly · Ep. 148</text>
+  <rect x="24" y="86" width="312" height="104" rx="16" fill="#1b0d2b" fill-opacity="0.85"/>
+  <rect x="42.0" y="133.0" width="6" height="10" rx="3" fill="#c9a0ff" opacity="1"/>
+  <rect x="52.0" y="129.0" width="6" height="18" rx="3" fill="#c9a0ff" opacity="1"/>
+  <rect x="62.0" y="125.0" width="6" height="26" rx="3" fill="#c9a0ff" opacity="1"/>
+  <rect x="72.0" y="131.0" width="6" height="14" rx="3" fill="#c9a0ff" opacity="1"/>
+  <rect x="82.0" y="122.0" width="6" height="32" rx="3" fill="#c9a0ff" opacity="1"/>
+  <rect x="92.0" y="116.0" width="6" height="44" rx="3" fill="#c9a0ff" opacity="1"/>
+  <rect x="102.0" y="127.0" width="6" height="22" rx="3" fill="#c9a0ff" opacity="1"/>
+  <rect x="112.0" y="120.0" width="6" height="36" rx="3" fill="#c9a0ff" opacity="1"/>
+  <rect x="122.0" y="112.0" width="6" height="52" rx="3" fill="#c9a0ff" opacity="1"/>
+  <rect x="132.0" y="123.0" width="6" height="30" rx="3" fill="#c9a0ff" opacity="1"/>
+  <rect x="142.0" y="128.0" width="6" height="20" rx="3" fill="#c9a0ff" opacity="1"/>
+  <rect x="152.0" y="115.0" width="6" height="46" rx="3" fill="#ffffff" opacity="0.35"/>
+  <rect x="162.0" y="109.0" width="6" height="58" rx="3" fill="#ffffff" opacity="0.35"/>
+  <rect x="172.0" y="121.0" width="6" height="34" rx="3" fill="#ffffff" opacity="0.35"/>
+  <rect x="182.0" y="126.0" width="6" height="24" rx="3" fill="#ffffff" opacity="0.35"/>
+  <rect x="192.0" y="118.0" width="6" height="40" rx="3" fill="#ffffff" opacity="0.35"/>
+  <rect x="202.0" y="113.0" width="6" height="50" rx="3" fill="#ffffff" opacity="0.35"/>
+  <rect x="212.0" y="124.0" width="6" height="28" rx="3" fill="#ffffff" opacity="0.35"/>
+  <rect x="222.0" y="130.0" width="6" height="16" rx="3" fill="#ffffff" opacity="0.35"/>
+  <rect x="232.0" y="119.0" width="6" height="38" rx="3" fill="#ffffff" opacity="0.35"/>
+  <rect x="242.0" y="111.0" width="6" height="54" rx="3" fill="#ffffff" opacity="0.35"/>
+  <rect x="252.0" y="117.0" width="6" height="42" rx="3" fill="#ffffff" opacity="0.35"/>
+  <rect x="262.0" y="125.0" width="6" height="26" rx="3" fill="#ffffff" opacity="0.35"/>
+  <rect x="272.0" y="121.0" width="6" height="34" rx="3" fill="#ffffff" opacity="0.35"/>
+  <rect x="282.0" y="114.0" width="6" height="48" rx="3" fill="#ffffff" opacity="0.35"/>
+  <rect x="292.0" y="128.0" width="6" height="20" rx="3" fill="#ffffff" opacity="0.35"/>
+  <rect x="302.0" y="123.0" width="6" height="30" rx="3" fill="#ffffff" opacity="0.35"/>
+  <rect x="312.0" y="129.0" width="6" height="18" rx="3" fill="#ffffff" opacity="0.35"/>
+  <rect x="20" y="214" width="320" height="392" rx="18" fill="#1b0d2b" fill-opacity="0.94" stroke="#c9a0ff" stroke-opacity="0.5"/>
+  <text x="44" y="250" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14" font-weight="600" letter-spacing="0.8" fill="#e6d4ff">SPONSORED · CODEPODCAST</text>
+  <text x="44" y="282" font-family="Georgia, 'Times New Roman', serif" font-size="17" font-style="italic" fill="#e6d4ff">This episode is brought to you by</text>
+  <g transform="translate(44 311)">
+    <rect x="0" y="0" width="30" height="8" rx="2.5" fill="#c9a0ff"/><circle cx="25" cy="4" r="1.6" fill="#1b0d2b"/>
+    <rect x="0" y="11" width="30" height="8" rx="2.5" fill="#c9a0ff"/><circle cx="25" cy="15" r="1.6" fill="#1b0d2b"/>
+    <rect x="0" y="22" width="30" height="8" rx="2.5" fill="#c9a0ff"/><circle cx="25" cy="26" r="1.6" fill="#1b0d2b"/>
+  </g>
+  <text x="86" y="336" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="30" font-weight="800" letter-spacing="2.5" fill="#ffffff">NEORACK</text>
+  <text x="44" y="396" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="27" font-weight="800" letter-spacing="-0.4" fill="#ffffff">Your next training</text>
+  <text x="44" y="429" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="27" font-weight="800" letter-spacing="-0.4" fill="#ffffff">run starts tonight.</text>
+  <text x="44" y="474" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="20" font-weight="600" fill="#c9a0ff">GPUs for builders</text>
+  <rect x="44" y="500" width="272" height="58" rx="12" fill="#ffffff"/>
+  <text x="166" y="537" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="24" font-weight="800" fill="#2a1540">Sign up</text>
+  <path d="M222 522 l8 7 l-8 7" fill="none" stroke="#2a1540" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="44" y="580" width="272" height="5" rx="2.5" fill="#ffffff" opacity="0.2"/>
+  <rect x="44" y="580" width="96" height="5" rx="2.5" fill="#c9a0ff"/>
+</svg>

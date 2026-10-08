@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 640" width="360" height="640" role="img" aria-labelledby="t d">
+  <title id="t">NeoRack ad on GamingForum</title>
+  <desc id="d">Illustrative mock creative: NeoRack banner in a gaming forum thread list. Out of VRAM? Rent an H100.</desc>
+  <defs><radialGradient id="glow" cx="0.5" cy="0.3" r="0.8"><stop offset="0" stop-color="#ff3df0"/><stop offset="0.7" stop-color="#2a0a4a"/><stop offset="1" stop-color="#14052a"/></radialGradient></defs>
+  <rect width="360" height="640" fill="url(#glow)"/>
+  <rect width="360" height="56" fill="#14052a" opacity="0.8"/>
+  <text x="24" y="36" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="20" font-weight="800" fill="#ffffff">GamingForum</text>
+  <text x="336" y="35" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14" font-weight="600" letter-spacing="0.8" fill="#ff9af5">HARDWARE</text>
+  <circle cx="42" cy="92" r="14" fill="#ffffff" opacity="0.28"/>
+  <rect x="68" y="82" width="200" height="10" rx="5" fill="#ffffff" opacity="0.5"/>
+  <rect x="68" y="98" width="130" height="7" rx="3.5" fill="#ffffff" opacity="0.22"/>
+  <circle cx="42" cy="136" r="14" fill="#ffffff" opacity="0.28"/>
+  <rect x="68" y="126" width="160" height="10" rx="5" fill="#ffffff" opacity="0.5"/>
+  <rect x="68" y="142" width="180" height="7" rx="3.5" fill="#ffffff" opacity="0.22"/>
+  <rect x="16" y="176" width="328" height="3" fill="#ff3df0" opacity="0.8"/>
+  <text x="24" y="208" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14" font-weight="600" letter-spacing="0.8" fill="#ffd1fb">SPONSORED · GAMINGFORUM</text>
+  <rect x="16" y="222" width="328" height="372" rx="14" fill="#14052a" fill-opacity="0.86" stroke="#ff3df0" stroke-width="2"/>
+  <g transform="translate(40 265)">
+    <rect x="0" y="0" width="30" height="8" rx="2.5" fill="#ff3df0"/><circle cx="25" cy="4" r="1.6" fill="#14052a"/>
+    <rect x="0" y="11" width="30" height="8" rx="2.5" fill="#ff3df0"/><circle cx="25" cy="15" r="1.6" fill="#14052a"/>
+    <rect x="0" y="22" width="30" height="8" rx="2.5" fill="#ff3df0"/><circle cx="25" cy="26" r="1.6" fill="#14052a"/>
+  </g>
+  <text x="82" y="290" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="30" font-weight="800" letter-spacing="2.5" fill="#ffffff">NEORACK</text>
+  <text x="40" y="360" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="32" font-weight="800" letter-spacing="-0.4" fill="#ffffff">Out of VRAM?</text>
+  <text x="40" y="398" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="32" font-weight="800" letter-spacing="-0.4" fill="#ffffff">Rent an H100.</text>
+  <text x="40" y="440" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="20" font-weight="600" fill="#ff9af5">GPUs for builders</text>
+  <rect x="40" y="460" width="58.8" height="28" rx="14" fill="#ff3df022" stroke="#ff3df088"/><text x="69.4" y="479" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#ffd1fb">H100</text>
+  <rect x="106.8" y="460" width="58.8" height="28" rx="14" fill="#ff3df022" stroke="#ff3df088"/><text x="136.2" y="479" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#ffd1fb">A100</text>
+  <rect x="173.6" y="460" width="58.8" height="28" rx="14" fill="#ff3df022" stroke="#ff3df088"/><text x="203" y="479" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#ffd1fb">L40S</text>
+  <rect x="40" y="516" width="280" height="58" rx="12" fill="#ff3df0"/>
+  <text x="166" y="553" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="24" font-weight="800" fill="#14052a">Sign up</text>
+  <path d="M222 538 l8 7 l-8 7" fill="none" stroke="#14052a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

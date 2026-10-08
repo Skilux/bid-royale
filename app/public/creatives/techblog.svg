@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 640" width="360" height="640" role="img" aria-labelledby="t d">
+  <title id="t">NeoRack ad on TechBlog</title>
+  <desc id="d">Illustrative mock creative: NeoRack inline banner in a developer blog. H100s by the hour. No sales call.</desc>
+  <defs><linearGradient id="bg" x1="0.25" y1="0" x2="0.75" y2="1"><stop offset="0" stop-color="#0f2a3a"/><stop offset="0.6" stop-color="#1e5f74"/><stop offset="1" stop-color="#72c99a"/></linearGradient></defs>
+  <rect width="360" height="640" fill="url(#bg)"/>
+  <rect width="360" height="56" fill="#08202c" opacity="0.7"/>
+  <text x="24" y="36" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18" font-weight="700" fill="#72c99a">&lt;/&gt;</text>
+  <text x="62" y="36" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="20" font-weight="800" fill="#eaf6f1">TechBlog</text>
+  <rect x="24" y="84" width="250" height="14" rx="6" fill="#eaf6f1" opacity="0.55"/>
+  <rect x="24" y="108" width="312" height="8" rx="4" fill="#eaf6f1" opacity="0.25"/>
+  <rect x="24" y="124" width="296" height="8" rx="4" fill="#eaf6f1" opacity="0.25"/>
+  <rect x="24" y="140" width="180" height="8" rx="4" fill="#eaf6f1" opacity="0.25"/>
+  <text x="24" y="190" text-anchor="start" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14" font-weight="600" letter-spacing="0.8" fill="#eaf6f1">SPONSORED · TECHBLOG</text>
+  <rect x="20" y="206" width="320" height="388" rx="18" fill="#08202c" fill-opacity="0.82" stroke="#72c99a" stroke-opacity="0.55"/>
+  <g transform="translate(44 245)">
+    <rect x="0" y="0" width="30" height="8" rx="2.5" fill="#72c99a"/><circle cx="25" cy="4" r="1.6" fill="#08202c"/>
+    <rect x="0" y="11" width="30" height="8" rx="2.5" fill="#72c99a"/><circle cx="25" cy="15" r="1.6" fill="#08202c"/>
+    <rect x="0" y="22" width="30" height="8" rx="2.5" fill="#72c99a"/><circle cx="25" cy="26" r="1.6" fill="#08202c"/>
+  </g>
+  <text x="86" y="270" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="30" font-weight="800" letter-spacing="2.5" fill="#ffffff">NEORACK</text>
+  <text x="44" y="340" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="28" font-weight="800" letter-spacing="-0.4" fill="#ffffff">H100s by the hour.</text>
+  <text x="44" y="374" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="28" font-weight="800" letter-spacing="-0.4" fill="#ffffff">No sales call.</text>
+  <text x="44" y="418" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="20" font-weight="600" fill="#72c99a">GPUs for builders</text>
+  <rect x="44" y="440" width="58.8" height="28" rx="14" fill="#72c99a22" stroke="#72c99a77"/><text x="73.4" y="459" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#d7f3e5">H100</text>
+  <rect x="110.8" y="440" width="58.8" height="28" rx="14" fill="#72c99a22" stroke="#72c99a77"/><text x="140.2" y="459" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#d7f3e5">A100</text>
+  <rect x="177.6" y="440" width="58.8" height="28" rx="14" fill="#72c99a22" stroke="#72c99a77"/><text x="207" y="459" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#d7f3e5">L40S</text>
+  <rect x="44" y="508" width="272" height="60" rx="12" fill="#72c99a"/>
+  <text x="166" y="546" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="24" font-weight="800" fill="#08202c">Sign up</text>
+  <path d="M222 531 l8 7 l-8 7" fill="none" stroke="#08202c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="24" y="612" width="120" height="6" rx="3" fill="#eaf6f1" opacity="0.3"/>
+</svg>
