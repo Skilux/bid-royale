@@ -85,7 +85,7 @@ originality 10%, honest limitations 10%.
 | Payment rail | Masumi preprod (Cardano), tUSDM (availability on preprod unverified; fallback tADA with scaled amounts) — ONLY | Topic partner's rails; escrow + dispute primitives; self-hosted official Payment Service + Python SDK seller agents on Railway, product on Vercel — see [ADR 0001](docs/adr/0001-railway-for-masumi-rails-vercel-for-product.md) |
 | Degrade path | Labelled simulated ledger (`SIMULATE_PAYMENTS`) | Demo never dies; the track rule requires labelling |
 | Models | OpenAI primary; Groq / Gemini keys as fallback | OpenAI credits per win plan, activation is a kickoff question; fallback keys pre-tested |
-| State | In-memory + seeded JSON | No DB |
+| State | Upstash Redis (Vercel integration) + seeded JSON | Decided 8 Oct by Danila. Vercel instances do not share memory, so tender, bids and events need a shared store. No relational DB |
 | Voice (optional) | ElevenLabs, pre-generated | Never burn quota live |
 
 ## Constraints the stack must respect
@@ -116,19 +116,26 @@ bid-royale/
 │   ├── masumi.md        ← Masumi integration notes (API, states, polling)
 │   ├── demo-runbook.md  ← build order, demo script, cut order, checklists
 │   └── honest-limitations.md ← what is real vs simulated, labelling rules
-├── app/                 ← Next.js Wrapper UI (scaffolded, plain JS)
-├── lib/
-│   ├── masumi/          ← Masumi client (payment service + registry)
-│   ├── agents/          ← agent runtime (Consumer, Suppliers)
-│   ├── outcome-feed/    ← NeoRack signup feed + signed signup events
-│   ├── verifier/        ← deterministic outcome verification
-│   └── settlement/      ← 3 verdict branches → award / bond settlement wiring
-└── data/seeds/          ← seeded registry, tender terms schema
+└── app/                 ← Next.js project root = Vercel root directory
+    ├── app/             ← App Router: routes, layout, API routes (plain JS)
+    ├── jsconfig.json    ← alias: @/* → app/*
+    ├── lib/
+    │   ├── masumi/      ← Masumi client (payment service + registry)
+    │   ├── agents/      ← agent runtime (Consumer, Suppliers)
+    │   ├── outcome-feed/ ← NeoRack signup feed + signed signup events
+    │   ├── verifier/    ← deterministic outcome verification
+    │   └── settlement/  ← 3 verdict branches → award / bond settlement wiring
+    └── data/seeds/      ← seeded registry, tender terms schema
 ```
 
-Each `lib/*` and `app/` directory currently holds a README describing its
-contract (inputs → outputs, "done when"). No implementation code lives here
-yet — the night of Oct 8 is for building.
+**All code lives under `app/`.** Vercel builds with `app/` as the root
+directory, so anything outside it is not importable. Import with the alias:
+`import { verify } from "@/lib/verifier"`. In the docs, `lib/x` in a
+component description means `app/lib/x`.
+
+Each `app/lib/*` directory currently holds a README describing its contract
+(inputs → outputs, "done when"). No implementation code lives here yet — the
+night of Oct 8 is for building.
 
 ## Night-of quickstart
 

@@ -81,6 +81,25 @@ you're off the rails.
 7. Settlement beat (3 verdict branches) + ROI leaderboard + receipt
 8. 2-min video cut
 
+## Code layout (agents: read before creating any file)
+
+The Vercel project builds with **`app/` as its root directory**. Files outside
+`app/` are not in the build and Next.js cannot import them. Past mistake:
+`lib/` and `data/` were created at the repo root and had to be moved.
+
+- **All code goes under `app/`.** Modules in `app/lib/<name>/`, seed JSON in
+  `app/data/seeds/`, routes in `app/app/`. Never create `lib/`, `src/` or
+  `data/` at the repo root.
+- **Import with the alias `@/`**, which maps to `app/`:
+  `import { verify } from "@/lib/verifier"`. Never `../../../lib/...` and never
+  an import that leaves `app/`.
+- **Docs say `lib/x` for short.** It always means `app/lib/x`.
+- Repo-root files are docs, config and tooling only: `docs/`, `.agents/`,
+  `.tools/`, `AGENTS.md`, `README.md`, `GLOSSARY.md`, `.env.example`.
+- `npm install`, `npm run dev` and `npm run build` run inside `app/`.
+- Adding a new top-level code directory, or changing Vercel's root directory,
+  is an architecture change: verify with Danila first.
+
 ## Hard rules
 
 - **No secrets in the repo. Ever.** Private keys and API keys live in Vercel

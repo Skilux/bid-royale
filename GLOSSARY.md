@@ -8,7 +8,7 @@ Canonical terms for this repo (spec v3.1: Notion "Ad Slot Auction: Money Flow, S
 - **Consumer agent**: the NeoRack Consumer agent. Publishes the tender, locks the awards, receives refunds and forfeits.
 - **Supplier agent**: a role. Bids, serves impressions, posts a bond, submits results. Business type stays publisher: TechBlog, CodePodcast, DevNewsletter, GamingForum.
 - **Tender Board**: our service, the middleman. Not an agent. Parts: Tender API, Auction engine, Verifier, Settlement engine. Collects bid fees, holds bonds, verifies delivery and signs the verdict per supplier. Must not be the same entity as the customer.
-- **Verifier**: `lib/verifier`, a module inside the Tender Board service. Not an agent. Checks signature, attribution and time window, counts verified signups, and the Board signs the verdict per supplier. Its hash goes to the decision log. No LLM in the verdict.
+- **Verifier**: `app/lib/verifier`, a module inside the Tender Board service. Not an agent. Checks signature, attribution and time window, counts verified signups, and the Board signs the verdict per supplier. Its hash goes to the decision log. No LLM in the verdict.
 - **Masumi escrow**: the on-chain escrow every payment goes through. Rails we do not rebuild.
 - **NeoRack signup feed**: the source of signed signup events (simulated shop).
 - **Wrapper UI**: the judge-facing UI: tender, bids, dashboard, receipt. Replaces "playground".

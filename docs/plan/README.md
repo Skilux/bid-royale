@@ -28,3 +28,15 @@ on 9 Oct, Prague time). Spec: Notion PRD v3.1. Rules: `AGENTS.md`.
 | D11 | Budget fill: skip a bid that does not fit and continue | Decided 8 Oct by Danila, PRD not yet updated | Danila |
 | Payment service location | Organizer-hosted instance or own node on Railway | Open, gates Masumi checkpoint 1 | Danila + Vladimir |
 | Asset | tUSDM or tADA with scaled amounts | Open, tUSDM on preprod unverified | Vladimir |
+| Board state | Upstash Redis on Vercel | Decided 8 Oct by Danila | Danila |
+| Signup feed | Simple scripted generator, fixed seed, no live click path | Decided 8 Oct by Danila | Danila |
+| Supplier agents | LLM decides bids from a persona template and context (aggressive, passive, ...). Outcomes stay scripted in the feed | Decided 8 Oct by Danila | Danila |
+| Code layout | All code under `app/` (Vercel root directory): `app/lib/*`, `app/data/seeds`, import via `@/lib/...` | Decided 8 Oct, moved in the same change | Danila |
+
+## Code layout
+
+Vercel root directory is `app/` (`docs/hosting.md`). Next.js cannot import
+`../lib/*` by default, and Vercel only includes files outside the root if the
+project setting "Include source files outside of the Root Directory" is on
+(not checked on the live project). So `lib/` and `data/` moved under `app/`.
+The rule is in `AGENTS.md`, "Code layout".

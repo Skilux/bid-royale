@@ -1,4 +1,4 @@
-# `lib/agents/` — agent runtime
+# `app/lib/agents/` — agent runtime
 
 ## Purpose
 

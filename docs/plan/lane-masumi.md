@@ -19,7 +19,7 @@ Scope: payment logic only. No UI, agents or verifier. Rails stay Masumi's (see
 | 3 | 00:00 | Refund dry run | Path A2 tried (Consumer reclaims after `submitResultTime`, no supplier signature). If the contract rejects it, `request-refund` then `authorize-refund` reaches `RefundWithdrawn`. Result and tx hash saved (closes D10). If neither works by 01:00, escalate to the Masumi mentor. The real refund tx is on the never-cut list. |
 | 4 | 01:00 | Bond and plain transfers | Pass: Board `authorize-refund`, Supplier collects the full bond. Short of promise and Under gate: Board `submit-result`, collects, then plain transfers (forfeit 0.375 to Consumer, or the full 1.75). |
 | 5 | 03:00 | Full scenario | 3 awards and 3 bonds lock in parallel. All 3 verdict branches settle. Ledger matches the spec: Consumer net -10.875 for 14 verified signups. 4 suppliers registered and discovered through `registry-entry-search`, `apiBaseUrl` read. |
-| 6 | 03:30 | Integration module | `lib/masumi` exposes `lockAward`, `lockBond`, `settle(verdict)`, `getEscrowStatus`. Every call has an `AbortController` timeout and checks status before a retry. Long steps return a job token and a poll route. A simulated adapter implements the same functions. |
+| 6 | 03:30 | Integration module | `app/lib/masumi` exposes `lockAward`, `lockBond`, `settle(verdict)`, `getEscrowStatus`. Every call has an `AbortController` timeout and checks status before a retry. Long steps return a job token and a poll route. A simulated adapter implements the same functions. |
 
 ## Rules for this lane
 
@@ -35,4 +35,4 @@ Scope: payment logic only. No UI, agents or verifier. Rails stay Masumi's (see
 ## Hands off to Product lane
 
 At checkpoint 1: function signatures and the verdict input shape, posted in
-`lib/masumi/README.md`. Product codes against a stub adapter until checkpoint 6.
+`app/lib/masumi/README.md`. Product codes against a stub adapter until checkpoint 6.

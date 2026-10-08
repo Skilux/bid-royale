@@ -8,6 +8,9 @@ did not provide a hosted Payment Service, and the Payment Service and Python SDK
 agents need always-on processes, which Vercel functions can't provide. The LLM is
 an API; the chain is Cardano preprod. Nothing runs on a laptop.
 
+Board state (tender, bids, events) lives in Upstash Redis, added as a Vercel
+integration (decided 8 Oct by Danila: Vercel instances do not share memory).
+
 ```text
 Internet ──▶ Vercel URL (Next.js 16 Wrapper UI + Tender Board, harness, agent brains,
                  │        verifier, server-side API routes)
@@ -29,7 +32,7 @@ Buyers / registry ──▶ Railway: Python SDK seller agents (one service each)
   Public domain enabled; admin UI at `/admin`, Swagger at `/docs`.
 - Admin key lives only in Railway env vars. Vercel and agents get scoped
   ReadAndPay, Preprod-only keys.
-- One Railway service per Python seller agent (`lib/agents/<name>`, `masumi run`),
+- One Railway service per Python seller agent (`app/lib/agents/<name>`, `masumi run`),
   each with its own public domain — that domain is what gets registered.
 
 ## Vercel setup (do before Oct 8)

@@ -5,6 +5,9 @@ described by contract (inputs → outputs, "done when"). Terms: `GLOSSARY.md`.
 
 ## System diagram
 
+Paths in the diagram are relative to `app/` (the Vercel root directory), so
+`lib/verifier` is `app/lib/verifier`.
+
 ```text
 ┌────────────────────────────────────────────────────────────────────────┐
 │ BROWSER (judges, no signup, no wallet)                                 │
@@ -85,7 +88,7 @@ tADA with scaled amounts).
    touch the chain.
 4. **Delivery and verification.** Traffic serves. The NeoRack signup feed
    sends signed signup events to the Tender Board. Its verifier
-   (`lib/verifier`, inside the Board service, not an agent) counts verified
+   (`app/lib/verifier`, inside the Board service, not an agent) counts verified
    signups per supplier (TechBlog 8 · CodePodcast 6 · DevNewsletter 0 per
    1,000). The Board signs a verdict per supplier and sends it to the
    Consumer; its hash goes to the decision log. No Validator fee.
@@ -125,12 +128,12 @@ assumption on the Board.
 |---|---|---|---|
 | `app/` Wrapper UI | user clicks, SSE subscription | rendered tender → bids → dashboard → receipt; event ledger | <30s to a running demo; every money element badged |
 | Tender Board (service in the app, not an agent) | tender, commit hashes, reveals, verified signup counts | invitations, eligible + ranked bids, winners, Board-signed verdicts, settlement calls | commit-reveal mismatches rejected; budget fill ≤ 20 |
-| `lib/agents/` | tender terms, bids | bids, tender | ≤6–8 tool calls per run; roles distinct (Consumer / 4 Suppliers) |
-| `lib/outcome-feed/` | supplier list, scenario script | signed signup events + impression counts | verifier accepts its signatures; DevNewsletter emits 0 verified signups |
-| `lib/verifier/` | events + shop public key | verified signup counts per supplier | 3 deterministic checks only; bot signals never gate |
-| `lib/settlement/` | verified counts, bids, gate | Pass / Short of promise / Under gate settlement + Masumi calls | checks measured signups vs bid quote AND gate; forfeit = bond × (promised − delivered) ÷ promised |
-| `lib/masumi/` | escrow ops, registry queries | tx hashes + explorer links; agent cards | every chain op surfaces a clickable proof link |
-| `data/seeds/` | — | supplier cards, tender terms schema | discovery works instantly with zero network |
+| `app/lib/agents/` | tender terms, bids | bids, tender | ≤6–8 tool calls per run; roles distinct (Consumer / 4 Suppliers) |
+| `app/lib/outcome-feed/` | supplier list, scenario script | signed signup events + impression counts | verifier accepts its signatures; DevNewsletter emits 0 verified signups |
+| `app/lib/verifier/` | events + shop public key | verified signup counts per supplier | 3 deterministic checks only; bot signals never gate |
+| `app/lib/settlement/` | verified counts, bids, gate | Pass / Short of promise / Under gate settlement + Masumi calls | checks measured signups vs bid quote AND gate; forfeit = bond × (promised − delivered) ÷ promised |
+| `app/lib/masumi/` | escrow ops, registry queries | tx hashes + explorer links; agent cards | every chain op surfaces a clickable proof link |
+| `app/data/seeds/` | — | supplier cards, tender terms schema | discovery works instantly with zero network |
 
 ## Masumi state mapping
 

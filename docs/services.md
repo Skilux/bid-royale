@@ -67,6 +67,7 @@ in from hour 1.
 
 ## Explicitly NOT needed
 
-VPS / Docker payment service (hosted access supersedes it) · database
-(in-memory + seeded JSON) · MetaMask / browser wallets (server-side custodial
+VPS / Docker payment service (hosted access supersedes it; reopened, see
+`docs/plan/README.md`) · relational database (state is Upstash Redis + seeded
+JSON, decided 8 Oct) · MetaMask / browser wallets (server-side custodial
 pattern) · custom domain (Vercel URL is fine) · any Cardano/chain code.

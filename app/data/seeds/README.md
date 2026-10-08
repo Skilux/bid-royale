@@ -1,4 +1,4 @@
-# `data/seeds/` — seeded data
+# `app/data/seeds/` — seeded data
 
 ## Purpose
 

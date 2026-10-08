@@ -1,9 +1,9 @@
-# `lib/settlement/` — verdict → pay / forfeit / refund
+# `app/lib/settlement/` — verdict → pay / forfeit / refund
 
 ## Purpose
 
 Settlement engine of the Tender Board. Decides money movement per supplier
-from the Board-signed verdict (`lib/verifier/`) and executes it via `lib/masumi/`.
+from the Board-signed verdict (`app/lib/verifier/`) and executes it via `app/lib/masumi/`.
 
 ## Contract
 

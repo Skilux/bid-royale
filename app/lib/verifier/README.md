@@ -1,4 +1,4 @@
-# `lib/verifier/` — deterministic signup verification
+# `app/lib/verifier/` — deterministic signup verification
 
 ## Purpose
 

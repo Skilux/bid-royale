@@ -28,7 +28,7 @@ response, ~60s limit):
 | Masumi Payment Service + Postgres (official Railway template) | **Railway** |
 | Python SDK seller endpoints (TechBlog, other suppliers, Board, Validator) — one service each | **Railway** |
 | Harness: tender → bids → allocation → verify → settle, UI, SSE | **Vercel** |
-| Agent brains (LLM reasoning), verifier, outcome feed, `lib/masumi` TS client | **Vercel** |
+| Agent brains (LLM reasoning), verifier, outcome feed, `app/lib/masumi` TS client | **Vercel** |
 
 - Python seller agents are **thin payment adapters**: the SDK handles MIP-003 routes,
   payment requests, lock monitoring and result-hash submission; `process_job` calls a

@@ -1,4 +1,4 @@
-# `lib/outcome-feed/` — NeoRack signup feed (the heart — build first)
+# `app/lib/outcome-feed/` — NeoRack signup feed (the heart — build first)
 
 ## Purpose
 
@@ -15,7 +15,7 @@ attribution by click/session ID. An outcome is a verified signup.
   DevNewsletter → 0 (zero-signup traffic, scripted). GamingForum is
   not served (bid rejected below the gate).
 - **Rules:** every event is signed; signatures must verify with the shop's
-  public key in `lib/verifier/`. Labelled "simulated, no funds moved" in
+  public key in `app/lib/verifier/`. Labelled "simulated, no funds moved" in
   the UI.
 
 ## Done when

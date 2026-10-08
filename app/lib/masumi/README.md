@@ -1,4 +1,4 @@
-# `lib/masumi/` — Masumi client
+# `app/lib/masumi/` — Masumi client
 
 ## Purpose
 
