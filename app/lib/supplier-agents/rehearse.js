@@ -25,6 +25,7 @@ for (const b of run.bids) {
     b.usage ? `usage ${b.usage.calls} calls ${b.usage.tokens} tokens` : "",
   );
 }
+for (const b of run.bids) for (const a of b.attempts ?? []) console.log(`  attempt failed ${b.supplier}: ${a.model} ${a.reason} ${a.status ?? ""} ${a.error}`.replace(/ {2,}/g, " "));
 const skipped = run.suppliers.map((s) => s.id).filter((id) => !run.bids.some((b) => b.supplier === id));
 if (skipped.length) console.log(`skipped (no bid, no fee): ${skipped.join(", ")}`);
 console.log("winners:", run.auction.accepted.map((a) => a.supplier).join(", "));

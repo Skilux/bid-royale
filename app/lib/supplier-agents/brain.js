@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { commit } from "../auction/index.js";
 import { estimateWinChance } from "./gate.js";
-import { newMeter, runAttempt } from "./llm.js";
+import { newMeter, runAttempt, safeDetail } from "./llm.js";
 import { resolveLlmConfig } from "./llm-config.js";
 import { PERSONAS } from "./personas.js";
 
@@ -12,7 +12,7 @@ function sealed(supplier, quote, salt) {
 }
 
 /** The persona's pinned quote as an InviteResponse. Pinned quotes bypass the gate: they are the anchors. */
-export function pinnedResponse({ supplier, tender, reference, reason, salt = newSalt(), usage }) {
+export function pinnedResponse({ supplier, tender, reference, reason, salt = newSalt(), usage, attempts }) {
   const persona = PERSONAS[supplier];
   return {
     supplier,
@@ -23,26 +23,43 @@ export function pinnedResponse({ supplier, tender, reference, reason, salt = new
     source: "pinned",
     reason,
     ...(usage ? { usage } : {}),
+    ...(attempts?.length ? { attempts } : {}),
   };
 }
 
 /**
  * One supplier brain: LLM quote via OpenRouter, gate in code, salt and commit in code.
- * Any failure ends in the pinned quote, never in an exception.
+ * Any failure ends in the pinned quote, never in an exception. Every failed attempt is returned as `attempts`
+ * (model, reason, HTTP status, first 200 characters of the error, never the key) and written to `log`.
  *
  * @param {object} request  a parsed InviteRequest
- * @param {{ env?: object, fetch?: typeof fetch, newSalt?: () => string, attemptTimeoutMs?: number }} [deps]
+ * @param {{ env?: object, fetch?: typeof fetch, newSalt?: () => string, attemptTimeoutMs?: number, log?: (line: string) => void }} [deps]
  */
-export async function runSupplier(request, { env = process.env, fetch: fetchImpl = fetch, newSalt: salt = newSalt, attemptTimeoutMs } = {}) {
+export async function runSupplier(
+  request,
+  { env = process.env, fetch: fetchImpl = fetch, newSalt: salt = newSalt, attemptTimeoutMs, log = console.error } = {},
+) {
   const { supplier, tender, reference, history } = request;
   const persona = PERSONAS[supplier];
   const meter = newMeter();
-  const pinned = (reason) => pinnedResponse({ supplier, tender, reference, reason, salt: salt(), usage: meter.calls ? { ...meter } : undefined });
+  const attempts = [];
+  const pinned = (reason) => pinnedResponse({ supplier, tender, reference, reason, salt: salt(), usage: meter.calls ? { ...meter } : undefined, attempts });
+  const fail = (model, err) => {
+    const record = {
+      model,
+      reason: err.reason ?? "llm_error",
+      ...(err.status ? { status: err.status } : {}),
+      error: safeDetail(err.detail || err.message, env.OPENROUTER_API_KEY),
+    };
+    attempts.push(record);
+    log(`supplier-agents ${supplier} attempt failed ${JSON.stringify(record)}`);
+    return record.reason;
+  };
 
   if (env.PERSONA_MODE === "pinned") return pinned("forced");
 
   const config = resolveLlmConfig(env);
-  if (!env.OPENROUTER_API_KEY) return pinned("llm_error");
+  if (!env.OPENROUTER_API_KEY) return pinned(fail("", { message: "OPENROUTER_API_KEY is not set" }));
 
   let reason = "llm_error";
   for (let attempt = 0; attempt < config.maxAttempts; attempt++) {
@@ -73,9 +90,10 @@ export async function runSupplier(request, { env = process.env, fetch: fetchImpl
         model,
         turns,
         usage: { ...meter },
+        ...(attempts.length ? { attempts } : {}),
       };
     } catch (err) {
-      reason = err.reason ?? "llm_error";
+      reason = fail(model, err);
       if (reason === "budget") break;
     }
   }

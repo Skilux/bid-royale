@@ -63,4 +63,5 @@ export const InviteResponse = z.object({
   model: z.string().optional(),
   turns: z.number().optional(),
   usage: z.object({ calls: z.number(), tokens: z.number() }).optional(),
+  attempts: z.array(z.object({ model: z.string(), reason: z.string(), status: z.number().optional(), error: z.string() })).optional(),
 });

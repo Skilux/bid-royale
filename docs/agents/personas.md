@@ -87,7 +87,8 @@ Persona blocks:
 - Models: `OPENROUTER_MODELS` (comma list, first is primary), already in `.env.example` and `/api/health`. Confirmed on 8 Oct 2026 against the OpenRouter models API: `poolside/laguna-s-2.1:free`, `nvidia/nemotron-3-ultra-550b-a55b:free` and `google/gemma-4-31b-it:free` all support `tools` and `tool_choice`. Only gemma supports `response_format`.
 - So the final answer is a **`submit_bid` tool call**, not an SDK `outputType`. Structured output would fail on the first two models.
 - Model attempts: one model per attempt, 12 s `AbortSignal` each, next model in the list on error, timeout or zod failure, max 3 attempts, 36 s total. All attempts failed gives the pinned quote (`reason: "llm_error"`).
-- Free-tier models are rate-limited and slower. Four parallel suppliers share one key. Expect `429`s: treat as an error and move to the next model. Run a rehearsal of all four before the night.
+- Failures are observable (#39): the response carries `attempts`, one `{ model, reason, status?, error }` per failed attempt, `error` cut to 200 characters with the key removed, and each is logged with `console.error`. Request shape: `reasoning: { enabled: false }` (free reasoning models spent a 700-token budget thinking and returned `finish_reason: length` with no tool call), and the last turn forces `submit_bid`.
+- Free-tier models are rate-limited and slower. Measured on 8 Oct 2026 (#39): `poolside/laguna-s-2.1`, `google/gemma-4-31b-it` and `-26b` answered 429, `nvidia/nemotron-3-ultra` answered a 200 wrapping `503 Service temporarily overloaded`. They are not usable for four parallel agents. Four parallel suppliers share one key. Expect `429`s: treat as an error and move to the next model. Run a rehearsal of all four before the night.
 - One `Agent` per attempt, `maxTurns: 4`.
 - Tools (zod parameter schemas):
   - `get_operator_config()` returns `{ costPer1000, minMargin, clamps, reference: { pricePerSignup, source }, history }`.

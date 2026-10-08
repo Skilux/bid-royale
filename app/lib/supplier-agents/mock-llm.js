@@ -1,7 +1,12 @@
 // Test helper: scripted OpenRouter. Never touches the network.
 export const toolCall = (name, args, id = `call_${name}`) => ({ id, type: "function", function: { name, arguments: JSON.stringify(args) } });
 export const reply = (message) => ({ ok: true, status: 200, json: async () => ({ choices: [{ message }] }) });
-export const failure = (status) => ({ ok: false, status, json: async () => ({ error: { message: `status ${status}` } }) });
+export const failure = (status, body = { error: { message: `status ${status}` } }) => ({
+  ok: false,
+  status,
+  json: async () => body,
+  text: async () => (typeof body === "string" ? body : JSON.stringify(body)),
+});
 
 /** A model that calls get_operator_config and estimate_win_chance, then submits `quote`. */
 export function submitting(quote, rationale = "Plain quote.") {

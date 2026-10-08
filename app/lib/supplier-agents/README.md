@@ -10,12 +10,17 @@ MIP-003 routes under the same base path come from #37.
    `AGENT_SHARED_SECRET` is unset), 400 body fails `InviteRequest` or `supplier` differs from `<name>`.
 2. `runSupplier` (`brain.js`): up to 3 attempts, one model each from `llm-config.js` (cycled), 12 s `AbortController`
    per attempt, next model on HTTP error, timeout or zod failure.
-3. One attempt (`llm.js`): OpenRouter chat completions with tools, max 4 turns. Tools `get_operator_config`,
+3. One attempt (`llm.js`): OpenRouter chat completions with tools, max 4 turns, `reasoning` off (asked again with it on if the
+   model answers 400 "reasoning is mandatory"), the last turn forces `submit_bid`. Tools `get_operator_config`,
    `estimate_win_chance`, `submit_bid`. `submit_bid` arguments are checked with `bidFor(id)` (the clamps).
 4. Code, not the LLM, applies the D12 gate (`gate.js`). A quote that fails it becomes `decision: "skip"` and no bid.
 5. Code makes the salt (`randomBytes(16)`) and `commit` (`commit()` from `../auction/index.js`).
 6. Any failure, `PERSONA_MODE=pinned` or a missing key returns the pinned quote: `source: "pinned"`,
    `reason` one of `llm_error`, `zod`, `timeout`, `forced`. The route still answers 200.
+7. Every failed attempt is in `attempts` on the response and on the Board bid: `{ model, reason, status?, error }`. `error` is the first
+   200 characters of the provider body with the key removed. The same record goes to `console.error`
+   (`supplier-agents <name> attempt failed {...}`), so Vercel logs show why a supplier fell back. `rehearse.js` prints them.
+   A 200 with an `error` body (an overloaded upstream) is reported with status 200.
 
 No `@openai/agents`: the loop is raw OpenRouter function calling (the spec allows it), so tests mock `fetch` and no SDK sits
 between the code and the free-tier models.

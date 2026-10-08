@@ -14,9 +14,10 @@ const reference = { pricePerSignup: 1, source: "operator" };
 const request = (supplier) => ({ action: "bid", runId: "run_t", supplier, tender, reference, history: [] });
 const ENV = { OPENROUTER_API_KEY: "k", OPENROUTER_MODELS: "m1,m2,m3,m4", AGENT_SHARED_SECRET: "s3cret" };
 const salt = () => "fixed-salt";
+console.error = () => {};
 const anchors = Object.fromEntries(SUPPLIER_IDS.map((id) => [id, PERSONAS[id].pinned]));
 
-const brain = (supplier, fetch, env = ENV, extra = {}) => runSupplier(request(supplier), { env, fetch, newSalt: salt, ...extra });
+const brain = (supplier, fetch, env = ENV, extra = {}) => runSupplier(request(supplier), { env, fetch, newSalt: salt, log: () => {}, ...extra });
 
 test("clamps: each persona's schema rejects quotes outside its table row", () => {
   const ok = (id, over) => bidFor(id).safeParse({ decision: "bid", rationale: "r", ...PERSONAS[id].pinned, ...over }).success;
@@ -167,6 +168,123 @@ test("forced failures: no API key, no models, PERSONA_MODE=pinned all skip the n
   assert.equal(forced.source, "pinned");
   assert.equal(forced.reason, "forced");
   assert.equal(fetch.calls.length, 0);
+});
+
+test("each failed attempt is returned with model, status and a body cut to 200 characters, and logged", async () => {
+  const lines = [];
+  const long = "x".repeat(500);
+  const fetch = mockFetch((body, call, i) => (i === 0 ? failure(429, { error: { message: long } }) : i === 1 ? failure(503, "overloaded") : "hang"));
+  const res = await brain("techblog", fetch, ENV, { attemptTimeoutMs: 20, log: (l) => lines.push(l) });
+  assert.equal(res.source, "pinned");
+  assert.equal(res.reason, "timeout");
+  assert.equal(res.attempts.length, 3);
+  assert.deepEqual(res.attempts.map((a) => [a.model, a.reason, a.status]), [["m1", "llm_error", 429], ["m2", "llm_error", 503], ["m3", "timeout", undefined]]);
+  assert.equal(res.attempts[0].error.length, 200);
+  assert.match(res.attempts[0].error, /^\{"error":\{"message":"xxx/);
+  assert.equal(res.attempts[1].error, "overloaded");
+  assert.match(res.attempts[2].error, /timed out/);
+  assert.equal(lines.length, 3);
+  assert.match(lines[0], /techblog attempt failed .*"status":429/);
+  assert.equal(InviteResponse.safeParse(res).success, true);
+});
+
+test("the API key never reaches the attempts or the log, even when the provider echoes it", async () => {
+  const lines = [];
+  const prefix = ["sk", "or", "v1"].join("-");
+  const key = `${prefix}-SECRETSECRETSECRET`;
+  const fetch = mockFetch((body, call, i) =>
+    i === 0 ? failure(401, `bad key ${key}`) : i === 1 ? failure(403, { error: { message: `Authorization: Bearer ${prefix}-OTHERKEY` } }) : failure(500, "x"),
+  );
+  const res = await brain("techblog", fetch, { ...ENV, OPENROUTER_API_KEY: key }, { log: (l) => lines.push(l) });
+  const everything = JSON.stringify(res) + lines.join("\n");
+  assert.ok(!everything.includes("SECRETSECRET"));
+  assert.ok(!everything.includes("OTHERKEY"));
+  assert.match(res.attempts[0].error, /bad key \[redacted\]/);
+});
+
+test("an HTTP 200 whose body is an error (provider overloaded) is reported with its message", async () => {
+  const fetch = mockFetch((body, call, i) =>
+    i === 0 ? { ok: true, status: 200, json: async () => ({ error: { message: "Service temporarily overloaded", code: 503 } }) } : failure(500),
+  );
+  const res = await brain("techblog", fetch);
+  assert.equal(res.attempts[0].status, 200);
+  assert.match(res.attempts[0].error, /Service temporarily overloaded/);
+});
+
+test("a successful run after failures still reports the failed attempts", async () => {
+  const good = submitting({ price: 7, impressions: 1000, promisedPer1000: 7 });
+  const fetch = mockFetch((body, call, i) => (i === 0 ? failure(429) : good(body)));
+  const res = await brain("techblog", fetch);
+  assert.equal(res.source, "llm");
+  assert.equal(res.attempts.length, 1);
+  assert.equal(res.attempts[0].status, 429);
+});
+
+test("a missing API key says which one is missing", async () => {
+  const noKey = await brain("gamingforum", mockFetch(() => failure(500)), { ...ENV, OPENROUTER_API_KEY: "" });
+  assert.equal(noKey.reason, "llm_error");
+  assert.match(noKey.attempts[0].error, /OPENROUTER_API_KEY is not set/);
+});
+
+test("request switches reasoning off, so a reasoning model does not spend its token budget thinking", async () => {
+  const fetch = mockFetch(submitting({ price: 7, impressions: 1000, promisedPer1000: 7 }));
+  await brain("techblog", fetch);
+  assert.deepEqual(fetch.calls[0].body.reasoning, { enabled: false });
+});
+
+test("a model that makes reasoning mandatory is asked again with reasoning on, once", async () => {
+  const good = submitting({ price: 7, impressions: 1000, promisedPer1000: 7 });
+  const fetch = mockFetch((body, call, i) =>
+    i === 0 ? failure(400, { error: { message: "Reasoning is mandatory for this endpoint and cannot be disabled." } }) : good(body),
+  );
+  const res = await brain("techblog", fetch);
+  assert.equal(res.source, "llm");
+  assert.equal(res.model, "m1");
+  assert.deepEqual(fetch.calls[0].body.reasoning, { enabled: false });
+  assert.equal("reasoning" in fetch.calls[1].body, false);
+  assert.equal("reasoning" in fetch.calls[2].body, false, "later turns keep it on");
+  assert.equal(res.attempts, undefined);
+  assert.equal(res.usage.calls, 4, "the repeated request counts against the call cap");
+});
+
+test("any other 400 is a failed attempt, not a retry", async () => {
+  const fetch = mockFetch(() => failure(400, { error: { message: "bad tools schema" } }));
+  const res = await brain("techblog", fetch);
+  assert.equal(fetch.calls.length, 3, "one request per attempt");
+  assert.equal(res.attempts[0].status, 400);
+  assert.match(res.attempts[0].error, /bad tools schema/);
+});
+
+test("the last turn forces submit_bid, so a model that keeps probing still answers", async () => {
+  const quote = { price: 7, impressions: 1000, promisedPer1000: 7 };
+  const fetch = mockFetch((body) =>
+    body.tool_choice === "auto" ? reply({ tool_calls: [toolCall("estimate_win_chance", quote)] }) : reply({ tool_calls: [toolCall("submit_bid", { decision: "bid", ...quote, rationale: "r" })] }),
+  );
+  const res = await brain("techblog", fetch);
+  assert.equal(res.source, "llm");
+  assert.equal(res.turns, LLM_CONFIG.maxTurns);
+  const choices = fetch.calls.map((c) => c.body.tool_choice);
+  assert.deepEqual(choices.at(-1), { type: "function", function: { name: "submit_bid" } });
+  assert.ok(choices.slice(0, -1).every((c) => c === "auto"));
+});
+
+test("the route returns the attempts in its 200 body", async () => {
+  const res = await handleRun({
+    request: new Request("http://x/api/agents/techblog/run", {
+      method: "POST",
+      headers: { "x-agent-secret": "s3cret", "content-type": "application/json" },
+      body: JSON.stringify(request("techblog")),
+    }),
+    name: "techblog",
+    env: ENV,
+    fetch: mockFetch(() => failure(429, { error: { message: "rate limited" } })),
+    limiter: () => true,
+  });
+  const body = await res.json();
+  assert.equal(body.reason, "llm_error");
+  assert.equal(body.attempts.length, 3);
+  assert.equal(body.attempts[0].status, 429);
+  assert.match(body.attempts[0].error, /rate limited/);
 });
 
 test("GamingForum: the LLM cannot promise the gate, so its bid ends below it", async () => {

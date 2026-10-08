@@ -9,13 +9,35 @@ export const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 /** Spend meter for one invite, shared by all its attempts. */
 export const newMeter = () => ({ calls: 0, tokens: 0 });
 
-/** Failure with a category the route reports as `reason`: llm_error, zod, timeout or budget. */
+export const ERROR_BODY_MAX = 200;
+
+/** Error text safe to return and log: the API key and anything key-shaped removed, cut to 200 characters. */
+export function safeDetail(text, apiKey) {
+  let out = String(text ?? "");
+  if (apiKey) out = out.split(apiKey).join("[redacted]");
+  return out.replace(/sk-or-[A-Za-z0-9_-]+/g, "[redacted]").slice(0, ERROR_BODY_MAX);
+}
+
+/** Failure with a category the route reports as `reason`: llm_error, zod, timeout or budget. `status` and `detail` carry the HTTP cause. */
 export class AttemptError extends Error {
-  constructor(reason, message) {
+  constructor(reason, message, { status, detail } = {}) {
     super(message);
     this.reason = reason;
+    this.status = status;
+    this.detail = detail;
   }
 }
+
+async function errorBody(res, apiKey) {
+  try {
+    return safeDetail(typeof res.text === "function" ? await res.text() : JSON.stringify(await res.json()), apiKey);
+  } catch {
+    return "";
+  }
+}
+
+/** The last turn must answer: a model that keeps probing `estimate_win_chance` is made to call `submit_bid`. */
+const FORCE_SUBMIT = { type: "function", function: { name: "submit_bid" } };
 
 const jsonSchema = (schema) => {
   const { $schema, ...rest } = z.toJSONSchema(schema);
@@ -62,6 +84,19 @@ export async function runAttempt({ fetch, apiKey, model, persona, tender, refere
     return { error: `unknown tool ${name}` };
   };
 
+  // Reasoning off keeps a turn at 1 to 3 s instead of 6 to 9 s on reasoning models, and their token budget is not spent thinking.
+  // A model that insists on reasoning answers 400: ask again with it on.
+  let reasoning = { reasoning: { enabled: false } };
+  const post = (body) => {
+    meter.calls += 1;
+    return fetch(OPENROUTER_URL, {
+      method: "POST",
+      signal: ctrl.signal,
+      headers: { authorization: `Bearer ${apiKey}`, "content-type": "application/json" },
+      body,
+    });
+  };
+
   try {
     for (let turn = 1; turn <= config.maxTurns; turn++) {
       if (meter.calls >= config.maxCallsPerInvite) throw new AttemptError("budget", `call cap ${config.maxCallsPerInvite} reached`);
@@ -70,24 +105,28 @@ export async function runAttempt({ fetch, apiKey, model, persona, tender, refere
         model,
         messages,
         tools,
-        tool_choice: "auto",
+        tool_choice: turn === config.maxTurns ? FORCE_SUBMIT : "auto",
         temperature: config.temperature,
         max_tokens: config.maxOutputTokens,
         provider: { max_price: config.maxPrice },
+        ...reasoning,
       });
       if (JSON.stringify(messages).length > config.maxInputChars) throw new AttemptError("budget", `input over ${config.maxInputChars} chars`);
-      meter.calls += 1;
-      const res = await fetch(OPENROUTER_URL, {
-        method: "POST",
-        signal: ctrl.signal,
-        headers: { authorization: `Bearer ${apiKey}`, "content-type": "application/json" },
-        body,
-      });
-      if (!res.ok) throw new AttemptError("llm_error", `OpenRouter ${res.status} from ${model}`);
+      let res = await post(body);
+      if (res.status === 400 && reasoning.reasoning) {
+        const detail = await errorBody(res, apiKey);
+        if (!/reasoning/i.test(detail)) throw new AttemptError("llm_error", `OpenRouter 400 from ${model}`, { status: 400, detail });
+        reasoning = {};
+        res = await post(JSON.stringify({ ...JSON.parse(body), reasoning: undefined }));
+      }
+      if (!res.ok) throw new AttemptError("llm_error", `OpenRouter ${res.status} from ${model}`, { status: res.status, detail: await errorBody(res, apiKey) });
       const payload = await res.json();
       meter.tokens += Number(payload?.usage?.total_tokens) || Math.ceil((body.length + JSON.stringify(payload).length) / 4);
       const message = payload?.choices?.[0]?.message;
-      if (!message) throw new AttemptError("llm_error", `no message from ${model}: ${payload?.error?.message ?? "empty"}`);
+      if (!message) {
+        const detail = safeDetail(payload?.error ? JSON.stringify(payload.error) : "empty response", apiKey);
+        throw new AttemptError("llm_error", `no message from ${model}`, { status: res.status, detail });
+      }
 
       const calls = message.tool_calls ?? [];
       messages.push({ role: "assistant", content: message.content ?? null, ...(calls.length ? { tool_calls: calls } : {}) });
@@ -115,7 +154,7 @@ export async function runAttempt({ fetch, apiKey, model, persona, tender, refere
   } catch (err) {
     if (err instanceof AttemptError) throw err;
     if (ctrl.signal.aborted) throw new AttemptError("timeout", `${model} timed out after ${timeoutMs} ms`);
-    throw new AttemptError("llm_error", `${model}: ${err?.message ?? err}`);
+    throw new AttemptError("llm_error", `${model}: ${err?.message ?? err}`, { detail: safeDetail(err?.cause?.message ?? err?.message ?? err, apiKey) });
   } finally {
     clearTimeout(timer);
   }

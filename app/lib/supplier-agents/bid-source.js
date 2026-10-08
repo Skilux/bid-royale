@@ -69,6 +69,7 @@ export function createBidSource({ invite, referencePrice = 1, suppliers = SUPPLI
           ...(response.reason ? { reason: response.reason } : {}),
           ...(response.model ? { model: response.model } : {}),
           ...(response.usage ? { usage: response.usage } : {}),
+          ...(response.attempts?.length ? { attempts: response.attempts } : {}),
         };
       }),
     );
