@@ -9,6 +9,7 @@ const OPERATIONS = {
   "submit-result": { side: "payment", queued: ["SubmitResultRequested", "SubmitResultInitiated"] },
   "authorize-refund": { side: "payment", queued: ["AuthorizeRefundRequested", "AuthorizeRefundInitiated"] },
   "request-refund": { side: "purchase", queued: ["SetRefundRequestedRequested", "SetRefundRequestedInitiated"] },
+  "cancel-refund-request": { side: "purchase", queued: ["UnSetRefundRequestedRequested", "UnSetRefundRequestedInitiated"] },
 };
 const hash = (value) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
 const encode = (job) => `masumi_${Buffer.from(JSON.stringify(job)).toString("base64url")}`;
@@ -27,13 +28,15 @@ export function lovelace(amount) {
 
 /** Pending is explicit: a REAL badge requires a service-reported Cardano transaction hash. */
 function receipt(job, action, amount, from, to, data = {}, error) {
-  const candidate = data.CurrentTransaction?.txHash;
+  const goal = job.followup?.operation === "release" ? "Withdrawn"
+    : job.followup?.operation === "refund" ? "RefundWithdrawn" : null;
+  const candidate = !goal || data.onChainState === goal ? data.CurrentTransaction?.txHash : null;
   const txHash = /^[0-9a-f]{64}$/i.test(candidate ?? "") ? candidate : null;
   return {
     id: encode(job), badge: txHash ? "REAL" : "PENDING", action, amount, from, to,
     txHash, explorerUrl: txHash ? `https://preprod.cardanoscan.io/transaction/${txHash}` : null,
     state: error ? "Error" : data.onChainState ?? data.NextAction?.requestedAction ?? "Pending",
-    ...(error ? { error: error.message } : {}),
+    ...(error || data.stepError ? { error: error?.message ?? data.stepError } : {}),
   };
 }
 
@@ -109,45 +112,50 @@ export function createRealAdapter({ env = process.env, fetch, timeoutMs, now = D
     }
     return job;
   }
-  async function change(job, operation, resultHash, knownStatus) {
-    // Reconcile before repeat calls, including across serverless invocations. Never blind-retry.
-    const { side, queued } = OPERATIONS[operation];
-    const current = knownStatus ?? await status(job, side);
-    const submitted = current.resultHash || ["ResultSubmitted", "WithdrawAuthorized", "Withdrawn"].includes(current.onChainState);
-    const refunded = ["RefundAuthorized", "RefundWithdrawn"].includes(current.onChainState);
-    if ((operation === "submit-result" && submitted) || (operation === "authorize-refund" && refunded) ||
-        (operation === "request-refund" && (refunded || current.onChainState === "RefundRequested")) ||
-        queued.includes(current.NextAction?.requestedAction)) return current;
-    if (operation === "submit-result" && current.onChainState !== "FundsLocked") return current;
-    return client(side === "purchase" ? job.buyer : job.seller).post(
-      `/${side}/${operation}`,
-      { network: config().network, blockchainIdentifier: job.blockchainIdentifier,
-        ...(operation === "submit-result" ? { submitResultHash: resultHash } : {}) },
-    );
-  }
-  async function refundStep(job) {
-    const [buyerStatus, sellerStatus] = await Promise.all([status(job, "purchase"), status(job)]);
-    const refundQueued = OPERATIONS["authorize-refund"].queued.includes(sellerStatus.NextAction?.requestedAction);
-    if (refundQueued || ["RefundAuthorized", "RefundWithdrawn"].includes(sellerStatus.onChainState)) return sellerStatus;
-    if (["RefundRequested", "Disputed"].includes(sellerStatus.onChainState)) {
-      return change(job, "authorize-refund", undefined, sellerStatus);
+  async function escrowStep(job, path, resultHash, startOnly = false) {
+    const [buyer, seller] = await Promise.all([status(job, "purchase"), status(job)]);
+    const current = path === "refund" ? buyer : seller;
+    if ([buyer, seller].some((side) => ["Withdrawn", "RefundWithdrawn", "DisputedWithdrawn", "FundsOrDatumInvalid"].includes(side.onChainState))) return current;
+    // A side can lag the other; wait while either has queued work, then reconcile again.
+    const queued = [buyer, seller].some((side) => Object.values(OPERATIONS)
+      .some((operation) => operation.queued.includes(side.NextAction?.requestedAction)));
+    if (queued) {
+      return path === "refund" && OPERATIONS["request-refund"].queued.includes(buyer.NextAction?.requestedAction)
+        ? { ...current, onChainState: "RefundRequestedPending" } : current;
     }
-    // The API accepts seller authorization only after the request is on chain.
-    // Leave A2 automatic refund available if the seller never authorizes.
-    const buyerQueued = OPERATIONS["request-refund"].queued.includes(buyerStatus.NextAction?.requestedAction);
-    if (buyerQueued || buyerStatus.onChainState === "RefundRequested") {
-      return { ...sellerStatus, onChainState: "RefundRequestedPending" };
+    const ready = (side, states) => side.NextAction?.requestedAction === "WaitingForExternalAction" && states.includes(side.onChainState);
+    let operation;
+    if (path === "release") {
+      if (["WithdrawAuthorized", "RefundAuthorized", "RefundRequested"].includes(seller.onChainState)) return current;
+      if (ready(buyer, ["Disputed"])) operation = "cancel-refund-request";
+      else if (ready(buyer, ["ResultSubmitted"]) && seller.onChainState !== "Disputed") operation = "request-refund";
+      else if (ready(seller, ["FundsLocked"]) && !seller.resultHash && (!buyer.onChainState || buyer.onChainState === "FundsLocked")) operation = "submit-result";
+    } else {
+      if ([buyer, seller].some((side) => side.onChainState === "RefundAuthorized")) return current;
+      if (ready(seller, ["RefundRequested", "Disputed"])) operation = "authorize-refund";
+      else if (ready(buyer, ["FundsLocked", "ResultSubmitted"]) && !["RefundRequested", "Disputed"].includes(seller.onChainState)) operation = "request-refund";
     }
-    if (buyerStatus.onChainState !== "FundsLocked") return sellerStatus;
-    const requested = await change(job, "request-refund", undefined, buyerStatus);
-    return { ...requested, onChainState: "RefundRequestedPending" };
+    if (!operation || (startOnly && operation !== (path === "release" ? "submit-result" : "request-refund"))) return current;
+    const { side } = OPERATIONS[operation];
+    try {
+      await client(side === "purchase" ? job.buyer : job.seller).post(`/${side}/${operation}`, {
+        network: config().network, blockchainIdentifier: job.blockchainIdentifier,
+        ...(operation === "submit-result" ? { submitResultHash: resultHash } : {}),
+      });
+      // The mutation response belongs to its caller; settlement evidence comes from the goal side.
+      return path === "refund" && operation === "request-refund"
+        ? { ...current, onChainState: "RefundRequestedPending" } : current;
+    } catch (error) {
+      // Cooperative rejection leaves timer-based collection available; later advances may retry.
+      return { ...current, stepError: error.message };
+    }
   }
   async function transferStep(job, knownBondStatus) {
     const id = encode(job);
     if (transferResults.has(id)) return transferResults.get(id);
     const { bond, move, verdict } = job.followup;
-    const current = knownBondStatus ?? await status(bond);
-    if (current.onChainState !== "Withdrawn" || !treasury) return { onChainState: "TransferPending" };
+    const current = knownBondStatus ?? await escrowStep(bond, "release", job.followup.resultHash);
+    if (current.onChainState !== "Withdrawn" || !treasury) return { onChainState: "TransferPending", ...(current.stepError ? { stepError: current.stepError } : {}) };
     // The treasury persists/deduplicates this exact receipt id across invocations.
     const transfer = await treasury({ ...move, verdict, bondEscrowId: encode(bond), id });
     const data = transfer ? { onChainState: transfer.state, CurrentTransaction: { txHash: transfer.txHash } }
@@ -161,7 +169,7 @@ export function createRealAdapter({ env = process.env, fetch, timeoutMs, now = D
     if (!followup || !(followup.operation === "transfer" ? followup.bond?.blockchainIdentifier : job.blockchainIdentifier)) return receipt(job ?? {}, "advance", 0, "", "", {}, new Error("Masumi follow-up receipt id required"));
     try {
       const data = followup.operation === "transfer" ? await transferStep(job)
-        : followup.operation === "refund" ? await refundStep(job) : await change(job, "submit-result", followup.resultHash);
+        : await escrowStep(job, followup.operation === "refund" ? "refund" : "release", followup.resultHash);
       return receipt(job, followup.action, followup.amount, followup.from, followup.to, data);
     } catch (error) { return receipt(job, followup.action, followup.amount, followup.from, followup.to, {}, error); }
   }
@@ -177,7 +185,7 @@ export function createRealAdapter({ env = process.env, fetch, timeoutMs, now = D
       const results = [];
       // Award and bond progress independently; no chain-confirmation loops.
       const bondProgress = moves.some((move) => move.via === "plain_transfer")
-        ? Promise.resolve().then(() => change(escrow(verdict, "bond"), "submit-result", resultHash)).then(
+        ? Promise.resolve().then(() => escrowStep(escrow(verdict, "bond"), "release", resultHash, true)).then(
           (data) => ({ data }), (error) => ({ error }),
         ) : null;
       await Promise.all(moves.map(async (move, index) => {
@@ -187,7 +195,7 @@ export function createRealAdapter({ env = process.env, fetch, timeoutMs, now = D
             const bond = escrow(verdict, "bond");
             job = { ...job, bondIdentifier: bond.blockchainIdentifier,
               followup: { operation: "transfer", action: move.reason, amount: move.amount,
-                from: move.from, to: move.to, move, bond, verdict } };
+                from: move.from, to: move.to, move, bond, verdict, resultHash } };
             const { data, error } = await bondProgress;
             if (error) throw error;
             results[index] = receipt(job, move.reason, move.amount, move.from, move.to,
@@ -196,8 +204,8 @@ export function createRealAdapter({ env = process.env, fetch, timeoutMs, now = D
           }
           job = escrow(verdict, move.reason.startsWith("award") ? "award" : "bond");
           job = { ...job, followup: { action: move.reason, amount: move.amount, from: move.from, to: move.to,
-            operation: move.reason === "award_release" ? "submit-result" : "refund", resultHash } };
-          const data = move.reason === "award_release" ? await change(job, "submit-result", resultHash) : await refundStep(job);
+            operation: move.reason === "award_release" ? "release" : "refund", resultHash } };
+          const data = await escrowStep(job, job.followup.operation, resultHash, true);
           results[index] = receipt(job, move.reason, move.amount, move.from, move.to, data);
         } catch (error) { results[index] = receipt(job, move.reason, move.amount, move.from, move.to, {}, error); }
       }));
