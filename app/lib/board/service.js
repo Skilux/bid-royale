@@ -1,5 +1,6 @@
 import { getFlags } from "@/lib/config";
 import { getAdapter } from "@/lib/masumi";
+import { bidSourceFromEnv } from "@/lib/supplier-agents";
 import { BoardError, createBoard, createStoreFromEnv } from "./index.js";
 import { getCannedReplay } from "./canned.js";
 
@@ -10,6 +11,7 @@ export function getBoard() {
     adapter: getAdapter(),
     flags: getFlags,
     canned: getCannedReplay(),
+    bidSource: bidSourceFromEnv(),
   });
 }
 
