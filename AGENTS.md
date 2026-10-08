@@ -129,6 +129,24 @@ The Vercel project builds with **`app/` as its root directory**. Files outside
   push to `main` as you go — the repo is private for now (flip to public at
   code freeze) and commit history is evidence.
 
+## Deploying (manual, Danila triggers it)
+
+**Pushing to `main` does not deploy.** Vercel is on the Hobby plan, which blocks
+Git-triggered deploys when the commit author (`Skilux`) is not the account owner,
+so `app/vercel.json` turns Git deploys off. Production changes only when Danila
+triggers a deploy. Agents never deploy on their own.
+
+- After you push to `main`, tell Danila: "pushed `<sha>`, trigger a deploy."
+- Trigger: GitHub → Actions → `deploy` → Run workflow, or
+  `gh workflow run deploy.yml --repo Skilux/bid-royale`. The workflow deploys
+  production with a Vercel token, then checks `/api/health` for `ok: true`.
+- **Known problem (#18, #35):** GitHub Actions currently ends every run in
+  `startup_failure` on this account, so `deploy` does not run yet. Fallback,
+  from a machine logged in to Vercel as `dkosygincz-1148`: copy the repo to a
+  temp dir without `.git` (the CLI attaches the commit author and Vercel blocks
+  it), then `vercel deploy --prod --yes --cwd <copy>`.
+- After any deploy, quote the `/api/health` response. A green deploy is not proof.
+
 ## Checks before every commit (mandatory)
 
 - Run `npm run check` in `app/` before every commit. It takes about a second:
