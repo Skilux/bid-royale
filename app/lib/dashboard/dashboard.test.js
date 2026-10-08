@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { reduceEvents } from "./reduce.js";
 import { buildDashboardView, summarizeSignals } from "./view.js";
-import { gapFor, totalMs } from "./pace.js";
+import { gapsFor, totalMs } from "./pace.js";
 
 const fixture = JSON.parse(readFileSync(new URL("../../data/seeds/board-run.worked-example.json", import.meta.url), "utf8"));
 const REAL_TX = "b".repeat(64);
@@ -154,12 +154,15 @@ test("unknown events are ignored and do not throw", () => {
   assert.equal(v.suppliers.length, 0);
 });
 
-test("canned pacing: the recorded run reaches the receipt in under 26 s at Normal, under 12 s at Fast", () => {
+test("canned pacing: the recorded run reaches the receipt in under 26 s at Normal, under 14 s at Fast", () => {
   const normal = totalMs(fixture.events, 1);
-  assert.ok(normal > 15000 && normal < 26000, `normal ${normal} ms`);
-  assert.ok(totalMs(fixture.events, 2.2) < 12000);
-  const hero = fixture.events.find((e) => e.data?.receipt?.action === "award_reclaim");
-  assert.ok(gapFor(hero) > gapFor({ name: "settlement.transfer", data: { receipt: { action: "award_release" } } }));
+  assert.ok(normal > 12000 && normal < 26000, `normal ${normal} ms`);
+  assert.ok(totalMs(fixture.events, 2) < 14000);
+  const gaps = gapsFor(fixture.events);
+  assert.equal(gaps.length, fixture.events.length);
+  const heroAt = fixture.events.findIndex((e) => e.data?.receipt?.action === "award_reclaim");
+  const releaseAt = fixture.events.findIndex((e) => e.data?.receipt?.action === "award_release");
+  assert.ok(gaps[heroAt] > gaps[releaseAt] + 800);
 });
 
 test("registry.discovered shows as a Discovery chip: live or seeded, with the agent count", () => {

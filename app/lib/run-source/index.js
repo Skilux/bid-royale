@@ -103,6 +103,7 @@ export function openRunSource({
     };
     const finish = () => {
       if (closed) return;
+      snapshotTaken = false;
       takeSnapshot();
       clearTimeout(watchdog);
       es?.close();

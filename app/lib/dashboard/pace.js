@@ -1,54 +1,28 @@
 import { EVENTS } from "../board/events.js";
+import { paceEvents } from "../replay/pacing.js";
 
 /**
- * Pause before each event when a recorded run is played back, in ms at Normal speed. A recording carries no
- * usable timing (the fixture spans 0.7 s), so pace comes from the event name. DESIGN.md section 3: the 30 s run
- * reaches the receipt in about 24 s. The Under-gate refund gets the longest hold, it is the hero beat.
+ * Playback pace of a recorded run in the UI. The base timing is the replay's (`lib/replay/pacing`, fast mode),
+ * so the server replay and the UI play one run at one speed. The UI adds one hold: the Under-gate refund is the
+ * hero beat. Normal speed reaches the receipt in about 25 s, inside the 30 s rule (DESIGN.md section 3).
  */
-const GAP_MS = {
-  [EVENTS.runCreated]: 0,
-  [EVENTS.tenderPublished]: 500,
-  [EVENTS.bidCommitted]: 360,
-  [EVENTS.bidFeeLocked]: 200,
-  [EVENTS.bidRevealed]: 360,
-  [EVENTS.bidRejected]: 800,
-  [EVENTS.auctionRanked]: 900,
-  [EVENTS.allocationDecided]: 800,
-  [EVENTS.escrowLocked]: 320,
-  [EVENTS.feedServed]: 1000,
-  [EVENTS.feedGenerated]: 500,
-  [EVENTS.verificationCompleted]: 1200,
-  [EVENTS.verdictSigned]: 1100,
-  [EVENTS.settlementStarted]: 600,
-  [EVENTS.settlementTransfer]: 560,
-  [EVENTS.settlementProgress]: 160,
-  [EVENTS.settlementCompleted]: 300,
-  [EVENTS.receiptReady]: 700,
-  [EVENTS.roundTwoDecided]: 600,
-  [EVENTS.runCompleted]: 0,
-  [EVENTS.modeDegraded]: 600,
-};
-const DEFAULT_GAP_MS = 120;
-const HERO_GAP_MS = 1400;
+export const SPEEDS = { slow: 0.6, normal: 1, fast: 2 };
 
-/** Names that carry no visible change. They add no pause, so the step bar never stalls on them. */
-const SILENT = new Set([EVENTS.stepStarted, EVENTS.stepCompleted]);
+export const HERO_HOLD_MS = 900;
+const BUDGET_MS = 24_000;
 
-export const SPEEDS = { slow: 0.6, normal: 1, fast: 2.2 };
+const isHero = (e) => e?.name === EVENTS.settlementTransfer && e.data?.receipt?.action === "award_reclaim";
 
-/** Pause in ms before showing `event`, at speed 1. */
-export function gapFor(event) {
-  if (SILENT.has(event?.name)) return 0;
-  if (event?.name === EVENTS.settlementTransfer && event.data?.receipt?.action === "award_reclaim") return HERO_GAP_MS;
-  return GAP_MS[event?.name] ?? DEFAULT_GAP_MS;
+/** Pause in ms before showing each event, at Normal speed. Same length as `events`. */
+export function gapsFor(events) {
+  const offsets = paceEvents(events ?? [], { speed: "fast", budgetMs: BUDGET_MS });
+  return (events ?? []).map((e, i) => (i === 0 ? 0 : offsets[i] - offsets[i - 1]) + (isHero(e) ? HERO_HOLD_MS : 0));
 }
 
-/** Total playback time of a transcript in ms at the given speed. */
+/** Total playback time of a transcript in ms at the given speed multiplier. */
 export function totalMs(events, speed = 1) {
-  return Math.round((events ?? []).reduce((t, e) => t + gapFor(e), 0) / speed);
+  return Math.round(gapsFor(events).reduce((t, g) => t + g, 0) / speed);
 }
 
-/** The run is its own pace: events that arrive live are shown at once. */
-export function nextDelayMs(event, speed = 1) {
-  return Math.round(gapFor(event) / speed);
-}
+/** step.started and step.completed only move the step bar. Next and Back skip over them. */
+export const isStepEvent = (e) => e?.name === EVENTS.stepStarted || e?.name === EVENTS.stepCompleted;

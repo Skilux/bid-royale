@@ -84,7 +84,7 @@ test("live: POST /api/run, follow SSE, run the steps, end on run.completed", asy
   await tick();
   assert.deepEqual(log.events.map((e) => e.seq), [1, 2, 3]);
   assert.equal(log.ends, 1);
-  assert.equal(log.snapshots.length, 1);
+  assert.equal(log.snapshots.length, 2, "one snapshot after the feed, one final snapshot for the receipt");
   assert.equal(log.degrades.length, 0);
 });
 

@@ -1,11 +1,16 @@
 import { openRunSource } from "@/lib/run-source";
+import { prepareRecording } from "@/lib/replay/prepare";
+
+const BUNDLED = "data/canned/run.json";
 
 /**
- * The recorded run that Run (canned) replays, and the fallback when a live run fails. Today it is the worked
- * example fixture. The canned replay (#13) swaps this one function for its recording: it must resolve to
- * `{ run, events }` in the shape of app/data/seeds/board-run.worked-example.json.
+ * The recorded run that Run (canned) replays, and the fallback when a live run fails. It is the same file and
+ * the same labelling as the server replay (lib/replay): `app/data/canned/run.json`, relabelled by
+ * `prepareRecording` so non-REAL money is PRE-RECORDED. Swapping the recording (#45) means replacing that file
+ * and nothing here. It is bundled, so Run works with the network off.
  */
-export const loadCanned = () => import("@/data/seeds/board-run.worked-example.json").then((m) => m.default ?? m);
+export const loadCanned = () =>
+  import("@/data/canned/run.json").then((m) => prepareRecording(m.default ?? m, BUNDLED));
 
 /** The only way the UI reads a run. mode is "canned" | "live" | "attach", see lib/run-source. */
 export function openJudgeRunSource(opts) {
