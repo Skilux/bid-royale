@@ -9,7 +9,7 @@ need it on the night.
 |---|---|
 | What | Hosted payment-service API (escrow), registry (discovery), faucet, explorer |
 | Why | Topic partner's rails; escrow + dispute primitives; 25% track relevance |
-| Access | Provided for the event (confirmed Oct 2): hosted payment-service API + docs |
+| Access | Superseded by [ADR 0001](adr/0001-railway-for-masumi-rails-vercel-for-product.md): organizers did not provide a hosted Payment Service, so we run our own node on Railway. Registry, faucet and explorer stay Masumi's |
 | We need from organizers/partner | API base URL, API keys (ReadAndPay level minimum), faucet access for tADA + tUSDM (test USDM on preprod is **UNVERIFIED**, fallback tADA with scaled amounts), registry write for our 4 supplier agents |
 | Our usage | 10 escrows (tUSDM) per run: 6 on the critical path (3 awards, 3 bonds), REAL; 4 bid fees in the background, SIMULATED first and REAL if time allows; locked early, in parallel. Settlement per verdict (Pass, Short of promise, Under gate). Registry reads for discovery; tx hashes → cardanoscan preprod links in UI |
 | Permission levels | Read (queries) / ReadAndPay (lock, submit result, request/authorize refund — **this is what we need**) / Admin (key management, not arbitration — keep out of Vercel) |
@@ -67,7 +67,6 @@ in from hour 1.
 
 ## Explicitly NOT needed
 
-VPS / Docker payment service (hosted access supersedes it; reopened, see
-`docs/plan/README.md`) · relational database (state is Upstash Redis + seeded
-JSON, decided 8 Oct) · MetaMask / browser wallets (server-side custodial
+A VPS (the Payment Service runs on Railway, ADR 0001) · a relational database
+for the Board (state is Upstash Redis + seeded JSON, decided 8 Oct) · MetaMask / browser wallets (server-side custodial
 pattern) · custom domain (Vercel URL is fine) · any Cardano/chain code.
