@@ -71,9 +71,11 @@ measured time: [`docs/money-flow.md`](money-flow.md).
    budget 200, technical users, pay per verified signup. The Consumer agent
    publishes the tender to the Tender Board: gate 5 signups per 1,000
    impressions, bond 25% of award. The Board queries the Masumi registry
-   (`POST /registry-entry`), reads each supplier's `api_base_url`, and sends
+   (`GET /registry` on the node, V2 payment source, Read-only key; seeded
+   fallback `app/data/seeds/suppliers.json`, labelled "seeded registry"),
+   emits `registry.discovered`, reads each supplier's `apiBaseUrl`, and sends
    the tender to a custom `POST /tender-invite` endpoint on our Supplier
-   agents. MIP-003 `/start_job` is not used: calling it would make the Board a
+   agents (over HTTP when `SUPPLIER_AGENTS=http`, in-process when `local`). MIP-003 `/start_job` is not used: calling it would make the Board a
    paying buyer. Each agent still exposes the MIP-003 routes on Vercel (ADR 0002, #37). GamingForum is invited like the other three; proactive
    discovery (GamingForum finds the Board itself) is pitch only.
 2. **Bidding.** Each Supplier agent decides whether to bid and pays the 2

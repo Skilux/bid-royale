@@ -6,13 +6,15 @@ Zero-network instant demo: discovery works before any API is wired.
 
 ## Contents
 
+- `suppliers.json` — exists (#44). The seeded registry: the 4 supplier agents with `agentIdentifier`,
+  `apiBaseUrl` and persona. Used when the live registry lookup fails or finds fewer than 4.
 - `board-run.worked-example.json` — exists. One full simulated Board run of the worked
   example: `{ run, events }`, the `GET /api/run/:id` body plus the SSE frames. UI agents
   render from it without a server. See `lib/board/README.md`.
 
 ## Contents (plan, nothing else exists yet)
 
-- `suppliers.json` — 4 supplier agents (TechBlog, CodePodcast, DevNewsletter,
+- `suppliers.json` (richer version) — 4 supplier agents (TechBlog, CodePodcast, DevNewsletter,
   GamingForum): registry entry, `api_base_url`, bid price, impressions,
   promised signups per 1,000, and serving cost per 1,000 as operator config.
 - `tender.json` — the NeoRack tender: budget 200 tADA, gate 5 signups per

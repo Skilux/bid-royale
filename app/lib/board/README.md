@@ -139,6 +139,7 @@ data: {"seq":12,"runId":"run_ab12cd34","name":"bid.committed","ts":"2026-10-08T2
 |---|---|
 | `run.created` | `{ runId, mode, badge, keys }` |
 | `tender.published` | `{ tender, brief, suppliers }` |
+| `registry.discovered` | `{ source: "live" \| "seeded", label, reason?, endpoint, expected, found, agents: [{ supplier, name, persona, agentIdentifier, apiBaseUrl, state }] }`, first event of the `bids` step, before any invite. `seeded` is never shown as a live lookup. Also on `run.discovery` |
 | `step.started` / `step.completed` | `{ step }` |
 | `step.failed` | `{ step, error }` |
 | `bid.committed` | `{ supplier, commit, committedAt }`, one per bidder, hash only |

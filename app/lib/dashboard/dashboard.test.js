@@ -161,3 +161,15 @@ test("canned pacing: the recorded run reaches the receipt in under 26 s at Norma
   const hero = fixture.events.find((e) => e.data?.receipt?.action === "award_reclaim");
   assert.ok(gapFor(hero) > gapFor({ name: "settlement.transfer", data: { receipt: { action: "award_release" } } }));
 });
+
+test("registry.discovered shows as a Discovery chip: live or seeded, with the agent count", () => {
+  const agents = ["techblog", "codepodcast", "devnewsletter", "gamingforum"].map((id) => ({ supplier: id, name: id, apiBaseUrl: `https://x.test/${id}` }));
+  const at = (data) => [{ seq: 1, ts: "2026-10-09T00:00:00.000Z", name: "registry.discovered", data }];
+
+  assert.equal(view(at({ source: "live", label: "Masumi registry", agents })).discovery.chip, "Discovery: Masumi registry · 4 agents · live");
+  assert.equal(
+    view(at({ source: "seeded", label: "seeded registry", reason: "timeout", agents })).discovery.chip,
+    "Discovery: seeded registry · 4 agents · seeded",
+  );
+  assert.equal(view([]).discovery, null);
+});

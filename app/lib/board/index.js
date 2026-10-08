@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { commit, evaluateBids } from "../auction/index.js";
 import { TENDER, getFlags } from "../config.js";
 import { parseReport } from "../delivery-report/index.js";
+import { discoverSuppliers, seededAgents } from "../discovery/index.js";
 import { createEvidence } from "../evidence/index.js";
 import { generateFeed } from "../outcome-feed/index.js";
 import { publicKeyFromSecret, publicKeyHex } from "../signing/index.js";
@@ -35,9 +36,10 @@ const round = (n) => Math.round(n * 1e6) / 1e6;
  * @param {() => number} [deps.now]
  * @param {() => string} [deps.newId]
  * @param {() => string} [deps.newJobId]
- * @param {(args: {tender: object, suppliers: object[], run: object}) => Promise<object[]>} [deps.bidSource]
+ * @param {(args: {tender: object, suppliers: object[], run: object, discovery: object}) => Promise<object[]>} [deps.bidSource]
  * @param {((args: {runId: string}) => Promise<{run: object, events: object[]}> | null) | null} [deps.canned]
  * @param {Partial<typeof import("./reconcile.js").SETTLEMENT>} [deps.settlement]   timing overrides (tests)
+ * @param {() => Promise<object>} [deps.discover]   supplier discovery (#44), defaults to the Masumi registry with a seeded fallback
  * @param {ReturnType<typeof createEvidence>} [deps.evidence]   evidence bundle recorder, defaults to one on `store`
  * @param {() => number} [deps.clock]   wall clock for the per-tick budget; `now` may be a fixture clock
  * @param {(ms: number) => Promise<void>} [deps.sleep]   runAll's wait between settlement ticks
@@ -52,6 +54,7 @@ export function createBoard({
   newJobId = () => `job_${randomUUID().slice(0, 12)}`,
   bidSource = pinnedBids,
   canned = null,
+  discover = discoverSuppliers,
   evidence = createEvidence({ store }),
   settlement = {},
   clock = Date.now,
@@ -144,6 +147,7 @@ export function createBoard({
       suppliers: SUPPLIERS,
       keys: { shop: shopPublic, board: boardPublic },
       bids: [],
+      discovery: null,
       auction: null,
       feed: null,
       verification: null,
@@ -165,8 +169,13 @@ export function createBoard({
 
   const handlers = {
     async bids(run) {
+      // Discovery comes before the invite: the Board asks the registry for supplier agents, then invites what it found.
+      // `discover` never throws. A registry failure is a seeded result, labelled as such.
+      run.discovery = await discover().catch((err) => ({ source: "seeded", label: "seeded registry", reason: "error", detail: String(err?.message ?? err), agents: seededAgents() }));
+      await emit(run.id, EVENTS.registryDiscovered, run.discovery);
+
       run.tender.deadline = now() + BID_WINDOW_MS;
-      const quotes = await bidSource({ tender: run.tender, suppliers: run.suppliers, run });
+      const quotes = await bidSource({ tender: run.tender, suppliers: run.suppliers, run, discovery: run.discovery });
 
       // Commit phase: the Board stamps the receive time and posts only the hash.
       const bids = quotes.map((q) => ({

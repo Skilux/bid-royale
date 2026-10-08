@@ -11,6 +11,7 @@ export const EVENTS = {
   stepCompleted: "step.completed",
   stepFailed: "step.failed",
   tenderPublished: "tender.published",
+  registryDiscovered: "registry.discovered",
   bidCommitted: "bid.committed",
   bidFeeLocked: "bid.fee_locked",
   bidRevealed: "bid.revealed",

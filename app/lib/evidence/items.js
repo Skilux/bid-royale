@@ -37,6 +37,11 @@ export function tenderItems(run) {
   ];
 }
 
+/** Where the invite URLs came from: live registry or the seed, with the agents found. Written with the bids. */
+export function discoveryItems(run) {
+  return run.discovery ? [{ name: "discovery", label: "Supplier discovery", group: "setup", value: run.discovery }] : [];
+}
+
 export function bidItems(run) {
   return run.bids.map((b) => ({
     name: `bid.${b.supplier}`,
@@ -172,7 +177,7 @@ export function receiptItems(run) {
 /** Items to write after a step finished. Settlement refreshes the mutable ones. */
 export const STEP_ITEMS = {
   tender: (run) => tenderItems(run),
-  bids: (run) => [...bidItems(run), ...ledgerItems(run)],
+  bids: (run) => [...discoveryItems(run), ...bidItems(run), ...ledgerItems(run)],
   allocation: (run) => allocationItems(run),
   locks: (run) => ledgerItems(run),
   feed: (run) => signupItems(run),

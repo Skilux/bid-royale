@@ -288,20 +288,21 @@ test("a live step failure degrades to the paced replay and says so", async () =>
   assert.equal(out.degradedFrom.step, "bids");
 
   const first = names(await board.getEvents(FIXTURE_RUN_ID));
-  assert.deepEqual(first.slice(0, 7), [
+  assert.deepEqual(first.slice(0, 8), [
     EVENTS.runCreated,
     EVENTS.tenderPublished,
     EVENTS.stepCompleted,
     EVENTS.stepStarted,
+    EVENTS.registryDiscovered,
     EVENTS.stepFailed,
     EVENTS.modeDegraded,
     EVENTS.runCreated,
   ]);
-  assert.ok(first.length < bundled.events.length + 6, "replay events are not all due yet");
+  assert.ok(first.length < bundled.events.length + 7, "replay events are not all due yet");
 
   clock.t += FAST_BUDGET_MS + 1;
   const all = names(await board.getEvents(FIXTURE_RUN_ID));
-  assert.equal(all.length, 6 + bundled.events.length);
+  assert.equal(all.length, 7 + bundled.events.length);
   assert.equal(all.at(-1), EVENTS.runCompleted);
   assert.equal((await board.getRun(FIXTURE_RUN_ID)).status, "completed");
 });

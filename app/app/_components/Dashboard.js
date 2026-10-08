@@ -127,6 +127,13 @@ function TenderCard({ view, quoteBadge }) {
         <Chip tone="neutral">
           bid fee <Money amount={tender.bidFee} badge={quoteBadge} />
         </Chip>
+        {view.discovery ? (
+          <Chip tone={view.discovery.source === "live" ? "cobalt" : "neutral"}>
+            <span data-testid="discovery-chip" title={view.discovery.agents.map((a) => `${a.name} ${a.apiBaseUrl}`).join("\n")}>
+              {view.discovery.chip}
+            </span>
+          </Chip>
+        ) : null}
       </div>
 
       <Label className="mt-4">Budget allocated · ranked by price per promised signup</Label>

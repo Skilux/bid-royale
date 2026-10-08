@@ -218,6 +218,12 @@ demo on a synchronous chain call — job-token + poll.
   `Standard`, not `OpenApi`: confirm at preflight.) The registry is passive: it
   doesn't run bidding; the Tender Board + sealed-bid auction is our product layer.
   Proactive supplier discovery (GamingForum finds the Board) is pitch only.
+- **As built (#44):** `app/lib/masumi/registry.js` does one `GET /registry?network=Preprod&filterSmartContractAddress=<V2 contract>`
+  on the node (not `POST /registry-entry-search/`, which is the public Registry service), with a Read-only key
+  (`MASUMI_REGISTRY_API_KEY`, base URL `MASUMI_REGISTRY_BASE_URL`, default `MASUMI_PAYMENT_BASE_URL`). `app/lib/discovery/` keeps
+  confirmed entries of our four suppliers whose https `apiBaseUrl` has the seeded origin, and falls back to
+  `app/data/seeds/suppliers.json` on a timeout, error, missing key or fewer than 4 agents. The run emits `registry.discovered`
+  with `source: "live" | "seeded"`. See `app/lib/discovery/README.md`.
 
 ## What we need from the organizers / Masumi mentor
 

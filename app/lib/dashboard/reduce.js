@@ -47,6 +47,8 @@ export function initialState({ replay = false } = {}) {
     done: false,
     tender: null,
     brief: null,
+    /** Supplier discovery (#44): `registry.discovered` data, or null before it arrives. */
+    discovery: null,
     order: [],
     suppliers: {},
     steps: {},
@@ -120,6 +122,15 @@ function apply(state, e) {
           state.order.push(s.id);
         } else Object.assign(state.suppliers[s.id], { name: s.name ?? state.suppliers[s.id].name, persona: s.persona ?? "" });
       }
+      break;
+    case EVENTS.registryDiscovered:
+      state.discovery = {
+        source: d.source === "live" ? "live" : "seeded",
+        label: d.label ?? (d.source === "live" ? "Masumi registry" : "seeded registry"),
+        found: Array.isArray(d.agents) ? d.agents.length : 0,
+        reason: d.reason ?? null,
+        agents: d.agents ?? [],
+      };
       break;
     case EVENTS.stepStarted:
       state.steps[d.step] = "running";
@@ -239,6 +250,10 @@ export function describeEvent(state, e) {
       return "run created";
     case EVENTS.tenderPublished:
       return `tender published, gate ${d.tender?.gate} per 1,000, bond ${Math.round((d.tender?.bondRate ?? 0) * 100)}%`;
+    case EVENTS.registryDiscovered:
+      return d.source === "live"
+        ? `discovery: ${d.agents?.length ?? 0} supplier agents from the Masumi registry`
+        : `discovery: seeded registry, ${d.agents?.length ?? 0} supplier agents (${String(d.reason ?? "").replaceAll("_", " ")})`;
     case EVENTS.bidCommitted:
       return `${nm(d.supplier)} sealed a bid ${shortHash(d.commit)}`;
     case EVENTS.bidFeeLocked:

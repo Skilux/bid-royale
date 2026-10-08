@@ -1,0 +1,33 @@
+{
+  "_note": "Seeded registry (#44): the 4 supplier agents registered on Cardano preprod, V2 payment source. Used when the Masumi registry lookup fails or returns fewer than 4 agents. Identifiers and URLs are public (docs/plan/lane-masumi.md, Registered agents). Never shown as a live lookup.",
+  "suppliers": [
+    {
+      "id": "techblog",
+      "name": "TechBlog",
+      "persona": "conservative",
+      "agentIdentifier": "67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b10adaaad1ba6f00b23a439dcb64cc022e13ae3e4ac093f9e5a56facd1f000000",
+      "apiBaseUrl": "https://ad-slot-auction.vercel.app/api/agents/techblog"
+    },
+    {
+      "id": "codepodcast",
+      "name": "CodePodcast",
+      "persona": "moderate",
+      "agentIdentifier": "67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b10a1389a9987a72d5ac638993bbb3fae35d9edf337172d44635af33ed0000000",
+      "apiBaseUrl": "https://ad-slot-auction.vercel.app/api/agents/codepodcast"
+    },
+    {
+      "id": "devnewsletter",
+      "name": "DevNewsletter",
+      "persona": "aggressive over-promiser",
+      "agentIdentifier": "67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b109150335daa6d55f995eb38aea9773df9a05420f779b99b16831a4eff000000",
+      "apiBaseUrl": "https://ad-slot-auction.vercel.app/api/agents/devnewsletter"
+    },
+    {
+      "id": "gamingforum",
+      "name": "GamingForum",
+      "persona": "passive low-baller",
+      "agentIdentifier": "67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b10aec5ba825779ae68bb401136b41990b4915de5e04f8f15d9f263bccf000000",
+      "apiBaseUrl": "https://ad-slot-auction.vercel.app/api/agents/gamingforum"
+    }
+  ]
+}

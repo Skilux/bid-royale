@@ -1,3 +1,4 @@
+import { discoverSuppliers } from "../discovery/index.js";
 import { createBoard, createMemoryStore } from "./index.js";
 import { installNextResolution } from "./test-alias.js";
 
@@ -15,6 +16,7 @@ export async function createFixtureBoard(overrides = {}) {
     store: createMemoryStore(),
     adapter: getAdapter(),
     flags: { simulatePayments: true, demoMode: "live" },
+    discover: () => discoverSuppliers({ env: {} }),
     secrets: () => FIXTURE_SECRETS,
     now: () => FIXTURE_START + 10 * tick++,
     newId: () => FIXTURE_RUN_ID,

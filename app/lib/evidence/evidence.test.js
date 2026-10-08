@@ -8,7 +8,7 @@ import { sha256Hex } from "../signing/index.js";
 import { verdictPreimage, verifyItem } from "./verify.js";
 
 const EXPECTED = [
-  "tender", "brief", "keys",
+  "tender", "brief", "keys", "discovery",
   "bid.techblog", "bid.codepodcast", "bid.devnewsletter", "bid.gamingforum",
   "allocation",
   "signups.techblog", "signups.codepodcast", "signups.devnewsletter",

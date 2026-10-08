@@ -17,37 +17,37 @@
       "bids": {
         "status": "done",
         "startedAt": "2026-10-08T22:00:00.040Z",
-        "finishedAt": "2026-10-08T22:00:00.230Z"
+        "finishedAt": "2026-10-08T22:00:00.240Z"
       },
       "allocation": {
         "status": "done",
-        "startedAt": "2026-10-08T22:00:00.250Z",
-        "finishedAt": "2026-10-08T22:00:00.300Z"
+        "startedAt": "2026-10-08T22:00:00.260Z",
+        "finishedAt": "2026-10-08T22:00:00.310Z"
       },
       "locks": {
         "status": "done",
-        "startedAt": "2026-10-08T22:00:00.320Z",
-        "finishedAt": "2026-10-08T22:00:00.400Z"
+        "startedAt": "2026-10-08T22:00:00.330Z",
+        "finishedAt": "2026-10-08T22:00:00.410Z"
       },
       "feed": {
         "status": "done",
-        "startedAt": "2026-10-08T22:00:00.420Z",
-        "finishedAt": "2026-10-08T22:00:00.490Z"
+        "startedAt": "2026-10-08T22:00:00.430Z",
+        "finishedAt": "2026-10-08T22:00:00.500Z"
       },
       "verification": {
         "status": "done",
-        "startedAt": "2026-10-08T22:00:00.510Z",
-        "finishedAt": "2026-10-08T22:00:00.540Z"
+        "startedAt": "2026-10-08T22:00:00.520Z",
+        "finishedAt": "2026-10-08T22:00:00.550Z"
       },
       "verdicts": {
         "status": "done",
-        "startedAt": "2026-10-08T22:00:00.560Z",
-        "finishedAt": "2026-10-08T22:00:00.610Z"
+        "startedAt": "2026-10-08T22:00:00.570Z",
+        "finishedAt": "2026-10-08T22:00:00.620Z"
       },
       "settlement": {
         "status": "done",
-        "startedAt": "2026-10-08T22:00:00.630Z",
-        "finishedAt": "2026-10-08T22:00:00.760Z"
+        "startedAt": "2026-10-08T22:00:00.640Z",
+        "finishedAt": "2026-10-08T22:00:00.770Z"
       }
     },
     "brief": {
@@ -62,7 +62,7 @@
       "bidFee": 2,
       "currency": "tADA",
       "audience": "technical users",
-      "deadline": 1791496855060
+      "deadline": 1791496855070
     },
     "suppliers": [
       {
@@ -98,7 +98,7 @@
         "promisedPer1000": 7,
         "salt": "salt-techblog",
         "commit": "5520dde29f2232d3f4706b83973b2267763f0daec8dcf0660774c6c82288a564",
-        "committedAt": 1791496800070
+        "committedAt": 1791496800080
       },
       {
         "supplier": "codepodcast",
@@ -107,7 +107,7 @@
         "promisedPer1000": 8,
         "salt": "salt-codepodcast",
         "commit": "c9abe29dc280c1d6494464d5e2512f46d327ca6b6bcd32b97a85b9f81c026e06",
-        "committedAt": 1791496800080
+        "committedAt": 1791496800090
       },
       {
         "supplier": "devnewsletter",
@@ -116,7 +116,7 @@
         "promisedPer1000": 12,
         "salt": "salt-devnewsletter",
         "commit": "88fab11a3d07d72c9a83ce6a9e47f215e916a8dd44dba580ea03db426d763183",
-        "committedAt": 1791496800090
+        "committedAt": 1791496800100
       },
       {
         "supplier": "gamingforum",
@@ -125,9 +125,51 @@
         "promisedPer1000": 4,
         "salt": "salt-gamingforum",
         "commit": "2a1d98e0b6c62f5c4f51d09dc8d60ae59fba1c3a471ba574ff312664624af64e",
-        "committedAt": 1791496800100
+        "committedAt": 1791496800110
       }
     ],
+    "discovery": {
+      "source": "seeded",
+      "label": "seeded registry",
+      "reason": "not_configured",
+      "endpoint": "GET /registry (V2 payment source)",
+      "expected": 4,
+      "found": 0,
+      "agents": [
+        {
+          "supplier": "techblog",
+          "name": "TechBlog",
+          "persona": "conservative",
+          "agentIdentifier": "67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b10adaaad1ba6f00b23a439dcb64cc022e13ae3e4ac093f9e5a56facd1f000000",
+          "apiBaseUrl": "https://ad-slot-auction.vercel.app/api/agents/techblog",
+          "state": "seeded"
+        },
+        {
+          "supplier": "codepodcast",
+          "name": "CodePodcast",
+          "persona": "moderate",
+          "agentIdentifier": "67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b10a1389a9987a72d5ac638993bbb3fae35d9edf337172d44635af33ed0000000",
+          "apiBaseUrl": "https://ad-slot-auction.vercel.app/api/agents/codepodcast",
+          "state": "seeded"
+        },
+        {
+          "supplier": "devnewsletter",
+          "name": "DevNewsletter",
+          "persona": "aggressive over-promiser",
+          "agentIdentifier": "67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b109150335daa6d55f995eb38aea9773df9a05420f779b99b16831a4eff000000",
+          "apiBaseUrl": "https://ad-slot-auction.vercel.app/api/agents/devnewsletter",
+          "state": "seeded"
+        },
+        {
+          "supplier": "gamingforum",
+          "name": "GamingForum",
+          "persona": "passive low-baller",
+          "agentIdentifier": "67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b10aec5ba825779ae68bb401136b41990b4915de5e04f8f15d9f263bccf000000",
+          "apiBaseUrl": "https://ad-slot-auction.vercel.app/api/agents/gamingforum",
+          "state": "seeded"
+        }
+      ]
+    },
     "auction": {
       "ranking": [
         {
@@ -203,8 +245,8 @@
     },
     "feed": {
       "window": {
-        "start": "2026-10-08T21:00:00.440Z",
-        "end": "2026-10-08T22:00:00.440Z"
+        "start": "2026-10-08T21:00:00.450Z",
+        "end": "2026-10-08T22:00:00.450Z"
       },
       "impressions": {
         "devnewsletter": 1500,
@@ -216,8 +258,8 @@
           "eventId": "evt_00001",
           "sessionId": "devnewsletter.9001",
           "supplier": "devnewsletter",
-          "ts": "2026-10-08T21:37:37.906Z",
-          "signature": "13d7ac0115bb44af2db6003d903c3823df261b9fd1d930f5223a2557894c91932dea72c1eaa880be5e108606a71a458ec25a42927141dfecf2b6cedc9a5d9b04",
+          "ts": "2026-10-08T21:37:37.916Z",
+          "signature": "ab97a43efe1281c17743559aa1f2385e47c946606b5723004a562e8b2e2058feb201c12eb0cade161064c1d1f19bb60cfbf85e4ca31b570db59e65bab489650f",
           "signals": {
             "asn": "AS16509",
             "clickBurst": true
@@ -227,8 +269,8 @@
           "eventId": "evt_00002",
           "sessionId": "codepodcast.9002",
           "supplier": "devnewsletter",
-          "ts": "2026-10-08T21:31:39.249Z",
-          "signature": "69359ff939c71b14785d7930db16a172cb2f4a9f4c334394824a471044c4040b3b3c899028b4536faf43ee88d7316ecf06dde6c52288910d131207abfceee30f",
+          "ts": "2026-10-08T21:31:39.259Z",
+          "signature": "9afbc0245c8f70235c7573c1029c99673936268b8370be3815fd1b777c22c50de651c5d429f8d33f288c6baf1a7c8d0808ddb4817c18ed2ee2b6067120de2b0e",
           "signals": {
             "asn": "AS3320",
             "clickBurst": false
@@ -238,8 +280,8 @@
           "eventId": "evt_00003",
           "sessionId": "devnewsletter.9003",
           "supplier": "devnewsletter",
-          "ts": "2026-10-08T23:00:00.440Z",
-          "signature": "5e5092b2ed72383ca587fe182ee0734f87ed99c069a68e741df292cdca4a5f2e48ce1b9b276b42b5078647b78a79087b53982a2c7b1b9ef9c8a0110e80162609",
+          "ts": "2026-10-08T23:00:00.450Z",
+          "signature": "40f5640208f0a440e3996816c0965e17da2c6c7c5b6c3b1d57a32582bac1ea09ece26b4b10d821a7225157bf0296500e6b6357cb7038c11401df788662137309",
           "signals": {
             "asn": "AS3320",
             "clickBurst": false
@@ -249,8 +291,8 @@
           "eventId": "evt_00004",
           "sessionId": "codepodcast.0001",
           "supplier": "codepodcast",
-          "ts": "2026-10-08T21:16:52.412Z",
-          "signature": "b8497d11b399d962d7676d6865e636d92a4dee3a5af9a6765cd186bfe01c7954997a17ee3f6a7bd5d70355ebf6cd55e20ca642daa89f91f47ddb8fa0b554810a",
+          "ts": "2026-10-08T21:16:52.422Z",
+          "signature": "8a679a505da6686b601e2b4c4b8635a9d0dab3a01ae573dcebdc454a178ef99fb472761f7a28351913e45738bb31d916e473e8f9a2aa8b8e6245f23b9cdd430f",
           "signals": {
             "asn": "AS3320",
             "clickBurst": false
@@ -260,8 +302,8 @@
           "eventId": "evt_00005",
           "sessionId": "codepodcast.0002",
           "supplier": "codepodcast",
-          "ts": "2026-10-08T21:43:15.115Z",
-          "signature": "a944af0dab72064946dc739f7988055d2e511e89cf179e5780075d37bc237df08cbeb6b4c1a33acddc370be49f4a96f661f6fafd9178d8621d7841119fc38403",
+          "ts": "2026-10-08T21:43:15.125Z",
+          "signature": "165b5928b37c3534cd227fd5c28ffd83624413a6e7a96891f07b8ffb390c6734103539afb9895bb8f5925bbd150e322541cfe4d8a0eb48a4df4cbab7cad5d50b",
           "signals": {
             "asn": "AS3320",
             "clickBurst": false
@@ -271,8 +313,8 @@
           "eventId": "evt_00006",
           "sessionId": "codepodcast.0003",
           "supplier": "codepodcast",
-          "ts": "2026-10-08T21:59:41.802Z",
-          "signature": "9b105790ac6104403d193aa11e26cb4627147ac7eeccda76fa47260c260c39ad7a76e8a4668f8df45585a643c489843c809aebc50451327920f4edb0363b700d",
+          "ts": "2026-10-08T21:59:41.812Z",
+          "signature": "5849169cd10b552926b2668bba3932174c04a8a2b03de05a08a39909cb95b574daf811859918758925b5aeabade10674fbdf296337656f9a13388ea8b88b6d01",
           "signals": {
             "asn": "AS3320",
             "clickBurst": false
@@ -282,8 +324,8 @@
           "eventId": "evt_00007",
           "sessionId": "codepodcast.0004",
           "supplier": "codepodcast",
-          "ts": "2026-10-08T21:29:20.077Z",
-          "signature": "bff40c3a7c2187f7bf2e6ff418fab555491c3b4b9458fd52cd252acdee6993f88d2157db51b71d5afb49848b33bd40326c9bf12f0a68666b00378ffac4eccb03",
+          "ts": "2026-10-08T21:29:20.087Z",
+          "signature": "03b23db66281140dfcd7ceafa41998d27d111ab4ee50475901823baeefb72091443f126ab3a025e93aa2f0891a428d718c5ee1ff34a799fe14f0959f42eb2005",
           "signals": {
             "asn": "AS3320",
             "clickBurst": false
@@ -293,8 +335,8 @@
           "eventId": "evt_00008",
           "sessionId": "codepodcast.0005",
           "supplier": "codepodcast",
-          "ts": "2026-10-08T21:24:13.921Z",
-          "signature": "4fb4fd6653127c77a69ec020b02478d831b8cbb47cdc528f8dfaeddaf8ab82c517b62a9794b0e982c64a0554f8ed065f0d1fb401cb2d5a2e8d500f7fc5028202",
+          "ts": "2026-10-08T21:24:13.931Z",
+          "signature": "feba38bae36b2db59f151ba6b3407e963d24f01999bc5ec1dd39d951b8c9e1316c704d840175bfb72c92e8f3223bcfda83fe2f0c78acaff2c8d69079b0d7da06",
           "signals": {
             "asn": "AS3320",
             "clickBurst": false
@@ -304,8 +346,8 @@
           "eventId": "evt_00009",
           "sessionId": "codepodcast.0006",
           "supplier": "codepodcast",
-          "ts": "2026-10-08T21:09:16.615Z",
-          "signature": "c27eac8e9ac505f70ad37e305a07c29b1e3690388adbdec96fc13dbdfb0d33309d0ce69789b729f0989c66dabce4c899fce2ab4b871b5e30aa3956e5932cd209",
+          "ts": "2026-10-08T21:09:16.625Z",
+          "signature": "8cd8b6c1abdf88ca04dfdf6a1c98d9f1f924cae9526ede03fc13840d6e0ba0f7b1ff4295c166aec12df5e0c4e95ec7bb9937e43d90817860e66c55c44c1aa30d",
           "signals": {
             "asn": "AS3320",
             "clickBurst": false
@@ -315,8 +357,8 @@
           "eventId": "evt_00010",
           "sessionId": "codepodcast.9001",
           "supplier": "codepodcast",
-          "ts": "2026-10-08T21:04:02.971Z",
-          "signature": "9138c209ad33d769273afdad2869d7d49d7853b7939161bd475ca9ebec23bfb318d4052e2b9a879535eef32d889f967313b8b994228d3c14ca4b931692ad920d",
+          "ts": "2026-10-08T21:04:02.981Z",
+          "signature": "edfe4e40976fc2e3d42dd6f0a8e0a66b3cb957583f44cff929c91c0521b1782afee3074b38ae0d7904edafbcc35de434781ddcd459fad10609057d71cfc26504",
           "signals": {
             "asn": "AS3320",
             "clickBurst": false
@@ -326,8 +368,8 @@
           "eventId": "evt_00011",
           "sessionId": "devnewsletter.9002",
           "supplier": "codepodcast",
-          "ts": "2026-10-08T21:46:02.028Z",
-          "signature": "608617ecfc817bf3a4babc775d868c7808d30519da8a88a17fcb8706cb98c2d5498f44bc2d63f59e797bdf0500129869bb2409fcce1ff117f2f5840a14cd6004",
+          "ts": "2026-10-08T21:46:02.038Z",
+          "signature": "88c40c515928fb5ce334f191401f36b00fd8038235ca04d171f65650f4f29bbed6c4729ed7c19bb6bffcc0a0f483d0b06ffc9d21f832f29be496b83d4d1eee06",
           "signals": {
             "asn": "AS3320",
             "clickBurst": false
@@ -337,8 +379,8 @@
           "eventId": "evt_00012",
           "sessionId": "codepodcast.9003",
           "supplier": "codepodcast",
-          "ts": "2026-10-08T23:00:00.440Z",
-          "signature": "a93402dddb4d40eea069358cc17e48ee13c8e6ddab1bad3064eed157075c548820d35b639e7ea930d6708f353fcb2f752262aa8730f05c5ca9f6385e313f9d0c",
+          "ts": "2026-10-08T23:00:00.450Z",
+          "signature": "cd0b950dd13805def46d0f217aba027b2d06d19cd560065ef0507a389dd1ff60a81fedfca5311f5af64a7a918312856eb67f172b240458bdb727538005587e06",
           "signals": {
             "asn": "AS3320",
             "clickBurst": false
@@ -348,8 +390,8 @@
           "eventId": "evt_00013",
           "sessionId": "techblog.0001",
           "supplier": "techblog",
-          "ts": "2026-10-08T21:02:34.266Z",
-          "signature": "439318f1e73476f2dde253cfafcb73527610966ed7ef18f07fc8626ee43a2a47aec623456b3c447b79ab57398066870e59fe72b7048329e67e1915f03e5f1409",
+          "ts": "2026-10-08T21:02:34.276Z",
+          "signature": "3c399a17e60cb9d88301645f5296d6cf64a4bccf0497b1d7d098c8718b79b96406bf5744bf2d5b8a2dd38beadf66b66924d5906282e9cb7d59d2a23926b0c000",
           "signals": {
             "asn": "AS3320",
             "clickBurst": false
@@ -359,8 +401,8 @@
           "eventId": "evt_00014",
           "sessionId": "techblog.0002",
           "supplier": "techblog",
-          "ts": "2026-10-08T21:35:25.816Z",
-          "signature": "a3a17b5968363246607b4a04acfbce12e58802b87f8e79852bef1e22f467bca565f0e32c5c9dff0df2341e378ed18f93a344ee0c3e57ccf450ecd3232f5e1402",
+          "ts": "2026-10-08T21:35:25.826Z",
+          "signature": "3ae751c72d6f8815014c07312ab365c0891da054cf294193da956a6edb9a490a96920ae58a450540cf021ed32e9b5c40e243455cec0295619a7f49dee9f3d00d",
           "signals": {
             "asn": "AS3320",
             "clickBurst": false
@@ -370,8 +412,8 @@
           "eventId": "evt_00015",
           "sessionId": "techblog.0003",
           "supplier": "techblog",
-          "ts": "2026-10-08T21:17:41.971Z",
-          "signature": "3b4a03a4fd38aee51ba82f4bed404e385cef952f7e38b5acaef805333851e99ebf3e329156e2571c555019ee2c86b0fbe8cf11b15ce29096e288bcc442c46e0f",
+          "ts": "2026-10-08T21:17:41.981Z",
+          "signature": "f590377989ebd162366c5fe4a8ed74b59f673a0b50df7047919aaac270870eb4f8118e1b5129e8b4de9b05caf9dba0cc8b3eca740196c25a1ee4ac931ad88005",
           "signals": {
             "asn": "AS3320",
             "clickBurst": false
@@ -381,8 +423,8 @@
           "eventId": "evt_00016",
           "sessionId": "techblog.0004",
           "supplier": "techblog",
-          "ts": "2026-10-08T21:39:29.706Z",
-          "signature": "660501ba92cc0bf9d1a36b8af1540a3bae40a301da748a1ffdc09358672aaf1482085e76b124f271c50170e21889c000e9ad17ebfab9db3000363728d18bea0a",
+          "ts": "2026-10-08T21:39:29.716Z",
+          "signature": "8945b0326466d01ad683271319596d41a7673955026e3cd26b86e24b6a5bf9eeaff30e8336c346a7b02f630ec21d8318a325d6bc088222fd12c870d78da2a90d",
           "signals": {
             "asn": "AS3320",
             "clickBurst": false
@@ -392,8 +434,8 @@
           "eventId": "evt_00017",
           "sessionId": "techblog.0005",
           "supplier": "techblog",
-          "ts": "2026-10-08T21:45:30.834Z",
-          "signature": "d45d4c99980f87876a0da3f973d33c6c530d6d06bcffda7f406e7f265e446d9a28be921dc5e4622b55008573390db71da7d37b0b83f5a019597e59eaa9407e08",
+          "ts": "2026-10-08T21:45:30.844Z",
+          "signature": "ac63409d1a3fe09d818064869b7dd72c3b28dce131fdf4ed63e4a65590e5450592a0eb9a75435383a1519d0abb5be5a911f2b6a34da377a9ef57a8feab6f1605",
           "signals": {
             "asn": "AS3320",
             "clickBurst": false
@@ -403,8 +445,8 @@
           "eventId": "evt_00018",
           "sessionId": "techblog.0006",
           "supplier": "techblog",
-          "ts": "2026-10-08T21:43:15.851Z",
-          "signature": "5d3b0baf416317d880e02c91f87cfd64b70f6d7f06efe6c3ea49faf7115d78dc9eb9fae8f4bfd51780db332f09b6c4de2122074928f0bdd71a0a33f8a6a55b0c",
+          "ts": "2026-10-08T21:43:15.861Z",
+          "signature": "bbabfe70eabdc6f166958d1ba85b946c8c8ddf161d2589421720435f99cfc7323395a04a3ac2a7c7ceb9ec27182dc07cd8b35c7a4a74bbdaf47648aa49528104",
           "signals": {
             "asn": "AS3320",
             "clickBurst": false
@@ -414,8 +456,8 @@
           "eventId": "evt_00019",
           "sessionId": "techblog.0007",
           "supplier": "techblog",
-          "ts": "2026-10-08T21:46:13.929Z",
-          "signature": "dcacdb54a1a9b59da423811b62b0bacb2e440677ec09606e3fac2aed6016b229894dba20df0e632bbd541f93ded4933e937e181e299af3658dacc57657bc5904",
+          "ts": "2026-10-08T21:46:13.939Z",
+          "signature": "93fa430715a180a4cc937913ed020473c0f0f65da9cd84f9f335f75f6c3573227cffb215f97dd70b2b5fdb295dc4c7b8f1bd6bdc17010016fee4ddc403d13c03",
           "signals": {
             "asn": "AS3320",
             "clickBurst": false
@@ -425,8 +467,8 @@
           "eventId": "evt_00020",
           "sessionId": "techblog.0008",
           "supplier": "techblog",
-          "ts": "2026-10-08T21:14:22.039Z",
-          "signature": "ed19d66d8b5233cded05e86caf68aea39207214744777b12a9c9fcd23c45a1b2f57f4ea06e7712e02102cdaff5f884e5e98ed4bba1528a1e4a0a6b533d6c3606",
+          "ts": "2026-10-08T21:14:22.049Z",
+          "signature": "1b5ad23d53d8ed938e8f37f7d0ee4e5dfc7ff0694301cbbafc65077295b93e5a576abc4a82e421283fa95e221579531293deedd0062f894d75f00ebac116270f",
           "signals": {
             "asn": "AS3320",
             "clickBurst": false
@@ -436,8 +478,8 @@
           "eventId": "evt_00021",
           "sessionId": "techblog.9001",
           "supplier": "techblog",
-          "ts": "2026-10-08T21:09:12.215Z",
-          "signature": "9b425424ff9a57bef7af1b2e7acee3646f3e2acc545d5da5896ff25b964ea62e07ffe197dd3daee4447321f52c03e19a930ccbca7c798ad6a1e019b47eb73e0b",
+          "ts": "2026-10-08T21:09:12.225Z",
+          "signature": "8667168523ef07264fde2cd2603d25f7e350d690697fa95cb3da7920beb2fd32c8118a2c4c4b5d41a8f403d39884e3674a4abdf4747ba2ea225fb0e5e0559308",
           "signals": {
             "asn": "AS3320",
             "clickBurst": false
@@ -447,8 +489,8 @@
           "eventId": "evt_00022",
           "sessionId": "devnewsletter.9002",
           "supplier": "techblog",
-          "ts": "2026-10-08T21:24:47.949Z",
-          "signature": "249675e63c8117edbd5cf0dd863442f57f130e06c9eeec0d370d4a3a36809c7aaf0dccff2a4540228ce61c92b618d5d18780bc4d7b7d2861caa428537c14540c",
+          "ts": "2026-10-08T21:24:47.959Z",
+          "signature": "ed6d9d555341fb08f80d220575a5c61b96214006117e33ffaebc0a87347bdb34c83fc57c4431ed3ced3ea2326e495502f5ea63293292ef62e32ea3127c4ae101",
           "signals": {
             "asn": "AS3320",
             "clickBurst": false
@@ -458,8 +500,8 @@
           "eventId": "evt_00023",
           "sessionId": "techblog.9003",
           "supplier": "techblog",
-          "ts": "2026-10-08T23:00:00.440Z",
-          "signature": "7799a5e8cd1e0da6b9be32e34e847d4f1aeffaf7ebdfb1bba9e0833813ac564069003d6929c5e4b6b8923ebeea3f40f1b3e50f762bd3bffd888ce2363fa93106",
+          "ts": "2026-10-08T23:00:00.450Z",
+          "signature": "ed353c5b3c95f28b0239a775d27fae36855dddd7f924e6a43031fd31e33c5dc288bda579d652f341adae0db3d89100f491eae78450be660d8ac477d206ed070f",
           "signals": {
             "asn": "AS3320",
             "clickBurst": false
@@ -591,9 +633,9 @@
       "job": "job_worked-example",
       "status": "done",
       "phase": "settled",
-      "startedAt": "2026-10-08T22:00:00.640Z",
-      "deadline": "2026-10-08T22:40:00.640Z",
-      "reconcileUntil": "2026-10-09T01:00:00.640Z",
+      "startedAt": "2026-10-08T22:00:00.650Z",
+      "deadline": "2026-10-08T22:40:00.650Z",
+      "reconcileUntil": "2026-10-09T01:00:00.650Z",
       "settled": [
         "devnewsletter",
         "codepodcast",
@@ -696,8 +738,8 @@
       "feeTransfers": [],
       "pending": 0,
       "ticks": 1,
-      "lastTickAt": "2026-10-08T22:00:00.740Z",
-      "finishedAt": "2026-10-08T22:00:00.750Z"
+      "lastTickAt": "2026-10-08T22:00:00.750Z",
+      "finishedAt": "2026-10-08T22:00:00.760Z"
     },
     "ledger": [
       {
@@ -1049,18 +1091,18 @@
     ],
     "delivery": {
       "devnewsletter": {
-        "reportHash": "5e6a01833db74adf32bd28c534d33d7de5d9033352aa0e5adfec0424e132dd02",
-        "resultHash": "fb661de1ff55acec2e3fef39c60f0b7e11b5d83113de8c2a2175f9e2b11ae75d",
+        "reportHash": "db5110e3889b19fb6a713430db75ec2a6077bbda5e52c74eee60ca4400392ff7",
+        "resultHash": "4a14f018cfdb6562f96c98c2f3500a6db4d4bc9752a0544c624189161d3b9f9b",
         "source": "scripted_demo"
       },
       "codepodcast": {
-        "reportHash": "06981f6c72be93e7407c051b28fc8735852ad4faf046432959df82465888706a",
-        "resultHash": "99f627e77ee1ce86a79c646b03af2be2e5bbce435569fb1c41ab5d7fa573b493",
+        "reportHash": "39fcfe3efb5eb1b0ba7655ea19bde804c664848f87c4010c8457c11dc23bb488",
+        "resultHash": "1c015a19818a499526546d0b62a18932959e1cdb92af5ca40604f0a71fc9c982",
         "source": "scripted_demo"
       },
       "techblog": {
-        "reportHash": "9ca94407dcc10d93221387cdef3579dc2600a32b5cab27be5306103b93ba08f7",
-        "resultHash": "d293910f13a2d42b673e8abdc1266632fb1414ede8fe347ebe16b4541643ad28",
+        "reportHash": "41b0592c71b4c415f58a381474b5198a50a6a3f2f6279a01b0d23543d0926614",
+        "resultHash": "dff3e5ec01246da8586e23804937bdce2297182f6e94233c7d314134b366c8f4",
         "source": "scripted_demo"
       }
     }
@@ -1140,12 +1182,49 @@
     },
     {
       "seq": 5,
-      "ts": "2026-10-08T22:00:00.110Z",
-      "name": "bid.committed",
+      "ts": "2026-10-08T22:00:00.060Z",
+      "name": "registry.discovered",
       "data": {
-        "supplier": "techblog",
-        "commit": "5520dde29f2232d3f4706b83973b2267763f0daec8dcf0660774c6c82288a564",
-        "committedAt": 1791496800070
+        "source": "seeded",
+        "label": "seeded registry",
+        "reason": "not_configured",
+        "endpoint": "GET /registry (V2 payment source)",
+        "expected": 4,
+        "found": 0,
+        "agents": [
+          {
+            "supplier": "techblog",
+            "name": "TechBlog",
+            "persona": "conservative",
+            "agentIdentifier": "67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b10adaaad1ba6f00b23a439dcb64cc022e13ae3e4ac093f9e5a56facd1f000000",
+            "apiBaseUrl": "https://ad-slot-auction.vercel.app/api/agents/techblog",
+            "state": "seeded"
+          },
+          {
+            "supplier": "codepodcast",
+            "name": "CodePodcast",
+            "persona": "moderate",
+            "agentIdentifier": "67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b10a1389a9987a72d5ac638993bbb3fae35d9edf337172d44635af33ed0000000",
+            "apiBaseUrl": "https://ad-slot-auction.vercel.app/api/agents/codepodcast",
+            "state": "seeded"
+          },
+          {
+            "supplier": "devnewsletter",
+            "name": "DevNewsletter",
+            "persona": "aggressive over-promiser",
+            "agentIdentifier": "67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b109150335daa6d55f995eb38aea9773df9a05420f779b99b16831a4eff000000",
+            "apiBaseUrl": "https://ad-slot-auction.vercel.app/api/agents/devnewsletter",
+            "state": "seeded"
+          },
+          {
+            "supplier": "gamingforum",
+            "name": "GamingForum",
+            "persona": "passive low-baller",
+            "agentIdentifier": "67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b10aec5ba825779ae68bb401136b41990b4915de5e04f8f15d9f263bccf000000",
+            "apiBaseUrl": "https://ad-slot-auction.vercel.app/api/agents/gamingforum",
+            "state": "seeded"
+          }
+        ]
       }
     },
     {
@@ -1153,8 +1232,8 @@
       "ts": "2026-10-08T22:00:00.120Z",
       "name": "bid.committed",
       "data": {
-        "supplier": "codepodcast",
-        "commit": "c9abe29dc280c1d6494464d5e2512f46d327ca6b6bcd32b97a85b9f81c026e06",
+        "supplier": "techblog",
+        "commit": "5520dde29f2232d3f4706b83973b2267763f0daec8dcf0660774c6c82288a564",
         "committedAt": 1791496800080
       }
     },
@@ -1163,8 +1242,8 @@
       "ts": "2026-10-08T22:00:00.130Z",
       "name": "bid.committed",
       "data": {
-        "supplier": "devnewsletter",
-        "commit": "88fab11a3d07d72c9a83ce6a9e47f215e916a8dd44dba580ea03db426d763183",
+        "supplier": "codepodcast",
+        "commit": "c9abe29dc280c1d6494464d5e2512f46d327ca6b6bcd32b97a85b9f81c026e06",
         "committedAt": 1791496800090
       }
     },
@@ -1173,14 +1252,24 @@
       "ts": "2026-10-08T22:00:00.140Z",
       "name": "bid.committed",
       "data": {
-        "supplier": "gamingforum",
-        "commit": "2a1d98e0b6c62f5c4f51d09dc8d60ae59fba1c3a471ba574ff312664624af64e",
+        "supplier": "devnewsletter",
+        "commit": "88fab11a3d07d72c9a83ce6a9e47f215e916a8dd44dba580ea03db426d763183",
         "committedAt": 1791496800100
       }
     },
     {
       "seq": 9,
       "ts": "2026-10-08T22:00:00.150Z",
+      "name": "bid.committed",
+      "data": {
+        "supplier": "gamingforum",
+        "commit": "2a1d98e0b6c62f5c4f51d09dc8d60ae59fba1c3a471ba574ff312664624af64e",
+        "committedAt": 1791496800110
+      }
+    },
+    {
+      "seq": 10,
+      "ts": "2026-10-08T22:00:00.160Z",
       "name": "bid.fee_locked",
       "data": {
         "supplier": "techblog",
@@ -1198,8 +1287,8 @@
       }
     },
     {
-      "seq": 10,
-      "ts": "2026-10-08T22:00:00.160Z",
+      "seq": 11,
+      "ts": "2026-10-08T22:00:00.170Z",
       "name": "bid.fee_locked",
       "data": {
         "supplier": "codepodcast",
@@ -1217,8 +1306,8 @@
       }
     },
     {
-      "seq": 11,
-      "ts": "2026-10-08T22:00:00.170Z",
+      "seq": 12,
+      "ts": "2026-10-08T22:00:00.180Z",
       "name": "bid.fee_locked",
       "data": {
         "supplier": "devnewsletter",
@@ -1236,8 +1325,8 @@
       }
     },
     {
-      "seq": 12,
-      "ts": "2026-10-08T22:00:00.180Z",
+      "seq": 13,
+      "ts": "2026-10-08T22:00:00.190Z",
       "name": "bid.fee_locked",
       "data": {
         "supplier": "gamingforum",
@@ -1255,8 +1344,8 @@
       }
     },
     {
-      "seq": 13,
-      "ts": "2026-10-08T22:00:00.190Z",
+      "seq": 14,
+      "ts": "2026-10-08T22:00:00.200Z",
       "name": "bid.revealed",
       "data": {
         "supplier": "techblog",
@@ -1267,8 +1356,8 @@
       }
     },
     {
-      "seq": 14,
-      "ts": "2026-10-08T22:00:00.200Z",
+      "seq": 15,
+      "ts": "2026-10-08T22:00:00.210Z",
       "name": "bid.revealed",
       "data": {
         "supplier": "codepodcast",
@@ -1279,8 +1368,8 @@
       }
     },
     {
-      "seq": 15,
-      "ts": "2026-10-08T22:00:00.210Z",
+      "seq": 16,
+      "ts": "2026-10-08T22:00:00.220Z",
       "name": "bid.revealed",
       "data": {
         "supplier": "devnewsletter",
@@ -1291,8 +1380,8 @@
       }
     },
     {
-      "seq": 16,
-      "ts": "2026-10-08T22:00:00.220Z",
+      "seq": 17,
+      "ts": "2026-10-08T22:00:00.230Z",
       "name": "bid.revealed",
       "data": {
         "supplier": "gamingforum",
@@ -1303,24 +1392,24 @@
       }
     },
     {
-      "seq": 17,
-      "ts": "2026-10-08T22:00:00.240Z",
+      "seq": 18,
+      "ts": "2026-10-08T22:00:00.250Z",
       "name": "step.completed",
       "data": {
         "step": "bids"
       }
     },
     {
-      "seq": 18,
-      "ts": "2026-10-08T22:00:00.260Z",
+      "seq": 19,
+      "ts": "2026-10-08T22:00:00.270Z",
       "name": "step.started",
       "data": {
         "step": "allocation"
       }
     },
     {
-      "seq": 19,
-      "ts": "2026-10-08T22:00:00.270Z",
+      "seq": 20,
+      "ts": "2026-10-08T22:00:00.280Z",
       "name": "bid.rejected",
       "data": {
         "supplier": "gamingforum",
@@ -1328,8 +1417,8 @@
       }
     },
     {
-      "seq": 20,
-      "ts": "2026-10-08T22:00:00.280Z",
+      "seq": 21,
+      "ts": "2026-10-08T22:00:00.290Z",
       "name": "auction.ranked",
       "data": {
         "ranking": [
@@ -1367,8 +1456,8 @@
       }
     },
     {
-      "seq": 21,
-      "ts": "2026-10-08T22:00:00.290Z",
+      "seq": 22,
+      "ts": "2026-10-08T22:00:00.300Z",
       "name": "allocation.decided",
       "data": {
         "accepted": [
@@ -1414,24 +1503,24 @@
       }
     },
     {
-      "seq": 22,
-      "ts": "2026-10-08T22:00:00.310Z",
+      "seq": 23,
+      "ts": "2026-10-08T22:00:00.320Z",
       "name": "step.completed",
       "data": {
         "step": "allocation"
       }
     },
     {
-      "seq": 23,
-      "ts": "2026-10-08T22:00:00.330Z",
+      "seq": 24,
+      "ts": "2026-10-08T22:00:00.340Z",
       "name": "step.started",
       "data": {
         "step": "locks"
       }
     },
     {
-      "seq": 24,
-      "ts": "2026-10-08T22:00:00.340Z",
+      "seq": 25,
+      "ts": "2026-10-08T22:00:00.350Z",
       "name": "escrow.locked",
       "data": {
         "supplier": "devnewsletter",
@@ -1450,8 +1539,8 @@
       }
     },
     {
-      "seq": 25,
-      "ts": "2026-10-08T22:00:00.350Z",
+      "seq": 26,
+      "ts": "2026-10-08T22:00:00.360Z",
       "name": "escrow.locked",
       "data": {
         "supplier": "devnewsletter",
@@ -1470,8 +1559,8 @@
       }
     },
     {
-      "seq": 26,
-      "ts": "2026-10-08T22:00:00.360Z",
+      "seq": 27,
+      "ts": "2026-10-08T22:00:00.370Z",
       "name": "escrow.locked",
       "data": {
         "supplier": "codepodcast",
@@ -1490,8 +1579,8 @@
       }
     },
     {
-      "seq": 27,
-      "ts": "2026-10-08T22:00:00.370Z",
+      "seq": 28,
+      "ts": "2026-10-08T22:00:00.380Z",
       "name": "escrow.locked",
       "data": {
         "supplier": "codepodcast",
@@ -1510,8 +1599,8 @@
       }
     },
     {
-      "seq": 28,
-      "ts": "2026-10-08T22:00:00.380Z",
+      "seq": 29,
+      "ts": "2026-10-08T22:00:00.390Z",
       "name": "escrow.locked",
       "data": {
         "supplier": "techblog",
@@ -1530,8 +1619,8 @@
       }
     },
     {
-      "seq": 29,
-      "ts": "2026-10-08T22:00:00.390Z",
+      "seq": 30,
+      "ts": "2026-10-08T22:00:00.400Z",
       "name": "escrow.locked",
       "data": {
         "supplier": "techblog",
@@ -1550,24 +1639,24 @@
       }
     },
     {
-      "seq": 30,
-      "ts": "2026-10-08T22:00:00.410Z",
+      "seq": 31,
+      "ts": "2026-10-08T22:00:00.420Z",
       "name": "step.completed",
       "data": {
         "step": "locks"
       }
     },
     {
-      "seq": 31,
-      "ts": "2026-10-08T22:00:00.430Z",
+      "seq": 32,
+      "ts": "2026-10-08T22:00:00.440Z",
       "name": "step.started",
       "data": {
         "step": "feed"
       }
     },
     {
-      "seq": 32,
-      "ts": "2026-10-08T22:00:00.450Z",
+      "seq": 33,
+      "ts": "2026-10-08T22:00:00.460Z",
       "name": "feed.served",
       "data": {
         "supplier": "devnewsletter",
@@ -1577,8 +1666,8 @@
       }
     },
     {
-      "seq": 33,
-      "ts": "2026-10-08T22:00:00.460Z",
+      "seq": 34,
+      "ts": "2026-10-08T22:00:00.470Z",
       "name": "feed.served",
       "data": {
         "supplier": "codepodcast",
@@ -1588,8 +1677,8 @@
       }
     },
     {
-      "seq": 34,
-      "ts": "2026-10-08T22:00:00.470Z",
+      "seq": 35,
+      "ts": "2026-10-08T22:00:00.480Z",
       "name": "feed.served",
       "data": {
         "supplier": "techblog",
@@ -1599,13 +1688,13 @@
       }
     },
     {
-      "seq": 35,
-      "ts": "2026-10-08T22:00:00.480Z",
+      "seq": 36,
+      "ts": "2026-10-08T22:00:00.490Z",
       "name": "feed.generated",
       "data": {
         "window": {
-          "start": "2026-10-08T21:00:00.440Z",
-          "end": "2026-10-08T22:00:00.440Z"
+          "start": "2026-10-08T21:00:00.450Z",
+          "end": "2026-10-08T22:00:00.450Z"
         },
         "impressions": {
           "devnewsletter": 1500,
@@ -1616,24 +1705,24 @@
       }
     },
     {
-      "seq": 36,
-      "ts": "2026-10-08T22:00:00.500Z",
+      "seq": 37,
+      "ts": "2026-10-08T22:00:00.510Z",
       "name": "step.completed",
       "data": {
         "step": "feed"
       }
     },
     {
-      "seq": 37,
-      "ts": "2026-10-08T22:00:00.520Z",
+      "seq": 38,
+      "ts": "2026-10-08T22:00:00.530Z",
       "name": "step.started",
       "data": {
         "step": "verification"
       }
     },
     {
-      "seq": 38,
-      "ts": "2026-10-08T22:00:00.530Z",
+      "seq": 39,
+      "ts": "2026-10-08T22:00:00.540Z",
       "name": "verification.completed",
       "data": {
         "verified": {
@@ -1722,24 +1811,24 @@
       }
     },
     {
-      "seq": 39,
-      "ts": "2026-10-08T22:00:00.550Z",
+      "seq": 40,
+      "ts": "2026-10-08T22:00:00.560Z",
       "name": "step.completed",
       "data": {
         "step": "verification"
       }
     },
     {
-      "seq": 40,
-      "ts": "2026-10-08T22:00:00.570Z",
+      "seq": 41,
+      "ts": "2026-10-08T22:00:00.580Z",
       "name": "step.started",
       "data": {
         "step": "verdicts"
       }
     },
     {
-      "seq": 41,
-      "ts": "2026-10-08T22:00:00.580Z",
+      "seq": 42,
+      "ts": "2026-10-08T22:00:00.590Z",
       "name": "verdict.signed",
       "data": {
         "supplier": "devnewsletter",
@@ -1754,8 +1843,8 @@
       }
     },
     {
-      "seq": 42,
-      "ts": "2026-10-08T22:00:00.590Z",
+      "seq": 43,
+      "ts": "2026-10-08T22:00:00.600Z",
       "name": "verdict.signed",
       "data": {
         "supplier": "codepodcast",
@@ -1770,8 +1859,8 @@
       }
     },
     {
-      "seq": 43,
-      "ts": "2026-10-08T22:00:00.600Z",
+      "seq": 44,
+      "ts": "2026-10-08T22:00:00.610Z",
       "name": "verdict.signed",
       "data": {
         "supplier": "techblog",
@@ -1786,32 +1875,32 @@
       }
     },
     {
-      "seq": 44,
-      "ts": "2026-10-08T22:00:00.620Z",
+      "seq": 45,
+      "ts": "2026-10-08T22:00:00.630Z",
       "name": "step.completed",
       "data": {
         "step": "verdicts"
       }
     },
     {
-      "seq": 45,
-      "ts": "2026-10-08T22:00:00.650Z",
+      "seq": 46,
+      "ts": "2026-10-08T22:00:00.660Z",
       "name": "step.started",
       "data": {
         "step": "settlement"
       }
     },
     {
-      "seq": 46,
-      "ts": "2026-10-08T22:00:00.660Z",
+      "seq": 47,
+      "ts": "2026-10-08T22:00:00.670Z",
       "name": "settlement.started",
       "data": {
         "job": "job_worked-example"
       }
     },
     {
-      "seq": 47,
-      "ts": "2026-10-08T22:00:00.670Z",
+      "seq": 48,
+      "ts": "2026-10-08T22:00:00.680Z",
       "name": "settlement.transfer",
       "data": {
         "supplier": "devnewsletter",
@@ -1830,8 +1919,8 @@
       }
     },
     {
-      "seq": 48,
-      "ts": "2026-10-08T22:00:00.680Z",
+      "seq": 49,
+      "ts": "2026-10-08T22:00:00.690Z",
       "name": "settlement.transfer",
       "data": {
         "supplier": "devnewsletter",
@@ -1850,8 +1939,8 @@
       }
     },
     {
-      "seq": 49,
-      "ts": "2026-10-08T22:00:00.690Z",
+      "seq": 50,
+      "ts": "2026-10-08T22:00:00.700Z",
       "name": "settlement.transfer",
       "data": {
         "supplier": "codepodcast",
@@ -1870,8 +1959,8 @@
       }
     },
     {
-      "seq": 50,
-      "ts": "2026-10-08T22:00:00.700Z",
+      "seq": 51,
+      "ts": "2026-10-08T22:00:00.710Z",
       "name": "settlement.transfer",
       "data": {
         "supplier": "codepodcast",
@@ -1890,8 +1979,8 @@
       }
     },
     {
-      "seq": 51,
-      "ts": "2026-10-08T22:00:00.710Z",
+      "seq": 52,
+      "ts": "2026-10-08T22:00:00.720Z",
       "name": "settlement.transfer",
       "data": {
         "supplier": "codepodcast",
@@ -1910,8 +1999,8 @@
       }
     },
     {
-      "seq": 52,
-      "ts": "2026-10-08T22:00:00.720Z",
+      "seq": 53,
+      "ts": "2026-10-08T22:00:00.730Z",
       "name": "settlement.transfer",
       "data": {
         "supplier": "techblog",
@@ -1930,8 +2019,8 @@
       }
     },
     {
-      "seq": 53,
-      "ts": "2026-10-08T22:00:00.730Z",
+      "seq": 54,
+      "ts": "2026-10-08T22:00:00.740Z",
       "name": "settlement.transfer",
       "data": {
         "supplier": "techblog",
@@ -1950,8 +2039,8 @@
       }
     },
     {
-      "seq": 54,
-      "ts": "2026-10-08T22:00:00.770Z",
+      "seq": 55,
+      "ts": "2026-10-08T22:00:00.780Z",
       "name": "settlement.completed",
       "data": {
         "job": "job_worked-example",
@@ -1959,16 +2048,16 @@
       }
     },
     {
-      "seq": 55,
-      "ts": "2026-10-08T22:00:00.780Z",
+      "seq": 56,
+      "ts": "2026-10-08T22:00:00.790Z",
       "name": "step.completed",
       "data": {
         "step": "settlement"
       }
     },
     {
-      "seq": 56,
-      "ts": "2026-10-08T22:00:00.790Z",
+      "seq": 57,
+      "ts": "2026-10-08T22:00:00.800Z",
       "name": "receipt.ready",
       "data": {
         "receipt": {
@@ -2085,8 +2174,8 @@
       }
     },
     {
-      "seq": 57,
-      "ts": "2026-10-08T22:00:00.800Z",
+      "seq": 58,
+      "ts": "2026-10-08T22:00:00.810Z",
       "name": "round2.decided",
       "data": {
         "allocations": [
@@ -2106,8 +2195,8 @@
       }
     },
     {
-      "seq": 58,
-      "ts": "2026-10-08T22:00:00.810Z",
+      "seq": 59,
+      "ts": "2026-10-08T22:00:00.820Z",
       "name": "run.completed",
       "data": {
         "runId": "run_worked-example",
@@ -2135,9 +2224,9 @@
       "group": "auction",
       "supplier": "codepodcast",
       "step": "bids",
-      "hash": "a03cc44687c9c3f82216d848d748930f41ec2c0ce66644d847801dcfa48040c9",
+      "hash": "2c6b37aa4d300844d52833813a073ccf9c82d3ef33fc3a0d71877f254d5a22a7",
       "size": 268,
-      "bytes": "{\"commit\":\"c9abe29dc280c1d6494464d5e2512f46d327ca6b6bcd32b97a85b9f81c026e06\",\"commitMatchesReveal\":true,\"deadline\":1791496855060,\"receivedAt\":1791496800080,\"reveal\":{\"impressions\":1000,\"price\":60,\"promisedPer1000\":8,\"salt\":\"salt-codepodcast\"},\"supplier\":\"codepodcast\"}"
+      "bytes": "{\"commit\":\"c9abe29dc280c1d6494464d5e2512f46d327ca6b6bcd32b97a85b9f81c026e06\",\"commitMatchesReveal\":true,\"deadline\":1791496855070,\"receivedAt\":1791496800090,\"reveal\":{\"impressions\":1000,\"price\":60,\"promisedPer1000\":8,\"salt\":\"salt-codepodcast\"},\"supplier\":\"codepodcast\"}"
     },
     {
       "name": "bid.devnewsletter",
@@ -2145,9 +2234,9 @@
       "group": "auction",
       "supplier": "devnewsletter",
       "step": "bids",
-      "hash": "37ec8a19600a0033434aa46ee053c87a687b601b54b3800a3a38f6920867dc96",
+      "hash": "7f66c6500d64766dfaa80388f30f9cb6b1d329eea24c33d4723faa54b7ae4290",
       "size": 273,
-      "bytes": "{\"commit\":\"88fab11a3d07d72c9a83ce6a9e47f215e916a8dd44dba580ea03db426d763183\",\"commitMatchesReveal\":true,\"deadline\":1791496855060,\"receivedAt\":1791496800090,\"reveal\":{\"impressions\":1500,\"price\":70,\"promisedPer1000\":12,\"salt\":\"salt-devnewsletter\"},\"supplier\":\"devnewsletter\"}"
+      "bytes": "{\"commit\":\"88fab11a3d07d72c9a83ce6a9e47f215e916a8dd44dba580ea03db426d763183\",\"commitMatchesReveal\":true,\"deadline\":1791496855070,\"receivedAt\":1791496800100,\"reveal\":{\"impressions\":1500,\"price\":70,\"promisedPer1000\":12,\"salt\":\"salt-devnewsletter\"},\"supplier\":\"devnewsletter\"}"
     },
     {
       "name": "bid.gamingforum",
@@ -2155,9 +2244,9 @@
       "group": "auction",
       "supplier": "gamingforum",
       "step": "bids",
-      "hash": "31627153fa61236962aa0fa73ff069ffb0010b86d4f813eb4b788698de3bd2ec",
+      "hash": "d9cc7799a3cec9494726fa0c1e58cdd1b1bc5c0befd3dbb4cd36a3c4aa1c861f",
       "size": 268,
-      "bytes": "{\"commit\":\"2a1d98e0b6c62f5c4f51d09dc8d60ae59fba1c3a471ba574ff312664624af64e\",\"commitMatchesReveal\":true,\"deadline\":1791496855060,\"receivedAt\":1791496800100,\"reveal\":{\"impressions\":1000,\"price\":20,\"promisedPer1000\":4,\"salt\":\"salt-gamingforum\"},\"supplier\":\"gamingforum\"}"
+      "bytes": "{\"commit\":\"2a1d98e0b6c62f5c4f51d09dc8d60ae59fba1c3a471ba574ff312664624af64e\",\"commitMatchesReveal\":true,\"deadline\":1791496855070,\"receivedAt\":1791496800110,\"reveal\":{\"impressions\":1000,\"price\":20,\"promisedPer1000\":4,\"salt\":\"salt-gamingforum\"},\"supplier\":\"gamingforum\"}"
     },
     {
       "name": "bid.techblog",
@@ -2165,9 +2254,9 @@
       "group": "auction",
       "supplier": "techblog",
       "step": "bids",
-      "hash": "b97180f7dcbbad94bc7541c986bccbcb33e642fdfea5ac8808ad9bff31b5f642",
+      "hash": "743828268169b661b7f303e94477e2da52e2a4491dc1385bfb2b8ff0b0c109a3",
       "size": 262,
-      "bytes": "{\"commit\":\"5520dde29f2232d3f4706b83973b2267763f0daec8dcf0660774c6c82288a564\",\"commitMatchesReveal\":true,\"deadline\":1791496855060,\"receivedAt\":1791496800070,\"reveal\":{\"impressions\":1000,\"price\":70,\"promisedPer1000\":7,\"salt\":\"salt-techblog\"},\"supplier\":\"techblog\"}"
+      "bytes": "{\"commit\":\"5520dde29f2232d3f4706b83973b2267763f0daec8dcf0660774c6c82288a564\",\"commitMatchesReveal\":true,\"deadline\":1791496855070,\"receivedAt\":1791496800080,\"reveal\":{\"impressions\":1000,\"price\":70,\"promisedPer1000\":7,\"salt\":\"salt-techblog\"},\"supplier\":\"techblog\"}"
     },
     {
       "name": "brief",
@@ -2185,9 +2274,9 @@
       "supplier": "codepodcast",
       "origin": "scripted_demo",
       "step": "delivery",
-      "hash": "06981f6c72be93e7407c051b28fc8735852ad4faf046432959df82465888706a",
+      "hash": "39fcfe3efb5eb1b0ba7655ea19bde804c664848f87c4010c8457c11dc23bb488",
       "size": 383,
-      "bytes": "{\"impressionsServed\":1000,\"runId\":\"run_worked-example\",\"servedAt\":\"2026-10-08T22:00:00.440Z\",\"sessionIds\":[\"codepodcast.0001\",\"codepodcast.0002\",\"codepodcast.0003\",\"codepodcast.0004\",\"codepodcast.0005\",\"codepodcast.0006\",\"codepodcast.9001\",\"codepodcast.9003\",\"devnewsletter.9002\"],\"supplier\":\"codepodcast\",\"window\":{\"from\":\"2026-10-08T21:00:00.440Z\",\"to\":\"2026-10-08T22:00:00.440Z\"}}"
+      "bytes": "{\"impressionsServed\":1000,\"runId\":\"run_worked-example\",\"servedAt\":\"2026-10-08T22:00:00.450Z\",\"sessionIds\":[\"codepodcast.0001\",\"codepodcast.0002\",\"codepodcast.0003\",\"codepodcast.0004\",\"codepodcast.0005\",\"codepodcast.0006\",\"codepodcast.9001\",\"codepodcast.9003\",\"devnewsletter.9002\"],\"supplier\":\"codepodcast\",\"window\":{\"from\":\"2026-10-08T21:00:00.450Z\",\"to\":\"2026-10-08T22:00:00.450Z\"}}"
     },
     {
       "name": "delivery.devnewsletter",
@@ -2196,9 +2285,9 @@
       "supplier": "devnewsletter",
       "origin": "scripted_demo",
       "step": "delivery",
-      "hash": "5e6a01833db74adf32bd28c534d33d7de5d9033352aa0e5adfec0424e132dd02",
+      "hash": "db5110e3889b19fb6a713430db75ec2a6077bbda5e52c74eee60ca4400392ff7",
       "size": 273,
-      "bytes": "{\"impressionsServed\":1500,\"runId\":\"run_worked-example\",\"servedAt\":\"2026-10-08T22:00:00.440Z\",\"sessionIds\":[\"codepodcast.9002\",\"devnewsletter.9001\",\"devnewsletter.9003\"],\"supplier\":\"devnewsletter\",\"window\":{\"from\":\"2026-10-08T21:00:00.440Z\",\"to\":\"2026-10-08T22:00:00.440Z\"}}"
+      "bytes": "{\"impressionsServed\":1500,\"runId\":\"run_worked-example\",\"servedAt\":\"2026-10-08T22:00:00.450Z\",\"sessionIds\":[\"codepodcast.9002\",\"devnewsletter.9001\",\"devnewsletter.9003\"],\"supplier\":\"devnewsletter\",\"window\":{\"from\":\"2026-10-08T21:00:00.450Z\",\"to\":\"2026-10-08T22:00:00.450Z\"}}"
     },
     {
       "name": "delivery.techblog",
@@ -2207,9 +2296,18 @@
       "supplier": "techblog",
       "origin": "scripted_demo",
       "step": "delivery",
-      "hash": "9ca94407dcc10d93221387cdef3579dc2600a32b5cab27be5306103b93ba08f7",
+      "hash": "41b0592c71b4c415f58a381474b5198a50a6a3f2f6279a01b0d23543d0926614",
       "size": 388,
-      "bytes": "{\"impressionsServed\":1000,\"runId\":\"run_worked-example\",\"servedAt\":\"2026-10-08T22:00:00.440Z\",\"sessionIds\":[\"devnewsletter.9002\",\"techblog.0001\",\"techblog.0002\",\"techblog.0003\",\"techblog.0004\",\"techblog.0005\",\"techblog.0006\",\"techblog.0007\",\"techblog.0008\",\"techblog.9001\",\"techblog.9003\"],\"supplier\":\"techblog\",\"window\":{\"from\":\"2026-10-08T21:00:00.440Z\",\"to\":\"2026-10-08T22:00:00.440Z\"}}"
+      "bytes": "{\"impressionsServed\":1000,\"runId\":\"run_worked-example\",\"servedAt\":\"2026-10-08T22:00:00.450Z\",\"sessionIds\":[\"devnewsletter.9002\",\"techblog.0001\",\"techblog.0002\",\"techblog.0003\",\"techblog.0004\",\"techblog.0005\",\"techblog.0006\",\"techblog.0007\",\"techblog.0008\",\"techblog.9001\",\"techblog.9003\"],\"supplier\":\"techblog\",\"window\":{\"from\":\"2026-10-08T21:00:00.450Z\",\"to\":\"2026-10-08T22:00:00.450Z\"}}"
+    },
+    {
+      "name": "discovery",
+      "label": "Supplier discovery",
+      "group": "setup",
+      "step": "bids",
+      "hash": "45c7ee2005541ff183959035bfad4fe8274d8c0a71b14e96530b2efe31b7c611",
+      "size": 1379,
+      "bytes": "{\"agents\":[{\"agentIdentifier\":\"67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b10adaaad1ba6f00b23a439dcb64cc022e13ae3e4ac093f9e5a56facd1f000000\",\"apiBaseUrl\":\"https://ad-slot-auction.vercel.app/api/agents/techblog\",\"name\":\"TechBlog\",\"persona\":\"conservative\",\"state\":\"seeded\",\"supplier\":\"techblog\"},{\"agentIdentifier\":\"67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b10a1389a9987a72d5ac638993bbb3fae35d9edf337172d44635af33ed0000000\",\"apiBaseUrl\":\"https://ad-slot-auction.vercel.app/api/agents/codepodcast\",\"name\":\"CodePodcast\",\"persona\":\"moderate\",\"state\":\"seeded\",\"supplier\":\"codepodcast\"},{\"agentIdentifier\":\"67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b109150335daa6d55f995eb38aea9773df9a05420f779b99b16831a4eff000000\",\"apiBaseUrl\":\"https://ad-slot-auction.vercel.app/api/agents/devnewsletter\",\"name\":\"DevNewsletter\",\"persona\":\"aggressive over-promiser\",\"state\":\"seeded\",\"supplier\":\"devnewsletter\"},{\"agentIdentifier\":\"67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b10aec5ba825779ae68bb401136b41990b4915de5e04f8f15d9f263bccf000000\",\"apiBaseUrl\":\"https://ad-slot-auction.vercel.app/api/agents/gamingforum\",\"name\":\"GamingForum\",\"persona\":\"passive low-baller\",\"state\":\"seeded\",\"supplier\":\"gamingforum\"}],\"endpoint\":\"GET /registry (V2 payment source)\",\"expected\":4,\"found\":0,\"label\":\"seeded registry\",\"reason\":\"not_configured\",\"source\":\"seeded\"}"
     },
     {
       "name": "keys",
@@ -2249,9 +2347,9 @@
       "supplier": "codepodcast",
       "origin": "scripted_demo",
       "step": "verdicts",
-      "hash": "7757da02c6c1ac2c3f6071bccd3c0db6942468bea1e709118d470b5fcf2af118",
+      "hash": "4b6e5344aa3af1ec39e7e328de10bd084eb676be053f092f2c23ece7395b65d4",
       "size": 835,
-      "bytes": "{\"recipe\":\"sha256(UTF-8(canonical delivery report + verdict hash)), plain string concatenation, no separator, lowercase hex\",\"reportBytes\":\"{\\\"impressionsServed\\\":1000,\\\"runId\\\":\\\"run_worked-example\\\",\\\"servedAt\\\":\\\"2026-10-08T22:00:00.440Z\\\",\\\"sessionIds\\\":[\\\"codepodcast.0001\\\",\\\"codepodcast.0002\\\",\\\"codepodcast.0003\\\",\\\"codepodcast.0004\\\",\\\"codepodcast.0005\\\",\\\"codepodcast.0006\\\",\\\"codepodcast.9001\\\",\\\"codepodcast.9003\\\",\\\"devnewsletter.9002\\\"],\\\"supplier\\\":\\\"codepodcast\\\",\\\"window\\\":{\\\"from\\\":\\\"2026-10-08T21:00:00.440Z\\\",\\\"to\\\":\\\"2026-10-08T22:00:00.440Z\\\"}}\",\"reportHash\":\"06981f6c72be93e7407c051b28fc8735852ad4faf046432959df82465888706a\",\"resultHash\":\"99f627e77ee1ce86a79c646b03af2be2e5bbce435569fb1c41ab5d7fa573b493\",\"supplier\":\"codepodcast\",\"verdictHash\":\"ad70c18058dd3e10e6625381aa79ce448d50fc19ecf982e8ea985f871e8056fd\"}"
+      "bytes": "{\"recipe\":\"sha256(UTF-8(canonical delivery report + verdict hash)), plain string concatenation, no separator, lowercase hex\",\"reportBytes\":\"{\\\"impressionsServed\\\":1000,\\\"runId\\\":\\\"run_worked-example\\\",\\\"servedAt\\\":\\\"2026-10-08T22:00:00.450Z\\\",\\\"sessionIds\\\":[\\\"codepodcast.0001\\\",\\\"codepodcast.0002\\\",\\\"codepodcast.0003\\\",\\\"codepodcast.0004\\\",\\\"codepodcast.0005\\\",\\\"codepodcast.0006\\\",\\\"codepodcast.9001\\\",\\\"codepodcast.9003\\\",\\\"devnewsletter.9002\\\"],\\\"supplier\\\":\\\"codepodcast\\\",\\\"window\\\":{\\\"from\\\":\\\"2026-10-08T21:00:00.450Z\\\",\\\"to\\\":\\\"2026-10-08T22:00:00.450Z\\\"}}\",\"reportHash\":\"39fcfe3efb5eb1b0ba7655ea19bde804c664848f87c4010c8457c11dc23bb488\",\"resultHash\":\"1c015a19818a499526546d0b62a18932959e1cdb92af5ca40604f0a71fc9c982\",\"supplier\":\"codepodcast\",\"verdictHash\":\"ad70c18058dd3e10e6625381aa79ce448d50fc19ecf982e8ea985f871e8056fd\"}"
     },
     {
       "name": "result.devnewsletter",
@@ -2260,9 +2358,9 @@
       "supplier": "devnewsletter",
       "origin": "scripted_demo",
       "step": "verdicts",
-      "hash": "7bdb3849d0bfb38ea060a9be5cf20d1c13f8d5a525695037d0ce6944663f8d61",
+      "hash": "aee0e2b6f38d58bb22294c6be1a56cf7c4d3fd6ace99c56d651394ab719c1efe",
       "size": 715,
-      "bytes": "{\"recipe\":\"sha256(UTF-8(canonical delivery report + verdict hash)), plain string concatenation, no separator, lowercase hex\",\"reportBytes\":\"{\\\"impressionsServed\\\":1500,\\\"runId\\\":\\\"run_worked-example\\\",\\\"servedAt\\\":\\\"2026-10-08T22:00:00.440Z\\\",\\\"sessionIds\\\":[\\\"codepodcast.9002\\\",\\\"devnewsletter.9001\\\",\\\"devnewsletter.9003\\\"],\\\"supplier\\\":\\\"devnewsletter\\\",\\\"window\\\":{\\\"from\\\":\\\"2026-10-08T21:00:00.440Z\\\",\\\"to\\\":\\\"2026-10-08T22:00:00.440Z\\\"}}\",\"reportHash\":\"5e6a01833db74adf32bd28c534d33d7de5d9033352aa0e5adfec0424e132dd02\",\"resultHash\":\"fb661de1ff55acec2e3fef39c60f0b7e11b5d83113de8c2a2175f9e2b11ae75d\",\"supplier\":\"devnewsletter\",\"verdictHash\":\"3297b1857ce7a267a3e5576ce8af2a69f6f28c8e912218e6aabd6a3d65cef855\"}"
+      "bytes": "{\"recipe\":\"sha256(UTF-8(canonical delivery report + verdict hash)), plain string concatenation, no separator, lowercase hex\",\"reportBytes\":\"{\\\"impressionsServed\\\":1500,\\\"runId\\\":\\\"run_worked-example\\\",\\\"servedAt\\\":\\\"2026-10-08T22:00:00.450Z\\\",\\\"sessionIds\\\":[\\\"codepodcast.9002\\\",\\\"devnewsletter.9001\\\",\\\"devnewsletter.9003\\\"],\\\"supplier\\\":\\\"devnewsletter\\\",\\\"window\\\":{\\\"from\\\":\\\"2026-10-08T21:00:00.450Z\\\",\\\"to\\\":\\\"2026-10-08T22:00:00.450Z\\\"}}\",\"reportHash\":\"db5110e3889b19fb6a713430db75ec2a6077bbda5e52c74eee60ca4400392ff7\",\"resultHash\":\"4a14f018cfdb6562f96c98c2f3500a6db4d4bc9752a0544c624189161d3b9f9b\",\"supplier\":\"devnewsletter\",\"verdictHash\":\"3297b1857ce7a267a3e5576ce8af2a69f6f28c8e912218e6aabd6a3d65cef855\"}"
     },
     {
       "name": "result.techblog",
@@ -2271,9 +2369,9 @@
       "supplier": "techblog",
       "origin": "scripted_demo",
       "step": "verdicts",
-      "hash": "d0a7789b008f7d186d898433e29cd7de3b7ed5711e79f977a33bdba3d48f37e6",
+      "hash": "6c13a8c28be287b88866affd336cc3254573900cf16b97ad8f8c31fafcc2d834",
       "size": 841,
-      "bytes": "{\"recipe\":\"sha256(UTF-8(canonical delivery report + verdict hash)), plain string concatenation, no separator, lowercase hex\",\"reportBytes\":\"{\\\"impressionsServed\\\":1000,\\\"runId\\\":\\\"run_worked-example\\\",\\\"servedAt\\\":\\\"2026-10-08T22:00:00.440Z\\\",\\\"sessionIds\\\":[\\\"devnewsletter.9002\\\",\\\"techblog.0001\\\",\\\"techblog.0002\\\",\\\"techblog.0003\\\",\\\"techblog.0004\\\",\\\"techblog.0005\\\",\\\"techblog.0006\\\",\\\"techblog.0007\\\",\\\"techblog.0008\\\",\\\"techblog.9001\\\",\\\"techblog.9003\\\"],\\\"supplier\\\":\\\"techblog\\\",\\\"window\\\":{\\\"from\\\":\\\"2026-10-08T21:00:00.440Z\\\",\\\"to\\\":\\\"2026-10-08T22:00:00.440Z\\\"}}\",\"reportHash\":\"9ca94407dcc10d93221387cdef3579dc2600a32b5cab27be5306103b93ba08f7\",\"resultHash\":\"d293910f13a2d42b673e8abdc1266632fb1414ede8fe347ebe16b4541643ad28\",\"supplier\":\"techblog\",\"verdictHash\":\"1d923c7372999044ea43075bc4611b20570e982340c0f337d301df4c216c03df\"}"
+      "bytes": "{\"recipe\":\"sha256(UTF-8(canonical delivery report + verdict hash)), plain string concatenation, no separator, lowercase hex\",\"reportBytes\":\"{\\\"impressionsServed\\\":1000,\\\"runId\\\":\\\"run_worked-example\\\",\\\"servedAt\\\":\\\"2026-10-08T22:00:00.450Z\\\",\\\"sessionIds\\\":[\\\"devnewsletter.9002\\\",\\\"techblog.0001\\\",\\\"techblog.0002\\\",\\\"techblog.0003\\\",\\\"techblog.0004\\\",\\\"techblog.0005\\\",\\\"techblog.0006\\\",\\\"techblog.0007\\\",\\\"techblog.0008\\\",\\\"techblog.9001\\\",\\\"techblog.9003\\\"],\\\"supplier\\\":\\\"techblog\\\",\\\"window\\\":{\\\"from\\\":\\\"2026-10-08T21:00:00.450Z\\\",\\\"to\\\":\\\"2026-10-08T22:00:00.450Z\\\"}}\",\"reportHash\":\"41b0592c71b4c415f58a381474b5198a50a6a3f2f6279a01b0d23543d0926614\",\"resultHash\":\"dff3e5ec01246da8586e23804937bdce2297182f6e94233c7d314134b366c8f4\",\"supplier\":\"techblog\",\"verdictHash\":\"1d923c7372999044ea43075bc4611b20570e982340c0f337d301df4c216c03df\"}"
     },
     {
       "name": "settlement",
@@ -2281,9 +2379,9 @@
       "group": "money",
       "mutable": true,
       "step": "settlement",
-      "hash": "d902318ca9844924aeafe9989ed8db2d279e23074eefa1661771a77fd1ec818e",
+      "hash": "bb3af2afebe54a8aa9baf4d5e62e978bd98caff6c4d1acea82189e71b2c0c7a3",
       "size": 3471,
-      "bytes": "{\"decisions\":[{\"planned\":[{\"amount\":70,\"from\":\"devnewsletter\",\"reason\":\"award_reclaim\",\"to\":\"consumer\",\"via\":\"escrow\"},{\"amount\":17.5,\"from\":\"board\",\"reason\":\"bond_forfeit\",\"to\":\"consumer\",\"via\":\"plain_transfer\"}],\"supplier\":\"devnewsletter\",\"verdict\":\"under_gate\",\"verdictHash\":\"3297b1857ce7a267a3e5576ce8af2a69f6f28c8e912218e6aabd6a3d65cef855\"},{\"planned\":[{\"amount\":60,\"from\":\"consumer\",\"reason\":\"award_release\",\"to\":\"codepodcast\",\"via\":\"escrow\"},{\"amount\":11.25,\"from\":\"board\",\"reason\":\"bond_return\",\"to\":\"codepodcast\",\"via\":\"plain_transfer\"},{\"amount\":3.75,\"from\":\"board\",\"reason\":\"bond_forfeit\",\"to\":\"consumer\",\"via\":\"plain_transfer\"}],\"supplier\":\"codepodcast\",\"verdict\":\"short_of_promise\",\"verdictHash\":\"ad70c18058dd3e10e6625381aa79ce448d50fc19ecf982e8ea985f871e8056fd\"},{\"planned\":[{\"amount\":70,\"from\":\"consumer\",\"reason\":\"award_release\",\"to\":\"techblog\",\"via\":\"escrow\"},{\"amount\":17.5,\"from\":\"board\",\"reason\":\"bond_return\",\"to\":\"techblog\",\"via\":\"escrow\"}],\"supplier\":\"techblog\",\"verdict\":\"pass\",\"verdictHash\":\"1d923c7372999044ea43075bc4611b20570e982340c0f337d301df4c216c03df\"}],\"job\":\"job_worked-example\",\"startedAt\":\"2026-10-08T22:00:00.640Z\",\"status\":\"done\",\"transfers\":[{\"action\":\"award_reclaim\",\"amount\":70,\"badge\":\"SIMULATED\",\"explorerUrl\":null,\"from\":\"devnewsletter\",\"id\":\"sim_fa964d3e392795135f46fe00d0e82cf9e67403859d3848f3b5a4603c\",\"state\":\"Withdrawn\",\"supplier\":\"devnewsletter\",\"to\":\"consumer\",\"txHash\":\"sim_fa964d3e392795135f46fe00d0e82cf9e67403859d3848f3b5a4603c\",\"verdict\":\"under_gate\"},{\"action\":\"bond_forfeit\",\"amount\":17.5,\"badge\":\"SIMULATED\",\"explorerUrl\":null,\"from\":\"board\",\"id\":\"sim_c1c7bb9003e2b18cc69ddc8d899eb1e3f5e9849a45c1b0b50118de63\",\"state\":\"TransferSent\",\"supplier\":\"devnewsletter\",\"to\":\"consumer\",\"txHash\":\"sim_c1c7bb9003e2b18cc69ddc8d899eb1e3f5e9849a45c1b0b50118de63\",\"verdict\":\"under_gate\"},{\"action\":\"award_release\",\"amount\":60,\"badge\":\"SIMULATED\",\"explorerUrl\":null,\"from\":\"consumer\",\"id\":\"sim_cf669b3aca93df2ea9b6f9c06e9ad7e0e5073ac072854d6b4a501d97\",\"state\":\"Withdrawn\",\"supplier\":\"codepodcast\",\"to\":\"codepodcast\",\"txHash\":\"sim_cf669b3aca93df2ea9b6f9c06e9ad7e0e5073ac072854d6b4a501d97\",\"verdict\":\"short_of_promise\"},{\"action\":\"bond_return\",\"amount\":11.25,\"badge\":\"SIMULATED\",\"explorerUrl\":null,\"from\":\"board\",\"id\":\"sim_41363181e72214637607ab7978486697ec96d80822ffd37b7219282d\",\"state\":\"TransferSent\",\"supplier\":\"codepodcast\",\"to\":\"codepodcast\",\"txHash\":\"sim_41363181e72214637607ab7978486697ec96d80822ffd37b7219282d\",\"verdict\":\"short_of_promise\"},{\"action\":\"bond_forfeit\",\"amount\":3.75,\"badge\":\"SIMULATED\",\"explorerUrl\":null,\"from\":\"board\",\"id\":\"sim_e9a77fac0a3089d173a23a987dfc80638ce93c0e9823f89d47cc2f33\",\"state\":\"TransferSent\",\"supplier\":\"codepodcast\",\"to\":\"consumer\",\"txHash\":\"sim_e9a77fac0a3089d173a23a987dfc80638ce93c0e9823f89d47cc2f33\",\"verdict\":\"short_of_promise\"},{\"action\":\"award_release\",\"amount\":70,\"badge\":\"SIMULATED\",\"explorerUrl\":null,\"from\":\"consumer\",\"id\":\"sim_66a8127cefbe138a2b6eaad4623538e03d95209d956c8dc972d5e893\",\"state\":\"Withdrawn\",\"supplier\":\"techblog\",\"to\":\"techblog\",\"txHash\":\"sim_66a8127cefbe138a2b6eaad4623538e03d95209d956c8dc972d5e893\",\"verdict\":\"pass\"},{\"action\":\"bond_return\",\"amount\":17.5,\"badge\":\"SIMULATED\",\"explorerUrl\":null,\"from\":\"board\",\"id\":\"sim_1b2a7325c0118ee88a50dd2311923e12bc1950b6fb4f27c1502dc2ce\",\"state\":\"Withdrawn\",\"supplier\":\"techblog\",\"to\":\"techblog\",\"txHash\":\"sim_1b2a7325c0118ee88a50dd2311923e12bc1950b6fb4f27c1502dc2ce\",\"verdict\":\"pass\"}],\"transfersByBadge\":{\"SIMULATED\":7}}",
+      "bytes": "{\"decisions\":[{\"planned\":[{\"amount\":70,\"from\":\"devnewsletter\",\"reason\":\"award_reclaim\",\"to\":\"consumer\",\"via\":\"escrow\"},{\"amount\":17.5,\"from\":\"board\",\"reason\":\"bond_forfeit\",\"to\":\"consumer\",\"via\":\"plain_transfer\"}],\"supplier\":\"devnewsletter\",\"verdict\":\"under_gate\",\"verdictHash\":\"3297b1857ce7a267a3e5576ce8af2a69f6f28c8e912218e6aabd6a3d65cef855\"},{\"planned\":[{\"amount\":60,\"from\":\"consumer\",\"reason\":\"award_release\",\"to\":\"codepodcast\",\"via\":\"escrow\"},{\"amount\":11.25,\"from\":\"board\",\"reason\":\"bond_return\",\"to\":\"codepodcast\",\"via\":\"plain_transfer\"},{\"amount\":3.75,\"from\":\"board\",\"reason\":\"bond_forfeit\",\"to\":\"consumer\",\"via\":\"plain_transfer\"}],\"supplier\":\"codepodcast\",\"verdict\":\"short_of_promise\",\"verdictHash\":\"ad70c18058dd3e10e6625381aa79ce448d50fc19ecf982e8ea985f871e8056fd\"},{\"planned\":[{\"amount\":70,\"from\":\"consumer\",\"reason\":\"award_release\",\"to\":\"techblog\",\"via\":\"escrow\"},{\"amount\":17.5,\"from\":\"board\",\"reason\":\"bond_return\",\"to\":\"techblog\",\"via\":\"escrow\"}],\"supplier\":\"techblog\",\"verdict\":\"pass\",\"verdictHash\":\"1d923c7372999044ea43075bc4611b20570e982340c0f337d301df4c216c03df\"}],\"job\":\"job_worked-example\",\"startedAt\":\"2026-10-08T22:00:00.650Z\",\"status\":\"done\",\"transfers\":[{\"action\":\"award_reclaim\",\"amount\":70,\"badge\":\"SIMULATED\",\"explorerUrl\":null,\"from\":\"devnewsletter\",\"id\":\"sim_fa964d3e392795135f46fe00d0e82cf9e67403859d3848f3b5a4603c\",\"state\":\"Withdrawn\",\"supplier\":\"devnewsletter\",\"to\":\"consumer\",\"txHash\":\"sim_fa964d3e392795135f46fe00d0e82cf9e67403859d3848f3b5a4603c\",\"verdict\":\"under_gate\"},{\"action\":\"bond_forfeit\",\"amount\":17.5,\"badge\":\"SIMULATED\",\"explorerUrl\":null,\"from\":\"board\",\"id\":\"sim_c1c7bb9003e2b18cc69ddc8d899eb1e3f5e9849a45c1b0b50118de63\",\"state\":\"TransferSent\",\"supplier\":\"devnewsletter\",\"to\":\"consumer\",\"txHash\":\"sim_c1c7bb9003e2b18cc69ddc8d899eb1e3f5e9849a45c1b0b50118de63\",\"verdict\":\"under_gate\"},{\"action\":\"award_release\",\"amount\":60,\"badge\":\"SIMULATED\",\"explorerUrl\":null,\"from\":\"consumer\",\"id\":\"sim_cf669b3aca93df2ea9b6f9c06e9ad7e0e5073ac072854d6b4a501d97\",\"state\":\"Withdrawn\",\"supplier\":\"codepodcast\",\"to\":\"codepodcast\",\"txHash\":\"sim_cf669b3aca93df2ea9b6f9c06e9ad7e0e5073ac072854d6b4a501d97\",\"verdict\":\"short_of_promise\"},{\"action\":\"bond_return\",\"amount\":11.25,\"badge\":\"SIMULATED\",\"explorerUrl\":null,\"from\":\"board\",\"id\":\"sim_41363181e72214637607ab7978486697ec96d80822ffd37b7219282d\",\"state\":\"TransferSent\",\"supplier\":\"codepodcast\",\"to\":\"codepodcast\",\"txHash\":\"sim_41363181e72214637607ab7978486697ec96d80822ffd37b7219282d\",\"verdict\":\"short_of_promise\"},{\"action\":\"bond_forfeit\",\"amount\":3.75,\"badge\":\"SIMULATED\",\"explorerUrl\":null,\"from\":\"board\",\"id\":\"sim_e9a77fac0a3089d173a23a987dfc80638ce93c0e9823f89d47cc2f33\",\"state\":\"TransferSent\",\"supplier\":\"codepodcast\",\"to\":\"consumer\",\"txHash\":\"sim_e9a77fac0a3089d173a23a987dfc80638ce93c0e9823f89d47cc2f33\",\"verdict\":\"short_of_promise\"},{\"action\":\"award_release\",\"amount\":70,\"badge\":\"SIMULATED\",\"explorerUrl\":null,\"from\":\"consumer\",\"id\":\"sim_66a8127cefbe138a2b6eaad4623538e03d95209d956c8dc972d5e893\",\"state\":\"Withdrawn\",\"supplier\":\"techblog\",\"to\":\"techblog\",\"txHash\":\"sim_66a8127cefbe138a2b6eaad4623538e03d95209d956c8dc972d5e893\",\"verdict\":\"pass\"},{\"action\":\"bond_return\",\"amount\":17.5,\"badge\":\"SIMULATED\",\"explorerUrl\":null,\"from\":\"board\",\"id\":\"sim_1b2a7325c0118ee88a50dd2311923e12bc1950b6fb4f27c1502dc2ce\",\"state\":\"Withdrawn\",\"supplier\":\"techblog\",\"to\":\"techblog\",\"txHash\":\"sim_1b2a7325c0118ee88a50dd2311923e12bc1950b6fb4f27c1502dc2ce\",\"verdict\":\"pass\"}],\"transfersByBadge\":{\"SIMULATED\":7}}",
       "revision": 1
     },
     {
@@ -2292,9 +2390,9 @@
       "group": "traffic",
       "supplier": "codepodcast",
       "step": "feed",
-      "hash": "104e80e348bca5c446500c1b7d0a9acb2091162db203b8228188bd4ac6c6d891",
+      "hash": "fdfd01789316bb28d8104e5e1e28308feeaeffee9923d60fdf9e284a9c76cc17",
       "size": 2929,
-      "bytes": "{\"events\":[{\"eventId\":\"evt_00004\",\"sessionId\":\"codepodcast.0001\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"b8497d11b399d962d7676d6865e636d92a4dee3a5af9a6765cd186bfe01c7954997a17ee3f6a7bd5d70355ebf6cd55e20ca642daa89f91f47ddb8fa0b554810a\",\"supplier\":\"codepodcast\",\"ts\":\"2026-10-08T21:16:52.412Z\"},{\"eventId\":\"evt_00005\",\"sessionId\":\"codepodcast.0002\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"a944af0dab72064946dc739f7988055d2e511e89cf179e5780075d37bc237df08cbeb6b4c1a33acddc370be49f4a96f661f6fafd9178d8621d7841119fc38403\",\"supplier\":\"codepodcast\",\"ts\":\"2026-10-08T21:43:15.115Z\"},{\"eventId\":\"evt_00006\",\"sessionId\":\"codepodcast.0003\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"9b105790ac6104403d193aa11e26cb4627147ac7eeccda76fa47260c260c39ad7a76e8a4668f8df45585a643c489843c809aebc50451327920f4edb0363b700d\",\"supplier\":\"codepodcast\",\"ts\":\"2026-10-08T21:59:41.802Z\"},{\"eventId\":\"evt_00007\",\"sessionId\":\"codepodcast.0004\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"bff40c3a7c2187f7bf2e6ff418fab555491c3b4b9458fd52cd252acdee6993f88d2157db51b71d5afb49848b33bd40326c9bf12f0a68666b00378ffac4eccb03\",\"supplier\":\"codepodcast\",\"ts\":\"2026-10-08T21:29:20.077Z\"},{\"eventId\":\"evt_00008\",\"sessionId\":\"codepodcast.0005\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"4fb4fd6653127c77a69ec020b02478d831b8cbb47cdc528f8dfaeddaf8ab82c517b62a9794b0e982c64a0554f8ed065f0d1fb401cb2d5a2e8d500f7fc5028202\",\"supplier\":\"codepodcast\",\"ts\":\"2026-10-08T21:24:13.921Z\"},{\"eventId\":\"evt_00009\",\"sessionId\":\"codepodcast.0006\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"c27eac8e9ac505f70ad37e305a07c29b1e3690388adbdec96fc13dbdfb0d33309d0ce69789b729f0989c66dabce4c899fce2ab4b871b5e30aa3956e5932cd209\",\"supplier\":\"codepodcast\",\"ts\":\"2026-10-08T21:09:16.615Z\"},{\"eventId\":\"evt_00010\",\"sessionId\":\"codepodcast.9001\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"9138c209ad33d769273afdad2869d7d49d7853b7939161bd475ca9ebec23bfb318d4052e2b9a879535eef32d889f967313b8b994228d3c14ca4b931692ad920d\",\"supplier\":\"codepodcast\",\"ts\":\"2026-10-08T21:04:02.971Z\"},{\"eventId\":\"evt_00011\",\"sessionId\":\"devnewsletter.9002\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"608617ecfc817bf3a4babc775d868c7808d30519da8a88a17fcb8706cb98c2d5498f44bc2d63f59e797bdf0500129869bb2409fcce1ff117f2f5840a14cd6004\",\"supplier\":\"codepodcast\",\"ts\":\"2026-10-08T21:46:02.028Z\"},{\"eventId\":\"evt_00012\",\"sessionId\":\"codepodcast.9003\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"a93402dddb4d40eea069358cc17e48ee13c8e6ddab1bad3064eed157075c548820d35b639e7ea930d6708f353fcb2f752262aa8730f05c5ca9f6385e313f9d0c\",\"supplier\":\"codepodcast\",\"ts\":\"2026-10-08T23:00:00.440Z\"}],\"impressions\":1000,\"shopPublicKey\":\"25c0c5fb90392a7dd7476b8f8f07f3d10584c6b78d594d67a33dba6bd23e163d\",\"supplier\":\"codepodcast\",\"window\":{\"end\":\"2026-10-08T22:00:00.440Z\",\"start\":\"2026-10-08T21:00:00.440Z\"}}"
+      "bytes": "{\"events\":[{\"eventId\":\"evt_00004\",\"sessionId\":\"codepodcast.0001\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"8a679a505da6686b601e2b4c4b8635a9d0dab3a01ae573dcebdc454a178ef99fb472761f7a28351913e45738bb31d916e473e8f9a2aa8b8e6245f23b9cdd430f\",\"supplier\":\"codepodcast\",\"ts\":\"2026-10-08T21:16:52.422Z\"},{\"eventId\":\"evt_00005\",\"sessionId\":\"codepodcast.0002\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"165b5928b37c3534cd227fd5c28ffd83624413a6e7a96891f07b8ffb390c6734103539afb9895bb8f5925bbd150e322541cfe4d8a0eb48a4df4cbab7cad5d50b\",\"supplier\":\"codepodcast\",\"ts\":\"2026-10-08T21:43:15.125Z\"},{\"eventId\":\"evt_00006\",\"sessionId\":\"codepodcast.0003\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"5849169cd10b552926b2668bba3932174c04a8a2b03de05a08a39909cb95b574daf811859918758925b5aeabade10674fbdf296337656f9a13388ea8b88b6d01\",\"supplier\":\"codepodcast\",\"ts\":\"2026-10-08T21:59:41.812Z\"},{\"eventId\":\"evt_00007\",\"sessionId\":\"codepodcast.0004\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"03b23db66281140dfcd7ceafa41998d27d111ab4ee50475901823baeefb72091443f126ab3a025e93aa2f0891a428d718c5ee1ff34a799fe14f0959f42eb2005\",\"supplier\":\"codepodcast\",\"ts\":\"2026-10-08T21:29:20.087Z\"},{\"eventId\":\"evt_00008\",\"sessionId\":\"codepodcast.0005\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"feba38bae36b2db59f151ba6b3407e963d24f01999bc5ec1dd39d951b8c9e1316c704d840175bfb72c92e8f3223bcfda83fe2f0c78acaff2c8d69079b0d7da06\",\"supplier\":\"codepodcast\",\"ts\":\"2026-10-08T21:24:13.931Z\"},{\"eventId\":\"evt_00009\",\"sessionId\":\"codepodcast.0006\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"8cd8b6c1abdf88ca04dfdf6a1c98d9f1f924cae9526ede03fc13840d6e0ba0f7b1ff4295c166aec12df5e0c4e95ec7bb9937e43d90817860e66c55c44c1aa30d\",\"supplier\":\"codepodcast\",\"ts\":\"2026-10-08T21:09:16.625Z\"},{\"eventId\":\"evt_00010\",\"sessionId\":\"codepodcast.9001\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"edfe4e40976fc2e3d42dd6f0a8e0a66b3cb957583f44cff929c91c0521b1782afee3074b38ae0d7904edafbcc35de434781ddcd459fad10609057d71cfc26504\",\"supplier\":\"codepodcast\",\"ts\":\"2026-10-08T21:04:02.981Z\"},{\"eventId\":\"evt_00011\",\"sessionId\":\"devnewsletter.9002\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"88c40c515928fb5ce334f191401f36b00fd8038235ca04d171f65650f4f29bbed6c4729ed7c19bb6bffcc0a0f483d0b06ffc9d21f832f29be496b83d4d1eee06\",\"supplier\":\"codepodcast\",\"ts\":\"2026-10-08T21:46:02.038Z\"},{\"eventId\":\"evt_00012\",\"sessionId\":\"codepodcast.9003\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"cd0b950dd13805def46d0f217aba027b2d06d19cd560065ef0507a389dd1ff60a81fedfca5311f5af64a7a918312856eb67f172b240458bdb727538005587e06\",\"supplier\":\"codepodcast\",\"ts\":\"2026-10-08T23:00:00.450Z\"}],\"impressions\":1000,\"shopPublicKey\":\"25c0c5fb90392a7dd7476b8f8f07f3d10584c6b78d594d67a33dba6bd23e163d\",\"supplier\":\"codepodcast\",\"window\":{\"end\":\"2026-10-08T22:00:00.450Z\",\"start\":\"2026-10-08T21:00:00.450Z\"}}"
     },
     {
       "name": "signups.devnewsletter",
@@ -2302,9 +2400,9 @@
       "group": "traffic",
       "supplier": "devnewsletter",
       "step": "feed",
-      "hash": "7331c23a150e25cb2f15be09ea059dcace28209bbfddd94cef21886e24ae9997",
+      "hash": "efdee1df280c793d077c04868fe5b11020e7e161cfe1fd5e66550dba3e9d6a4a",
       "size": 1133,
-      "bytes": "{\"events\":[{\"eventId\":\"evt_00001\",\"sessionId\":\"devnewsletter.9001\",\"signals\":{\"asn\":\"AS16509\",\"clickBurst\":true},\"signature\":\"13d7ac0115bb44af2db6003d903c3823df261b9fd1d930f5223a2557894c91932dea72c1eaa880be5e108606a71a458ec25a42927141dfecf2b6cedc9a5d9b04\",\"supplier\":\"devnewsletter\",\"ts\":\"2026-10-08T21:37:37.906Z\"},{\"eventId\":\"evt_00002\",\"sessionId\":\"codepodcast.9002\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"69359ff939c71b14785d7930db16a172cb2f4a9f4c334394824a471044c4040b3b3c899028b4536faf43ee88d7316ecf06dde6c52288910d131207abfceee30f\",\"supplier\":\"devnewsletter\",\"ts\":\"2026-10-08T21:31:39.249Z\"},{\"eventId\":\"evt_00003\",\"sessionId\":\"devnewsletter.9003\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"5e5092b2ed72383ca587fe182ee0734f87ed99c069a68e741df292cdca4a5f2e48ce1b9b276b42b5078647b78a79087b53982a2c7b1b9ef9c8a0110e80162609\",\"supplier\":\"devnewsletter\",\"ts\":\"2026-10-08T23:00:00.440Z\"}],\"impressions\":1500,\"shopPublicKey\":\"25c0c5fb90392a7dd7476b8f8f07f3d10584c6b78d594d67a33dba6bd23e163d\",\"supplier\":\"devnewsletter\",\"window\":{\"end\":\"2026-10-08T22:00:00.440Z\",\"start\":\"2026-10-08T21:00:00.440Z\"}}"
+      "bytes": "{\"events\":[{\"eventId\":\"evt_00001\",\"sessionId\":\"devnewsletter.9001\",\"signals\":{\"asn\":\"AS16509\",\"clickBurst\":true},\"signature\":\"ab97a43efe1281c17743559aa1f2385e47c946606b5723004a562e8b2e2058feb201c12eb0cade161064c1d1f19bb60cfbf85e4ca31b570db59e65bab489650f\",\"supplier\":\"devnewsletter\",\"ts\":\"2026-10-08T21:37:37.916Z\"},{\"eventId\":\"evt_00002\",\"sessionId\":\"codepodcast.9002\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"9afbc0245c8f70235c7573c1029c99673936268b8370be3815fd1b777c22c50de651c5d429f8d33f288c6baf1a7c8d0808ddb4817c18ed2ee2b6067120de2b0e\",\"supplier\":\"devnewsletter\",\"ts\":\"2026-10-08T21:31:39.259Z\"},{\"eventId\":\"evt_00003\",\"sessionId\":\"devnewsletter.9003\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"40f5640208f0a440e3996816c0965e17da2c6c7c5b6c3b1d57a32582bac1ea09ece26b4b10d821a7225157bf0296500e6b6357cb7038c11401df788662137309\",\"supplier\":\"devnewsletter\",\"ts\":\"2026-10-08T23:00:00.450Z\"}],\"impressions\":1500,\"shopPublicKey\":\"25c0c5fb90392a7dd7476b8f8f07f3d10584c6b78d594d67a33dba6bd23e163d\",\"supplier\":\"devnewsletter\",\"window\":{\"end\":\"2026-10-08T22:00:00.450Z\",\"start\":\"2026-10-08T21:00:00.450Z\"}}"
     },
     {
       "name": "signups.techblog",
@@ -2312,9 +2410,9 @@
       "group": "traffic",
       "supplier": "techblog",
       "step": "feed",
-      "hash": "2eb0f6951b09fee9e39b89ea0cd323f01962098c78d6e93d5e2977747d73ceb5",
+      "hash": "938951cda587da499dfb412380661f938e45cb8c6a5ca0d4fcbab91833d22f59",
       "size": 3465,
-      "bytes": "{\"events\":[{\"eventId\":\"evt_00013\",\"sessionId\":\"techblog.0001\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"439318f1e73476f2dde253cfafcb73527610966ed7ef18f07fc8626ee43a2a47aec623456b3c447b79ab57398066870e59fe72b7048329e67e1915f03e5f1409\",\"supplier\":\"techblog\",\"ts\":\"2026-10-08T21:02:34.266Z\"},{\"eventId\":\"evt_00014\",\"sessionId\":\"techblog.0002\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"a3a17b5968363246607b4a04acfbce12e58802b87f8e79852bef1e22f467bca565f0e32c5c9dff0df2341e378ed18f93a344ee0c3e57ccf450ecd3232f5e1402\",\"supplier\":\"techblog\",\"ts\":\"2026-10-08T21:35:25.816Z\"},{\"eventId\":\"evt_00015\",\"sessionId\":\"techblog.0003\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"3b4a03a4fd38aee51ba82f4bed404e385cef952f7e38b5acaef805333851e99ebf3e329156e2571c555019ee2c86b0fbe8cf11b15ce29096e288bcc442c46e0f\",\"supplier\":\"techblog\",\"ts\":\"2026-10-08T21:17:41.971Z\"},{\"eventId\":\"evt_00016\",\"sessionId\":\"techblog.0004\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"660501ba92cc0bf9d1a36b8af1540a3bae40a301da748a1ffdc09358672aaf1482085e76b124f271c50170e21889c000e9ad17ebfab9db3000363728d18bea0a\",\"supplier\":\"techblog\",\"ts\":\"2026-10-08T21:39:29.706Z\"},{\"eventId\":\"evt_00017\",\"sessionId\":\"techblog.0005\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"d45d4c99980f87876a0da3f973d33c6c530d6d06bcffda7f406e7f265e446d9a28be921dc5e4622b55008573390db71da7d37b0b83f5a019597e59eaa9407e08\",\"supplier\":\"techblog\",\"ts\":\"2026-10-08T21:45:30.834Z\"},{\"eventId\":\"evt_00018\",\"sessionId\":\"techblog.0006\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"5d3b0baf416317d880e02c91f87cfd64b70f6d7f06efe6c3ea49faf7115d78dc9eb9fae8f4bfd51780db332f09b6c4de2122074928f0bdd71a0a33f8a6a55b0c\",\"supplier\":\"techblog\",\"ts\":\"2026-10-08T21:43:15.851Z\"},{\"eventId\":\"evt_00019\",\"sessionId\":\"techblog.0007\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"dcacdb54a1a9b59da423811b62b0bacb2e440677ec09606e3fac2aed6016b229894dba20df0e632bbd541f93ded4933e937e181e299af3658dacc57657bc5904\",\"supplier\":\"techblog\",\"ts\":\"2026-10-08T21:46:13.929Z\"},{\"eventId\":\"evt_00020\",\"sessionId\":\"techblog.0008\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"ed19d66d8b5233cded05e86caf68aea39207214744777b12a9c9fcd23c45a1b2f57f4ea06e7712e02102cdaff5f884e5e98ed4bba1528a1e4a0a6b533d6c3606\",\"supplier\":\"techblog\",\"ts\":\"2026-10-08T21:14:22.039Z\"},{\"eventId\":\"evt_00021\",\"sessionId\":\"techblog.9001\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"9b425424ff9a57bef7af1b2e7acee3646f3e2acc545d5da5896ff25b964ea62e07ffe197dd3daee4447321f52c03e19a930ccbca7c798ad6a1e019b47eb73e0b\",\"supplier\":\"techblog\",\"ts\":\"2026-10-08T21:09:12.215Z\"},{\"eventId\":\"evt_00022\",\"sessionId\":\"devnewsletter.9002\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"249675e63c8117edbd5cf0dd863442f57f130e06c9eeec0d370d4a3a36809c7aaf0dccff2a4540228ce61c92b618d5d18780bc4d7b7d2861caa428537c14540c\",\"supplier\":\"techblog\",\"ts\":\"2026-10-08T21:24:47.949Z\"},{\"eventId\":\"evt_00023\",\"sessionId\":\"techblog.9003\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"7799a5e8cd1e0da6b9be32e34e847d4f1aeffaf7ebdfb1bba9e0833813ac564069003d6929c5e4b6b8923ebeea3f40f1b3e50f762bd3bffd888ce2363fa93106\",\"supplier\":\"techblog\",\"ts\":\"2026-10-08T23:00:00.440Z\"}],\"impressions\":1000,\"shopPublicKey\":\"25c0c5fb90392a7dd7476b8f8f07f3d10584c6b78d594d67a33dba6bd23e163d\",\"supplier\":\"techblog\",\"window\":{\"end\":\"2026-10-08T22:00:00.440Z\",\"start\":\"2026-10-08T21:00:00.440Z\"}}"
+      "bytes": "{\"events\":[{\"eventId\":\"evt_00013\",\"sessionId\":\"techblog.0001\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"3c399a17e60cb9d88301645f5296d6cf64a4bccf0497b1d7d098c8718b79b96406bf5744bf2d5b8a2dd38beadf66b66924d5906282e9cb7d59d2a23926b0c000\",\"supplier\":\"techblog\",\"ts\":\"2026-10-08T21:02:34.276Z\"},{\"eventId\":\"evt_00014\",\"sessionId\":\"techblog.0002\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"3ae751c72d6f8815014c07312ab365c0891da054cf294193da956a6edb9a490a96920ae58a450540cf021ed32e9b5c40e243455cec0295619a7f49dee9f3d00d\",\"supplier\":\"techblog\",\"ts\":\"2026-10-08T21:35:25.826Z\"},{\"eventId\":\"evt_00015\",\"sessionId\":\"techblog.0003\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"f590377989ebd162366c5fe4a8ed74b59f673a0b50df7047919aaac270870eb4f8118e1b5129e8b4de9b05caf9dba0cc8b3eca740196c25a1ee4ac931ad88005\",\"supplier\":\"techblog\",\"ts\":\"2026-10-08T21:17:41.981Z\"},{\"eventId\":\"evt_00016\",\"sessionId\":\"techblog.0004\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"8945b0326466d01ad683271319596d41a7673955026e3cd26b86e24b6a5bf9eeaff30e8336c346a7b02f630ec21d8318a325d6bc088222fd12c870d78da2a90d\",\"supplier\":\"techblog\",\"ts\":\"2026-10-08T21:39:29.716Z\"},{\"eventId\":\"evt_00017\",\"sessionId\":\"techblog.0005\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"ac63409d1a3fe09d818064869b7dd72c3b28dce131fdf4ed63e4a65590e5450592a0eb9a75435383a1519d0abb5be5a911f2b6a34da377a9ef57a8feab6f1605\",\"supplier\":\"techblog\",\"ts\":\"2026-10-08T21:45:30.844Z\"},{\"eventId\":\"evt_00018\",\"sessionId\":\"techblog.0006\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"bbabfe70eabdc6f166958d1ba85b946c8c8ddf161d2589421720435f99cfc7323395a04a3ac2a7c7ceb9ec27182dc07cd8b35c7a4a74bbdaf47648aa49528104\",\"supplier\":\"techblog\",\"ts\":\"2026-10-08T21:43:15.861Z\"},{\"eventId\":\"evt_00019\",\"sessionId\":\"techblog.0007\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"93fa430715a180a4cc937913ed020473c0f0f65da9cd84f9f335f75f6c3573227cffb215f97dd70b2b5fdb295dc4c7b8f1bd6bdc17010016fee4ddc403d13c03\",\"supplier\":\"techblog\",\"ts\":\"2026-10-08T21:46:13.939Z\"},{\"eventId\":\"evt_00020\",\"sessionId\":\"techblog.0008\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"1b5ad23d53d8ed938e8f37f7d0ee4e5dfc7ff0694301cbbafc65077295b93e5a576abc4a82e421283fa95e221579531293deedd0062f894d75f00ebac116270f\",\"supplier\":\"techblog\",\"ts\":\"2026-10-08T21:14:22.049Z\"},{\"eventId\":\"evt_00021\",\"sessionId\":\"techblog.9001\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"8667168523ef07264fde2cd2603d25f7e350d690697fa95cb3da7920beb2fd32c8118a2c4c4b5d41a8f403d39884e3674a4abdf4747ba2ea225fb0e5e0559308\",\"supplier\":\"techblog\",\"ts\":\"2026-10-08T21:09:12.225Z\"},{\"eventId\":\"evt_00022\",\"sessionId\":\"devnewsletter.9002\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"ed6d9d555341fb08f80d220575a5c61b96214006117e33ffaebc0a87347bdb34c83fc57c4431ed3ced3ea2326e495502f5ea63293292ef62e32ea3127c4ae101\",\"supplier\":\"techblog\",\"ts\":\"2026-10-08T21:24:47.959Z\"},{\"eventId\":\"evt_00023\",\"sessionId\":\"techblog.9003\",\"signals\":{\"asn\":\"AS3320\",\"clickBurst\":false},\"signature\":\"ed353c5b3c95f28b0239a775d27fae36855dddd7f924e6a43031fd31e33c5dc288bda579d652f341adae0db3d89100f491eae78450be660d8ac477d206ed070f\",\"supplier\":\"techblog\",\"ts\":\"2026-10-08T23:00:00.450Z\"}],\"impressions\":1000,\"shopPublicKey\":\"25c0c5fb90392a7dd7476b8f8f07f3d10584c6b78d594d67a33dba6bd23e163d\",\"supplier\":\"techblog\",\"window\":{\"end\":\"2026-10-08T22:00:00.450Z\",\"start\":\"2026-10-08T21:00:00.450Z\"}}"
     },
     {
       "name": "tender",
@@ -2331,9 +2429,9 @@
       "group": "verdict",
       "supplier": "codepodcast",
       "step": "verdicts",
-      "hash": "71213db92427e0bc812f697923a7917f2393c0ff2ac81989b3b8d63cf910223f",
+      "hash": "9219c986e741503d9da7812b7c6a7450d094bf33f9c7a323cd8e0c0f4e78e2e8",
       "size": 514,
-      "bytes": "{\"boardPublicKey\":\"943a9d996aca8e821c6af3fa255cf4adf2ced70c69837fc796f5f9efeccac703\",\"verdict\":{\"award\":60,\"bond\":15,\"delivered\":6,\"gate\":5,\"hash\":\"ad70c18058dd3e10e6625381aa79ce448d50fc19ecf982e8ea985f871e8056fd\",\"kind\":\"short_of_promise\",\"promised\":8,\"signature\":\"97f29d935da2e241ecb32a3528f2556ed3a3b84e84e042e36bb64b0e7550ca42e28df75889b378ec1753c49281302c7d0477c2cda64c019914cc7d7e0c4cc002\",\"supplier\":\"codepodcast\"},\"verificationReportHash\":\"000ca5197f9bc9b48402313ae46df18ce5a53f894b9e3100bec97c7bf7986070\"}"
+      "bytes": "{\"boardPublicKey\":\"943a9d996aca8e821c6af3fa255cf4adf2ced70c69837fc796f5f9efeccac703\",\"verdict\":{\"award\":60,\"bond\":15,\"delivered\":6,\"gate\":5,\"hash\":\"ad70c18058dd3e10e6625381aa79ce448d50fc19ecf982e8ea985f871e8056fd\",\"kind\":\"short_of_promise\",\"promised\":8,\"signature\":\"97f29d935da2e241ecb32a3528f2556ed3a3b84e84e042e36bb64b0e7550ca42e28df75889b378ec1753c49281302c7d0477c2cda64c019914cc7d7e0c4cc002\",\"supplier\":\"codepodcast\"},\"verificationReportHash\":\"a5b9a87842613cf54ea72ea96fd213dadd48ffd9cf0cc0bde32e67a63f7c2f8a\"}"
     },
     {
       "name": "verdict.devnewsletter",
@@ -2341,9 +2439,9 @@
       "group": "verdict",
       "supplier": "devnewsletter",
       "step": "verdicts",
-      "hash": "6d32b639694ee6b71f16c7dd7be6061170b946e68a950e8d3fb480a86ad00141",
+      "hash": "aa4b2a5611f5295cd4e8917acaf2d7956e8b9a13c29276ebff580164d81a0e90",
       "size": 513,
-      "bytes": "{\"boardPublicKey\":\"943a9d996aca8e821c6af3fa255cf4adf2ced70c69837fc796f5f9efeccac703\",\"verdict\":{\"award\":70,\"bond\":17.5,\"delivered\":0,\"gate\":5,\"hash\":\"3297b1857ce7a267a3e5576ce8af2a69f6f28c8e912218e6aabd6a3d65cef855\",\"kind\":\"under_gate\",\"promised\":12,\"signature\":\"ccc0684d529216bb7816bc062098b01c25e22b1fafb7ee0a7388dd9447ae1743a4509e767a8a21f717298b635245c5b0f2b7b14c8ae0de54f67252ead033250c\",\"supplier\":\"devnewsletter\"},\"verificationReportHash\":\"2742aae9d695ebecf68e0fd8c375558ad3fc59fc5f5699ec5225b09dd032d296\"}"
+      "bytes": "{\"boardPublicKey\":\"943a9d996aca8e821c6af3fa255cf4adf2ced70c69837fc796f5f9efeccac703\",\"verdict\":{\"award\":70,\"bond\":17.5,\"delivered\":0,\"gate\":5,\"hash\":\"3297b1857ce7a267a3e5576ce8af2a69f6f28c8e912218e6aabd6a3d65cef855\",\"kind\":\"under_gate\",\"promised\":12,\"signature\":\"ccc0684d529216bb7816bc062098b01c25e22b1fafb7ee0a7388dd9447ae1743a4509e767a8a21f717298b635245c5b0f2b7b14c8ae0de54f67252ead033250c\",\"supplier\":\"devnewsletter\"},\"verificationReportHash\":\"591ceb5685f6ba5a16c85015721e8a105588a5976d76d94cf62f7da84b1fb044\"}"
     },
     {
       "name": "verdict.techblog",
@@ -2351,9 +2449,9 @@
       "group": "verdict",
       "supplier": "techblog",
       "step": "verdicts",
-      "hash": "9fadd491a16613a78d202542a5c04f9f7eda8aba711162558dc5628fe47b168a",
+      "hash": "c66c9e4be969fe7645e6b53544f8459eb90e77d09cb0b26ea18ded6b3e289878",
       "size": 501,
-      "bytes": "{\"boardPublicKey\":\"943a9d996aca8e821c6af3fa255cf4adf2ced70c69837fc796f5f9efeccac703\",\"verdict\":{\"award\":70,\"bond\":17.5,\"delivered\":8,\"gate\":5,\"hash\":\"1d923c7372999044ea43075bc4611b20570e982340c0f337d301df4c216c03df\",\"kind\":\"pass\",\"promised\":7,\"signature\":\"be1eae888ee63a145f4a4466f36dd01ab35f239df35a987d2580a5c8e8aaf93ecd071352be1ba0be132b239b16bc555613530eb6357039a1671ff8b57a36ee0b\",\"supplier\":\"techblog\"},\"verificationReportHash\":\"3127fecbe4b9b9fba95afedc5fd5a79a4d4eababebe8b080b06ccb728c287fc6\"}"
+      "bytes": "{\"boardPublicKey\":\"943a9d996aca8e821c6af3fa255cf4adf2ced70c69837fc796f5f9efeccac703\",\"verdict\":{\"award\":70,\"bond\":17.5,\"delivered\":8,\"gate\":5,\"hash\":\"1d923c7372999044ea43075bc4611b20570e982340c0f337d301df4c216c03df\",\"kind\":\"pass\",\"promised\":7,\"signature\":\"be1eae888ee63a145f4a4466f36dd01ab35f239df35a987d2580a5c8e8aaf93ecd071352be1ba0be132b239b16bc555613530eb6357039a1671ff8b57a36ee0b\",\"supplier\":\"techblog\"},\"verificationReportHash\":\"1574f352a2e13a8930cd50f4422e124d87fbfe1e5a741467e42e2ebe8434c55a\"}"
     },
     {
       "name": "verification.codepodcast",
@@ -2361,9 +2459,9 @@
       "group": "traffic",
       "supplier": "codepodcast",
       "step": "verification",
-      "hash": "000ca5197f9bc9b48402313ae46df18ce5a53f894b9e3100bec97c7bf7986070",
+      "hash": "a5b9a87842613cf54ea72ea96fd213dadd48ffd9cf0cc0bde32e67a63f7c2f8a",
       "size": 702,
-      "bytes": "{\"botSignals\":{\"flaggedClickBursts\":0,\"note\":\"dashboard context only, never read by the verifier\"},\"checks\":[\"signature\",\"attribution\",\"time_window\",\"no_duplicate\"],\"received\":9,\"rejectedByKind\":{\"bad_signature\":1,\"outside_window\":1,\"wrong_attribution\":1},\"rejectedEvents\":[{\"eventId\":\"evt_00010\",\"reason\":\"bad_signature\",\"supplier\":\"codepodcast\"},{\"eventId\":\"evt_00011\",\"reason\":\"wrong_attribution\",\"supplier\":\"codepodcast\"},{\"eventId\":\"evt_00012\",\"reason\":\"outside_window\",\"supplier\":\"codepodcast\"}],\"shopPublicKey\":\"25c0c5fb90392a7dd7476b8f8f07f3d10584c6b78d594d67a33dba6bd23e163d\",\"supplier\":\"codepodcast\",\"verified\":6,\"window\":{\"end\":\"2026-10-08T22:00:00.440Z\",\"start\":\"2026-10-08T21:00:00.440Z\"}}"
+      "bytes": "{\"botSignals\":{\"flaggedClickBursts\":0,\"note\":\"dashboard context only, never read by the verifier\"},\"checks\":[\"signature\",\"attribution\",\"time_window\",\"no_duplicate\"],\"received\":9,\"rejectedByKind\":{\"bad_signature\":1,\"outside_window\":1,\"wrong_attribution\":1},\"rejectedEvents\":[{\"eventId\":\"evt_00010\",\"reason\":\"bad_signature\",\"supplier\":\"codepodcast\"},{\"eventId\":\"evt_00011\",\"reason\":\"wrong_attribution\",\"supplier\":\"codepodcast\"},{\"eventId\":\"evt_00012\",\"reason\":\"outside_window\",\"supplier\":\"codepodcast\"}],\"shopPublicKey\":\"25c0c5fb90392a7dd7476b8f8f07f3d10584c6b78d594d67a33dba6bd23e163d\",\"supplier\":\"codepodcast\",\"verified\":6,\"window\":{\"end\":\"2026-10-08T22:00:00.450Z\",\"start\":\"2026-10-08T21:00:00.450Z\"}}"
     },
     {
       "name": "verification.devnewsletter",
@@ -2371,9 +2469,9 @@
       "group": "traffic",
       "supplier": "devnewsletter",
       "step": "verification",
-      "hash": "2742aae9d695ebecf68e0fd8c375558ad3fc59fc5f5699ec5225b09dd032d296",
+      "hash": "591ceb5685f6ba5a16c85015721e8a105588a5976d76d94cf62f7da84b1fb044",
       "size": 710,
-      "bytes": "{\"botSignals\":{\"flaggedClickBursts\":1,\"note\":\"dashboard context only, never read by the verifier\"},\"checks\":[\"signature\",\"attribution\",\"time_window\",\"no_duplicate\"],\"received\":3,\"rejectedByKind\":{\"bad_signature\":1,\"outside_window\":1,\"wrong_attribution\":1},\"rejectedEvents\":[{\"eventId\":\"evt_00001\",\"reason\":\"bad_signature\",\"supplier\":\"devnewsletter\"},{\"eventId\":\"evt_00002\",\"reason\":\"wrong_attribution\",\"supplier\":\"devnewsletter\"},{\"eventId\":\"evt_00003\",\"reason\":\"outside_window\",\"supplier\":\"devnewsletter\"}],\"shopPublicKey\":\"25c0c5fb90392a7dd7476b8f8f07f3d10584c6b78d594d67a33dba6bd23e163d\",\"supplier\":\"devnewsletter\",\"verified\":0,\"window\":{\"end\":\"2026-10-08T22:00:00.440Z\",\"start\":\"2026-10-08T21:00:00.440Z\"}}"
+      "bytes": "{\"botSignals\":{\"flaggedClickBursts\":1,\"note\":\"dashboard context only, never read by the verifier\"},\"checks\":[\"signature\",\"attribution\",\"time_window\",\"no_duplicate\"],\"received\":3,\"rejectedByKind\":{\"bad_signature\":1,\"outside_window\":1,\"wrong_attribution\":1},\"rejectedEvents\":[{\"eventId\":\"evt_00001\",\"reason\":\"bad_signature\",\"supplier\":\"devnewsletter\"},{\"eventId\":\"evt_00002\",\"reason\":\"wrong_attribution\",\"supplier\":\"devnewsletter\"},{\"eventId\":\"evt_00003\",\"reason\":\"outside_window\",\"supplier\":\"devnewsletter\"}],\"shopPublicKey\":\"25c0c5fb90392a7dd7476b8f8f07f3d10584c6b78d594d67a33dba6bd23e163d\",\"supplier\":\"devnewsletter\",\"verified\":0,\"window\":{\"end\":\"2026-10-08T22:00:00.450Z\",\"start\":\"2026-10-08T21:00:00.450Z\"}}"
     },
     {
       "name": "verification.techblog",
@@ -2381,9 +2479,9 @@
       "group": "traffic",
       "supplier": "techblog",
       "step": "verification",
-      "hash": "3127fecbe4b9b9fba95afedc5fd5a79a4d4eababebe8b080b06ccb728c287fc6",
+      "hash": "1574f352a2e13a8930cd50f4422e124d87fbfe1e5a741467e42e2ebe8434c55a",
       "size": 691,
-      "bytes": "{\"botSignals\":{\"flaggedClickBursts\":0,\"note\":\"dashboard context only, never read by the verifier\"},\"checks\":[\"signature\",\"attribution\",\"time_window\",\"no_duplicate\"],\"received\":11,\"rejectedByKind\":{\"bad_signature\":1,\"outside_window\":1,\"wrong_attribution\":1},\"rejectedEvents\":[{\"eventId\":\"evt_00021\",\"reason\":\"bad_signature\",\"supplier\":\"techblog\"},{\"eventId\":\"evt_00022\",\"reason\":\"wrong_attribution\",\"supplier\":\"techblog\"},{\"eventId\":\"evt_00023\",\"reason\":\"outside_window\",\"supplier\":\"techblog\"}],\"shopPublicKey\":\"25c0c5fb90392a7dd7476b8f8f07f3d10584c6b78d594d67a33dba6bd23e163d\",\"supplier\":\"techblog\",\"verified\":8,\"window\":{\"end\":\"2026-10-08T22:00:00.440Z\",\"start\":\"2026-10-08T21:00:00.440Z\"}}"
+      "bytes": "{\"botSignals\":{\"flaggedClickBursts\":0,\"note\":\"dashboard context only, never read by the verifier\"},\"checks\":[\"signature\",\"attribution\",\"time_window\",\"no_duplicate\"],\"received\":11,\"rejectedByKind\":{\"bad_signature\":1,\"outside_window\":1,\"wrong_attribution\":1},\"rejectedEvents\":[{\"eventId\":\"evt_00021\",\"reason\":\"bad_signature\",\"supplier\":\"techblog\"},{\"eventId\":\"evt_00022\",\"reason\":\"wrong_attribution\",\"supplier\":\"techblog\"},{\"eventId\":\"evt_00023\",\"reason\":\"outside_window\",\"supplier\":\"techblog\"}],\"shopPublicKey\":\"25c0c5fb90392a7dd7476b8f8f07f3d10584c6b78d594d67a33dba6bd23e163d\",\"supplier\":\"techblog\",\"verified\":8,\"window\":{\"end\":\"2026-10-08T22:00:00.450Z\",\"start\":\"2026-10-08T21:00:00.450Z\"}}"
     }
   ]
 }

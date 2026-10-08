@@ -154,6 +154,9 @@ export function buildDashboardView(state, { signals = null } = {}) {
     tender,
     brief: state.brief ?? { advertiser: "NeoRack", audience: tender.audience, goal: "pay per verified signup" },
     currency: tender.currency,
+    discovery: state.discovery
+      ? { ...state.discovery, chip: `Discovery: ${state.discovery.label} · ${state.discovery.found} agents · ${state.discovery.source}` }
+      : null,
     steps: STEP_ORDER.map((key) => ({ key, label: STEP_LABEL[key], status: state.steps[key] ?? "pending" })),
     suppliers,
     budget: {
