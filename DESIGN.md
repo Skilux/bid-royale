@@ -1,5 +1,7 @@
 # DESIGN.md: visual system for Ad Slot Auction
 
+> **9 Oct 2026: Danila picked the money flow dashboard concept (`docs/design/dashboard/money-flow.html`), dark, for `/dashboard` and `/`. Direction E is superseded for these pages (#9, #43). The dark tokens are scoped to `.flow` in `app/app/globals.css`; `/receipt` keeps the light tokens below.**
+
 > **Status: direction picked, 8 Oct 2026.** Danila picked Direction E, Money
 > flow, as a guided walkthrough. Reference build:
 > `docs/design/concepts/e-money-flow.html`. Issue #15. Feeds #6, #7, #8, #9.
