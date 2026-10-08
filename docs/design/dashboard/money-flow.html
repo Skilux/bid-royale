@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard concept 3 · Money flow · Bid Royale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --night:#0b0908; --night-2:#151110; --panel:rgba(18,13,12,.74); --panel-solid:#151110;
+  --cream:#eee6d8; --muted:rgba(238,230,216,.66); --faint:rgba(238,230,216,.38); --ghost:rgba(238,230,216,.14);
+  --line:rgba(242,228,201,.13); --line-strong:rgba(242,228,201,.28);
+  --blood:#cf352e; --ember:#ed4b43; --wine:#24100f; --amber:#e7a84b; --dawn:#ffd9a0; --verified:#72c99a;
+  --ease:cubic-bezier(.22,1,.36,1); --ease-stamp:cubic-bezier(.3,1.6,.5,1);
+  --d-fast:180ms; --d-base:420ms; --d-slow:900ms;
+  --f-display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --f-serif:"Instrument Serif",Georgia,"Times New Roman",serif;
+  --f-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#050404;color:var(--cream);font:13px/1.45 var(--f-mono);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:inherit}
+.num{font-variant-numeric:tabular-nums}
+#box{position:relative;margin:0 auto;overflow:hidden}
+#stage{position:absolute;left:0;top:0;width:1280px;height:800px;transform-origin:0 0;overflow:hidden;isolation:isolate;background:var(--night)}
+
+/* badges: one vocabulary, three states */
+.bdg{display:inline-flex;align-items:center;gap:4px;font:600 9px/1 var(--f-mono);letter-spacing:.1em;padding:3px 6px;border-radius:999px;border:1px solid;white-space:nowrap;vertical-align:middle}
+.bdg.real{color:var(--verified);border-color:var(--verified)}
+.bdg.real::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor}
+.bdg.sim{color:var(--amber);border:1px dashed var(--amber)}
+.bdg.pre{color:var(--cream);border-color:var(--cream)}
+.bdg.pre::before{content:"";width:5px;height:5px;background:currentColor}
+.tx{font:500 10px var(--f-mono);color:var(--verified);text-decoration:none;border-bottom:1px dotted rgba(114,201,154,.6);white-space:nowrap;margin-left:4px}
+.tx:hover{color:var(--cream)}
+
+/* verdict chips: four, nothing else */
+.vc{display:inline-block;font:700 12px/1 var(--f-display);letter-spacing:.12em;text-transform:uppercase;padding:5px 9px;border-radius:5px;border:1px solid;opacity:0;transform:scale(.7);transition:opacity var(--d-base) var(--ease),transform 520ms var(--ease-stamp)}
+.vc.on{opacity:1;transform:none}
+.vc.pass{color:var(--verified);border-color:var(--verified);background:rgba(114,201,154,.1)}
+.vc.short{color:var(--amber);border-color:var(--amber);background:rgba(231,168,75,.1)}
+.vc.under{color:#fff;border-color:var(--ember);background:var(--ember);box-shadow:0 0 22px rgba(237,75,67,.55)}
+.vc.lost{color:var(--faint);border-color:var(--line-strong);background:transparent}
+
+.label{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+.chip{font-size:10px;letter-spacing:.06em;padding:3px 8px;border:1px solid var(--line-strong);border-radius:999px;color:var(--faint);transition:all var(--d-base) var(--ease);white-space:nowrap}
+.chip.on{color:var(--dawn);border-color:rgba(255,217,160,.55);background:rgba(255,217,160,.06)}
+.chip.red.on{color:var(--ember);border-color:rgba(237,75,67,.6);background:rgba(237,75,67,.08)}
+
+/* prototype controls, not part of the design */
+#ctl{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:10px;height:44px;padding:0 14px;background:#0e0b0a;border-top:1px solid var(--line);font-size:11px;color:var(--muted);z-index:5}
+#ctl button{border:1px solid var(--line-strong);background:rgba(238,230,216,.04);padding:5px 12px;border-radius:999px;font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+#ctl button:hover{border-color:var(--cream)}
+#ctl .scrub{position:relative;flex:1;height:18px;cursor:pointer}
+#ctl .scrub::before{content:"";position:absolute;left:0;right:0;top:8px;height:3px;background:var(--ghost);border-radius:2px}
+#ctl .scrub i{position:absolute;left:0;top:8px;height:3px;background:linear-gradient(90deg,var(--blood),var(--amber),var(--dawn));border-radius:2px}
+#ctl .scrub b{position:absolute;top:3px;width:1px;height:13px;background:var(--line-strong)}
+#ctl .scrub b span{position:absolute;top:-2px;left:3px;font:400 8px var(--f-mono);letter-spacing:.1em;color:var(--faint);text-transform:uppercase;white-space:nowrap;display:none}
+#ctl time{min-width:44px;text-align:right;font-variant-numeric:tabular-nums}
+#ctl .tog{display:flex;align-items:center;gap:6px;white-space:nowrap}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* concept 3: money flow. NeoRack on the left, escrow in the middle, suppliers on the right. Coins travel the rails. */
+#stage{background:radial-gradient(70% 55% at 50% 0%,rgba(207,53,46,.2),transparent 70%),linear-gradient(#0b0908,#100a09)}
+.top{height:46px;display:flex;align-items:center;gap:18px;padding:0 24px;border-bottom:1px solid var(--line)}
+.brand b{font:800 22px/1 var(--f-display);letter-spacing:.04em;text-transform:uppercase}
+.brand em{font:italic 22px/1 var(--f-serif);color:var(--ember);margin-left:6px}
+.sp{flex:1}.clock{font:600 12px var(--f-mono);color:var(--muted);min-width:44px;text-align:right}
+.steps{display:flex;gap:0;height:26px;padding:0 24px;align-items:center;font:600 10px var(--f-mono);letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+.stp{flex:1;display:flex;align-items:center;gap:8px}
+.stp::after{content:"";flex:1;height:1px;background:var(--line-strong);margin-right:8px}
+.stp:last-child::after{display:none}
+.stp i{width:9px;height:9px;border-radius:50%;border:1px solid var(--line-strong);transition:all var(--d-base) var(--ease)}
+.stp.done{color:var(--muted)}.stp.done i{background:var(--ember);border-color:var(--ember)}
+.stp.on{color:var(--dawn)}.stp.on i{background:var(--dawn);border-color:var(--dawn);box-shadow:0 0 0 4px rgba(255,217,160,.16),0 0 12px var(--amber)}
+.node{position:absolute;border:1px solid var(--line);border-radius:14px;background:rgba(18,13,12,.82);padding:12px 14px;transition:border-color var(--d-slow),box-shadow var(--d-slow),opacity var(--d-slow),filter var(--d-slow)}
+.node h3{margin:0;font:800 22px/1 var(--f-display);letter-spacing:.03em;text-transform:uppercase}
+.node .per{font-size:10px;color:var(--faint);margin-top:2px}
+#svg{position:absolute;left:0;top:0;width:1280px;height:800px;pointer-events:none}
+.rail{fill:none;stroke:rgba(238,230,216,.16);stroke-width:1.5;stroke-dasharray:3 5;transition:stroke 600ms var(--ease)}
+.rail.amb{stroke:var(--amber);stroke-dasharray:none;opacity:.55}
+.rail.grn{stroke:var(--verified);stroke-dasharray:none;opacity:.6}
+.rail.red{stroke:var(--ember);stroke-dasharray:none;opacity:.9;stroke-width:2.5}
+#coins{position:absolute;inset:0;pointer-events:none;z-index:6}
+.coin{position:absolute;left:0;top:0;display:flex;align-items:center;gap:4px;padding:2px 7px;border-radius:999px;font:700 12px var(--f-mono);white-space:nowrap;transform:translate(-50%,-50%);box-shadow:0 0 14px currentColor}
+.coin.sm{width:12px;height:12px;padding:0;font-size:0}.coin.amb{background:var(--amber);color:#2b1a00}.coin.grn{background:var(--verified);color:#06241a}.coin.red{background:var(--ember);color:#fff;font-size:16px;padding:4px 11px}
+.label{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+.quote{font:italic 19px/1.15 var(--f-serif);margin:6px 0 8px}
+.terms{display:flex;gap:4px;flex-wrap:wrap}.terms .chip{padding:2px 6px;font-size:9.5px}.terms .chip b{color:var(--cream)}
+.big{font:700 52px/1 var(--f-display);margin-top:4px}.big small{font:500 12px var(--f-mono);color:var(--muted);margin-left:6px}
+.ln{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--muted);padding:3px 0;border-top:1px solid var(--line);gap:6px}
+.ln b{color:var(--cream);font-weight:600}.ln.back b{color:var(--ember)}
+.bar{display:flex;height:12px;border-radius:999px;background:var(--ghost);overflow:hidden;margin:6px 0 4px}
+.seg{height:100%;width:0;transition:width 600ms var(--ease);border-right:2px solid var(--night)}
+.seg.r1{background:var(--ember)}.seg.r2{background:#e8743f}.seg.r3{background:var(--amber)}
+.node.glow{border-color:rgba(237,75,67,.8);box-shadow:0 0 0 1px rgba(237,75,67,.3),0 0 44px rgba(237,75,67,.35)}
+.er{position:absolute;left:12px;right:12px;height:112px;border-top:1px solid var(--line);padding-top:6px}
+.er:first-of-type{border-top:0}
+.er .nm{font:700 15px var(--f-display);letter-spacing:.06em;text-transform:uppercase}
+.er .cell{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:2px 4px;font-size:10.5px;margin-top:5px;padding:3px 7px;border:1px dashed var(--line-strong);border-radius:6px;color:var(--faint);white-space:nowrap}
+.er .cell.on{border:1px solid rgba(231,168,75,.5);background:rgba(231,168,75,.06);color:var(--muted)}
+.er .cell.out{border-color:rgba(114,201,154,.45);background:rgba(114,201,154,.05)}
+.er .cell.red{border-color:rgba(237,75,67,.6);background:rgba(237,75,67,.08)}
+.er .cell b{color:var(--amber);font:700 14px var(--f-display);margin:0 4px}
+.er.dead{opacity:.45}
+.sup .bid{font-size:10px;color:var(--muted);margin:2px 0 0;min-height:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sup .bid b{color:var(--cream)}
+.sup{padding:8px 12px!important}.sup .hd{display:flex;justify-content:space-between;align-items:center;min-height:26px}.sup h3{font-size:20px}.sup .per{display:none}
+.sup{display:flex;gap:10px}.sup .sb{flex:1;min-width:0}
+.cr{position:relative;flex:0 0 58px;height:94px;border-radius:7px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;padding:6px;border:1px solid var(--line-strong)}
+.cr i{position:absolute;inset:0;z-index:0}
+.cr b,.cr span,.cr u{position:relative;z-index:1;display:block}
+.cr b{font:800 11px/1 var(--f-display);letter-spacing:.06em;text-transform:uppercase;color:#fff}
+.cr span{font:700 9px/1.1 var(--f-display);color:rgba(255,255,255,.85);margin:2px 0 4px;text-transform:uppercase}
+.cr u{font:600 7px var(--f-mono);text-decoration:none;text-align:center;padding:2px 0;border-radius:2px;background:#fff;color:#111}
+.cr-techblog i{background:linear-gradient(160deg,#0f2a3a,#1e5f74 60%,#72c99a)}
+.cr-codepodcast i{background:repeating-linear-gradient(90deg,#4b2a6b 0 4px,#7a3fa0 4px 6px),#4b2a6b}
+.cr-devnewsletter i{background:linear-gradient(180deg,#f4efe4 0 38%,#c9362e 38%)}
+.cr-devnewsletter b{color:#111}.cr-devnewsletter span{color:#fff}
+.cr-gamingforum i{background:radial-gradient(80% 60% at 50% 30%,#ff3df0,#2a0a4a 70%)}
+.sup .vcw{min-height:24px}
+.sup.lost .cr{filter:grayscale(1)}
+.gwrap{position:relative;margin-top:15px}
+.gauge{position:relative;height:11px;border-radius:4px;background:var(--ghost)}
+.gauge i{position:absolute;left:0;top:0;bottom:0;border-radius:4px 0 0 4px;background:var(--verified);width:0}
+.gauge u{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ember);text-decoration:none}
+.gauge u span{position:absolute;top:15px;left:-12px;font:500 8px var(--f-mono);color:var(--ember);white-space:nowrap}
+.gauge u+u{background:var(--dawn)}.gauge u+u span{top:-12px;left:-18px;color:var(--dawn)}
+.sup .row2{display:flex;align-items:baseline;gap:8px;margin-top:9px}
+.sup .row2 b{font:700 24px/1 var(--f-display)}.sup .row2 span{font-size:10px;color:var(--muted)}
+.sup.lost{opacity:.5;filter:saturate(.3)}
+.sup.under{border-color:rgba(237,75,67,.7);box-shadow:0 0 28px rgba(237,75,67,.25)}.sup.pass{border-color:rgba(114,201,154,.5)}.sup.short{border-color:rgba(231,168,75,.5)}
+.pn{position:absolute;top:602px;height:186px;border:1px solid var(--line);border-radius:12px;background:rgba(18,13,12,.8);padding:10px 12px;overflow:hidden}
+.bot{display:grid;grid-template-columns:1fr auto;gap:0 8px;font-size:10.5px;padding:4px 0;border-top:1px solid var(--line)}
+.bot b{font-weight:600}.bot span{color:var(--muted);text-align:right}.bot .warn{color:var(--amber);grid-column:1/3;text-align:left;font-size:10px}.bot .dim{color:var(--faint)}
+.pn ul{list-style:none;margin:6px 0 0;padding:0}
+.pn li{display:flex;gap:8px;align-items:center;padding:3px 0;border-top:1px solid var(--line);font-size:10.5px;color:var(--muted);white-space:nowrap;overflow:hidden}
+.pn li em{font-style:normal;font-size:9px;letter-spacing:.08em;color:var(--faint);min-width:128px}
+.pn li span{flex:1;overflow:hidden;text-overflow:ellipsis}
+.pn li.new{color:var(--cream)}.pn li.new em{color:var(--dawn)}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.rc{margin-top:6px}.rc .n{font:800 30px/1 var(--f-display);color:var(--dawn)}.rc .n small{font:500 12px var(--f-mono);color:var(--muted)}
+.rc .t{font-size:10.5px;color:var(--muted);margin-top:3px;line-height:1.5}.rc .t b{color:var(--cream)}
+.rc.off{opacity:.25}
+.flash{position:absolute;inset:0;z-index:5;pointer-events:none;opacity:0;background:radial-gradient(100% 80% at 40% 40%,rgba(237,75,67,0) 30%,rgba(237,75,67,.35));transition:opacity 500ms var(--ease)}
+#stage.hero .flash{opacity:1}
+.refund{position:absolute;left:272px;top:352px;width:150px;z-index:7;pointer-events:none;text-align:center;font:800 26px/1 var(--f-display);letter-spacing:.08em;text-transform:uppercase;color:#fff;background:var(--ember);padding:8px 6px;border-radius:8px;opacity:0;transform:scale(.6) rotate(-4deg);transition:all 500ms var(--ease-stamp);box-shadow:0 0 30px rgba(237,75,67,.6)}
+.refund small{display:block;font:600 9px var(--f-mono);letter-spacing:.12em;margin-top:3px}
+#stage.hero .refund{opacity:1;transform:scale(1) rotate(-4deg)}
+#wn.pulse{display:inline-block;animation:pop 900ms var(--ease-stamp) 2}
+@keyframes pop{50%{transform:scale(1.18);color:var(--ember)}}
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script>
+const DATA={"suppliers":[{"id":"techblog","name":"TechBlog","persona":"conservative"},{"id":"codepodcast","name":"CodePodcast","persona":"moderate"},{"id":"devnewsletter","name":"DevNewsletter","persona":"aggressive over-promiser"},{"id":"gamingforum","name":"GamingForum","persona":"passive low-baller"}],"bids":{"techblog":{"commit":"5ab05684c168d525dd6423bea19977e8722ab9d017226ea7b6e499d031ca1e78"},"codepodcast":{"commit":"3cee85af48542a4d01429933d79c5f88559f1d156f28367c2d9b92ef0e13c6bd"},"devnewsletter":{"commit":"8b148d40a0324b7424673dcb5d81fdbc41b81d29b0f4086b0c97af7a8320b0ee"},"gamingforum":{"commit":"741fe4f67645b3c1e020dc89a09fcafb7f20efd0911f577782c1cace93f85a38"}},"events":[{"seq":1,"at":0,"name":"run.created","data":{"mode":"canned"}},{"seq":2,"at":0.5,"name":"tender.published","data":{"tender":{"budget":20,"gate":5,"bondRate":0.25,"bidFee":0.2,"currency":"tUSDM","audience":"technical users"},"brief":{"advertiser":"NeoRack","audience":"technical users","goal":"pay per verified signup"}}},{"seq":5,"at":1.4,"name":"bid.committed","data":{"supplier":"techblog","commit":"5ab05684c168d525dd6423bea19977e8722ab9d017226ea7b6e499d031ca1e78","committedAt":1791496800070}},{"seq":6,"at":1.8,"name":"bid.committed","data":{"supplier":"codepodcast","commit":"3cee85af48542a4d01429933d79c5f88559f1d156f28367c2d9b92ef0e13c6bd","committedAt":1791496800080}},{"seq":7,"at":2.2,"name":"bid.committed","data":{"supplier":"devnewsletter","commit":"8b148d40a0324b7424673dcb5d81fdbc41b81d29b0f4086b0c97af7a8320b0ee","committedAt":1791496800090}},{"seq":8,"at":2.6,"name":"bid.committed","data":{"supplier":"gamingforum","commit":"741fe4f67645b3c1e020dc89a09fcafb7f20efd0911f577782c1cace93f85a38","committedAt":1791496800100}},{"seq":9,"at":3.1,"name":"bid.fee_locked","data":{"supplier":"techblog","receipt":{"id":"sim_514978bc512aecb4120201cb7ed91a4c315f56f8f7843168770567a5","badge":"SIMULATED","action":"bid_fee","amount":0.2,"from":"techblog","to":"board"}}},{"seq":10,"at":3.4,"name":"bid.fee_locked","data":{"supplier":"codepodcast","receipt":{"id":"sim_33f8ab000af6dc174790fb66017833e6595f7dd048214fbe054c9976","badge":"SIMULATED","action":"bid_fee","amount":0.2,"from":"codepodcast","to":"board"}}},{"seq":11,"at":3.7,"name":"bid.fee_locked","data":{"supplier":"devnewsletter","receipt":{"id":"sim_8020b74c49af1df9e9b3af52d9a2582aee47705f8335fbc46f922a7b","badge":"SIMULATED","action":"bid_fee","amount":0.2,"from":"devnewsletter","to":"board"}}},{"seq":12,"at":4,"name":"bid.fee_locked","data":{"supplier":"gamingforum","receipt":{"id":"sim_f47f85a9b7c253cd70aff82959b29b5723d241fa3b45ccaf56359c49","badge":"SIMULATED","action":"bid_fee","amount":0.2,"from":"gamingforum","to":"board"}}},{"seq":13,"at":5,"name":"bid.revealed","data":{"supplier":"techblog","price":7,"impressions":1000,"promisedPer1000":7,"salt":"salt-techblog"}},{"seq":14,"at":5.4,"name":"bid.revealed","data":{"supplier":"codepodcast","price":6,"impressions":1000,"promisedPer1000":8,"salt":"salt-codepodcast"}},{"seq":15,"at":5.8,"name":"bid.revealed","data":{"supplier":"devnewsletter","price":7,"impressions":1500,"promisedPer1000":12,"salt":"salt-devnewsletter"}},{"seq":16,"at":6.2,"name":"bid.revealed","data":{"supplier":"gamingforum","price":2,"impressions":1000,"promisedPer1000":4,"salt":"salt-gamingforum"}},{"seq":19,"at":7.2,"name":"bid.rejected","data":{"supplier":"gamingforum","reason":"below_gate"}},{"seq":20,"at":7.9,"name":"auction.ranked","data":{"ranking":[{"supplier":"devnewsletter","pricePerSignup":0.3888888888888889},{"supplier":"codepodcast","pricePerSignup":0.75},{"supplier":"techblog","pricePerSignup":1}]}},{"seq":21,"at":8.6,"name":"allocation.decided","data":{"accepted":[{"supplier":"devnewsletter","award":7,"bond":1.75},{"supplier":"codepodcast","award":6,"bond":1.5},{"supplier":"techblog","award":7,"bond":1.75}],"rejected":[{"supplier":"gamingforum","reason":"below_gate"}],"totalAward":20,"budget":20}},{"seq":24,"at":9.6,"name":"escrow.locked","data":{"supplier":"devnewsletter","kind":"award","receipt":{"id":"sim_7a6c62f756255e569a7d1293174de5d5e50aba814afac97e6607ad96","badge":"SIMULATED","action":"award","amount":7,"from":"consumer","to":"devnewsletter"}}},{"seq":25,"at":10,"name":"escrow.locked","data":{"supplier":"devnewsletter","kind":"bond","receipt":{"id":"sim_4093bb3a00e637a36fed5ebd24b84fa1fcfb04c8a4aeabe24dc8e1d5","badge":"SIMULATED","action":"bond","amount":1.75,"from":"devnewsletter","to":"board"}}},{"seq":26,"at":10.4,"name":"escrow.locked","data":{"supplier":"codepodcast","kind":"award","receipt":{"id":"sim_adfd8ad8aef963131468cd5fd4509fc923f118e233c5c3c08dd76537","badge":"SIMULATED","action":"award","amount":6,"from":"consumer","to":"codepodcast"}}},{"seq":27,"at":10.8,"name":"escrow.locked","data":{"supplier":"codepodcast","kind":"bond","receipt":{"id":"sim_bbc2461ae829760693fecd5bf073f2076162dac34661517b92e2a2bc","badge":"SIMULATED","action":"bond","amount":1.5,"from":"codepodcast","to":"board"}}},{"seq":28,"at":11.2,"name":"escrow.locked","data":{"supplier":"techblog","kind":"award","receipt":{"id":"sim_a0846b922076e7f632f3ee6736f029a8453b047e5290a59b463ff00f","badge":"SIMULATED","action":"award","amount":7,"from":"consumer","to":"techblog"}}},{"seq":29,"at":11.6,"name":"escrow.locked","data":{"supplier":"techblog","kind":"bond","receipt":{"id":"sim_1020b0ef9dfd04892b53babfe3d1ccfb415a42fe6793d83dec2ca327","badge":"SIMULATED","action":"bond","amount":1.75,"from":"techblog","to":"board"}}},{"seq":32,"at":13,"name":"feed.served","data":{"supplier":"devnewsletter","impressions":1500,"signupsReceived":3,"flaggedBySignals":1}},{"seq":33,"at":13.8,"name":"feed.served","data":{"supplier":"codepodcast","impressions":1000,"signupsReceived":9,"flaggedBySignals":0}},{"seq":34,"at":14.6,"name":"feed.served","data":{"supplier":"techblog","impressions":1000,"signupsReceived":11,"flaggedBySignals":0}},{"seq":35,"at":16.4,"name":"feed.generated","data":{"window":{"start":"2026-10-08T21:00:00.440Z","end":"2026-10-08T22:00:00.440Z"},"impressions":{"devnewsletter":1500,"codepodcast":1000,"techblog":1000},"signupsReceived":23}},{"seq":38,"at":18.6,"name":"verification.completed","data":{"verified":{"codepodcast":6,"techblog":8},"perSupplier":[{"supplier":"devnewsletter","received":3,"verified":0,"rejected":{"bad_signature":1,"wrong_attribution":1,"outside_window":1}},{"supplier":"codepodcast","received":9,"verified":6,"rejected":{"bad_signature":1,"wrong_attribution":1,"outside_window":1}},{"supplier":"techblog","received":11,"verified":8,"rejected":{"bad_signature":1,"wrong_attribution":1,"outside_window":1}}]}},{"seq":43,"at":20,"name":"verdict.signed","data":{"supplier":"techblog","kind":"pass","delivered":8,"promised":7,"gate":5,"award":7,"bond":1.75}},{"seq":42,"at":20.9,"name":"verdict.signed","data":{"supplier":"codepodcast","kind":"short_of_promise","delivered":6,"promised":8,"gate":5,"award":6,"bond":1.5}},{"seq":41,"at":21.9,"name":"verdict.signed","data":{"supplier":"devnewsletter","kind":"under_gate","delivered":0,"promised":12,"gate":5,"award":7,"bond":1.75}},{"seq":46,"at":23,"name":"settlement.started","data":{"job":"job_worked-example"}},{"seq":52,"at":23.6,"name":"settlement.transfer","data":{"supplier":"techblog","verdict":"pass","receipt":{"id":"sim_0817699c26e6bc30b66a6d2f38975affed3595d9f1a94194e726f8b4","badge":"SIMULATED","action":"award_release","amount":7,"from":"consumer","to":"techblog"}}},{"seq":53,"at":23.9,"name":"settlement.transfer","data":{"supplier":"techblog","verdict":"pass","receipt":{"id":"sim_5721ba5dbf7420258c721044226c4afd639ece3b609d8b079b1d5dff","badge":"SIMULATED","action":"bond_return","amount":1.75,"from":"board","to":"techblog"}}},{"seq":49,"at":24.5,"name":"settlement.transfer","data":{"supplier":"codepodcast","verdict":"short_of_promise","receipt":{"id":"sim_8b33dc76b599a5f560cdccedb3752ddbb9e07019e737d37393ac87f0","badge":"SIMULATED","action":"award_release","amount":6,"from":"consumer","to":"codepodcast"}}},{"seq":50,"at":24.8,"name":"settlement.transfer","data":{"supplier":"codepodcast","verdict":"short_of_promise","receipt":{"id":"sim_ee522800edfc08884dd5f82f23eb70115bb2f1d67f8c31193ea536bf","badge":"SIMULATED","action":"bond_return","amount":1.125,"from":"board","to":"codepodcast"}}},{"seq":51,"at":25.1,"name":"settlement.transfer","data":{"supplier":"codepodcast","verdict":"short_of_promise","receipt":{"id":"sim_0be0273b1c5e9286e29d7583f11302319de3008efd40e1f128f71998","badge":"SIMULATED","action":"bond_forfeit","amount":0.375,"from":"board","to":"consumer"}}},{"seq":47,"at":26,"name":"settlement.transfer","data":{"supplier":"devnewsletter","verdict":"under_gate","receipt":{"id":"sim_b7a8f2afdf191fe18b982ecde6f5238ade05c2ffa82874a9e43f61c7","badge":"SIMULATED","action":"award_reclaim","amount":7,"from":"devnewsletter","to":"consumer"}}},{"seq":48,"at":26.6,"name":"settlement.transfer","data":{"supplier":"devnewsletter","verdict":"under_gate","receipt":{"id":"sim_27eb840bafc62576f26cb9a3342729d388dfa97657cf2952e19157d1","badge":"SIMULATED","action":"bond_forfeit","amount":1.75,"from":"board","to":"consumer"}}},{"seq":54,"at":27,"name":"settlement.completed","data":{"job":"job_worked-example","transfers":7}},{"seq":56,"at":27.8,"name":"receipt.ready","data":{"receipt":{"consumer":{"awardsLocked":20,"returned":9.125,"net":-10.875,"signups":14,"costPerSignup":0.776786},"board":{"bidFees":0.8},"leaderboard":[{"supplier":"techblog","kind":"pass","rank":1,"paidToSupplier":7,"awardReclaimed":0,"bondForfeited":0,"bondReturned":1.75,"supplierNet":6.8},{"supplier":"codepodcast","kind":"short_of_promise","rank":2,"paidToSupplier":6,"awardReclaimed":0,"bondForfeited":0.375,"bondReturned":1.125,"supplierNet":5.425},{"supplier":"devnewsletter","kind":"under_gate","rank":3,"paidToSupplier":0,"awardReclaimed":7,"bondForfeited":1.75,"bondReturned":0,"supplierNet":-1.95},{"supplier":"gamingforum","kind":"lost_bid","rank":4,"paidToSupplier":0,"awardReclaimed":0,"bondForfeited":0,"bondReturned":0,"supplierNet":-0.2}]}}},{"seq":57,"at":28.4,"name":"round2.decided","data":{"allocations":[{"supplier":"devnewsletter","share":0},{"supplier":"codepodcast","share":0.5},{"supplier":"techblog","share":0.5}]}},{"seq":58,"at":29,"name":"run.completed","data":{"runId":"run_worked-example","net":-10.875,"signups":14,"badges":["SIMULATED"]}}],"signals":{"techblog":{"events":11,"clickBurst":0,"dcAsn":0,"asn":[]},"codepodcast":{"events":9,"clickBurst":0,"dcAsn":0,"asn":[]},"devnewsletter":{"events":3,"clickBurst":1,"dcAsn":1,"asn":["AS16509"]},"gamingforum":{"events":0,"clickBurst":0,"dcAsn":0,"asn":[]}},"tx":{"sim_514978bc512aecb4120201cb7ed91a4c315f56f8f7843168770567a5":"dfa719504c452dcf9aac468671bddd67446a6e5ecded8220f519bc363380b611","sim_33f8ab000af6dc174790fb66017833e6595f7dd048214fbe054c9976":"88af67d9f9cdfa82184866c0dc0c93e01b3313eddba7bcec83b10e1ae7e9d565","sim_8020b74c49af1df9e9b3af52d9a2582aee47705f8335fbc46f922a7b":"afb866b00b5a3107f55a1d845844465ad0232b7c4eec14ce766a9229e11f4516","sim_f47f85a9b7c253cd70aff82959b29b5723d241fa3b45ccaf56359c49":"76f948a5651642bb395993fc6181cfcbbdebcf48eb7ff7ab637c0233d42dbe11","sim_7a6c62f756255e569a7d1293174de5d5e50aba814afac97e6607ad96":"3738af44c11580dc7678f621009cdfc5ceee3edd505a33341af1c786c03677e0","sim_4093bb3a00e637a36fed5ebd24b84fa1fcfb04c8a4aeabe24dc8e1d5":"2275fa00834addfd64c5ad62696f5aecc5d2bc53213cb16500c54c5260eb8b25","sim_adfd8ad8aef963131468cd5fd4509fc923f118e233c5c3c08dd76537":"20299f7650cde61386daf073b4cabc10611f3059664c2fea8b4e2121ab202fac","sim_bbc2461ae829760693fecd5bf073f2076162dac34661517b92e2a2bc":"41ed7a7063ef9eb60f19ae6ae54b3af697ce66f4ed73add2d93d191daebea0cc","sim_a0846b922076e7f632f3ee6736f029a8453b047e5290a59b463ff00f":"ffd547c4a2a9ecb5e94ba48c7e152b516327882125db03279e29821e22e685cc","sim_1020b0ef9dfd04892b53babfe3d1ccfb415a42fe6793d83dec2ca327":"2d11c2d8db07371850f2c4ba79c9034b4ff2bbebccff43ec1992a9caa8e9d1c5","sim_b7a8f2afdf191fe18b982ecde6f5238ade05c2ffa82874a9e43f61c7":"13173cb7867bd62e0fafcf9c1cf67778319b1556ce0ceaa3e192e5dd2bf1a38c","sim_27eb840bafc62576f26cb9a3342729d388dfa97657cf2952e19157d1":"304d92dd96df12625d544ae772d412acd370152a45e1c6ae2b2cc92e9d3a88de","sim_8b33dc76b599a5f560cdccedb3752ddbb9e07019e737d37393ac87f0":"8f7b8cc10192a0df0272835a65092f678d3c4dde68a66e6d320e40f43df64441","sim_ee522800edfc08884dd5f82f23eb70115bb2f1d67f8c31193ea536bf":"f8c9f6dc719ceb3413df8204a00cabe2bfbb78af8aff81d794fa4237cbbc64ff","sim_0be0273b1c5e9286e29d7583f11302319de3008efd40e1f128f71998":"fa267f8d5ee83264f0ecbbed5bb9fe1b67961057e3211ad54884dabaf12f9556","sim_0817699c26e6bc30b66a6d2f38975affed3595d9f1a94194e726f8b4":"553b4c073b31f3013a21456fec9685fc79bf39f3b6712563332cb18d90c4d6e1","sim_5721ba5dbf7420258c721044226c4afd639ece3b609d8b079b1d5dff":"6c238396f7abeb8b7aced45ca8477cfa1e91e4d96edfe8412ef4aef75af37f85"},"roundTwo":[{"supplier":"devnewsletter","share":0},{"supplier":"codepodcast","share":0.5},{"supplier":"techblog","share":0.5}]};
+/* ---- shared: data, reducer, player. Concepts only draw; they never change state. ---- */
+const D = DATA, END = 29.6;
+let REAL = true; // receipt.badge decides in production; the toggle shows both states of the same run
+const el = (id) => document.getElementById(id);
+const T = (e, v) => { if (typeof e === "string") e = el(e); if (!e) return; v = String(v); if (e._t !== v) { e._t = v; e.textContent = v; } };
+const H = (e, v) => { if (typeof e === "string") e = el(e); if (!e || e._h === v) return; e._h = v; e.innerHTML = v; };
+const C = (e, cls, on) => { if (typeof e === "string") e = el(e); if (e) e.classList.toggle(cls, !!on); };
+const P = (e, prop, v) => { if (typeof e === "string") e = el(e); if (e && e.style.getPropertyValue(prop) !== String(v)) e.style.setProperty(prop, v); };
+const fmt = (n) => { const r = Math.round(n * 1000) / 1000; return (r < 0 ? "−" : "") + Math.abs(r).toLocaleString("en-US", { maximumFractionDigits: 3 }); };
+const sgn = (n) => (n > 0 ? "+" : "") + fmt(n);
+const short = (h) => h.slice(0, 4) + "…" + h.slice(-4);
+const ease = (p) => 1 - Math.pow(1 - Math.min(1, Math.max(0, p)), 3);
+const SUP = D.suppliers, byId = Object.fromEntries(SUP.map((s) => [s.id, s]));
+const KIND = { pass: "Pass", short_of_promise: "Short of promise", under_gate: "Under gate", lost_bid: "Lost bid" };
+const KCLS = { pass: "pass", short_of_promise: "short", under_gate: "under", lost_bid: "lost" };
+const STEPS = ["tender", "bids", "allocation", "locks", "feed", "verification", "verdicts", "settlement"];
+const GATE = 5, SCALE_MAX = 14;
+const nm = (id) => (id === "consumer" ? "NeoRack" : id === "board" ? "Board" : byId[id].name);
+
+/* badge from the receipt. bid fees stay SIMULATED, award/bond/settlement are REAL when the run is the warm run */
+const badgeOf = (r) => (r && r.action !== "bid_fee" && REAL ? "real" : "sim");
+function bdg(r, withTx = true) {
+  if (badgeOf(r) === "real") {
+    const h = D.tx[r.id];
+    return `<span class="bdg real">REAL</span>` + (withTx ? `<a class="tx" href="https://preprod.cardanoscan.io/transaction/${h}" target="_blank" rel="noopener">${short(h)} ↗</a>` : "");
+  }
+  return `<span class="bdg sim">SIMULATED</span>`;
+}
+const BDG_SIM = `<span class="bdg sim">SIMULATED</span>`;
+const BDG_PRE = `<span class="bdg pre">PRE-RECORDED</span>`;
+
+/* ---- reducer: state = reduce(events up to t) ---- */
+function init() {
+  const s = { at: 0, n: 0, step: null, steps: {}, chips: {}, ledger: [], sup: {}, tender: null, totalAward: 0, ranked: [], out: 0, back: 0, locked: 0, fees: 0, receipt: null, round2: null, done: false, heroAt: null, forfeit: 0 };
+  for (const u of SUP) s.sup[u.id] = { id: u.id, name: u.name, persona: u.persona, status: "invited", commit: null, bid: null, fee: null, reject: null, rank: null, pps: null, award: 0, bond: 0, locks: {}, imp: null, rec: null, flagged: 0, verified: null, vAt: 0, rej: null, verdict: null, tx: [] };
+  return s;
+}
+function describe(e) {
+  const d = e.data, n = d.supplier ? nm(d.supplier) : "";
+  switch (e.name) {
+    case "run.created": return "run created";
+    case "tender.published": return `tender ${d.tender.budget} ${d.tender.currency} · gate ${d.tender.gate}/1,000 · bond ${d.tender.bondRate * 100}%`;
+    case "bid.committed": return `${n} sealed ${short(d.commit)}`;
+    case "bid.fee_locked": return `${n} bid fee ${fmt(d.receipt.amount)}`;
+    case "bid.revealed": return `${n} reveals ${fmt(d.price)} · ${d.promisedPer1000}/1,000`;
+    case "bid.rejected": return `${n} rejected · ${d.reason}`;
+    case "auction.ranked": return "ranked by price per promised signup";
+    case "allocation.decided": return `allocated ${fmt(d.totalAward)} of ${fmt(d.budget)}`;
+    case "escrow.locked": return `${n} ${d.kind} ${fmt(d.receipt.amount)} locked`;
+    case "feed.served": return `${n} ${d.impressions.toLocaleString("en-US")} impressions · ${d.signupsReceived} signups`;
+    case "feed.generated": return `feed closed · ${d.signupsReceived} signups received`;
+    case "verification.completed": return `verified ${Object.values(d.verified).reduce((a, b) => a + b, 0)} of ${d.perSupplier.reduce((a, b) => a + b.received, 0)}`;
+    case "verdict.signed": return `${n} ${KIND[d.kind]} · ${d.delivered} of ${d.promised}`;
+    case "settlement.started": return "settlement job started";
+    case "settlement.transfer": return `${n} ${d.receipt.action.replace("_", " ")} ${fmt(d.receipt.amount)} → ${nm(d.receipt.to)}`;
+    case "settlement.completed": return "settlement complete";
+    case "receipt.ready": return `receipt · net ${fmt(d.receipt.consumer.net)}`;
+    case "round2.decided": return "round 2 shown, not executed";
+    case "run.completed": return "run completed";
+  }
+  return e.name;
+}
+function reduce(s, e) {
+  const d = e.data, u = d.supplier && s.sup[d.supplier];
+  s.at = e.at; s.n++;
+  switch (e.name) {
+    case "tender.published": s.tender = d.tender; s.step = "tender"; s.steps.tender = "done"; break;
+    case "bid.committed": u.status = "sealed"; u.commit = d.commit; s.step = "bids"; s.steps.bids = "running"; s.steps.tender = "done"; s.chips.discovery = true; break;
+    case "bid.fee_locked": u.fee = d.receipt; s.fees += d.receipt.amount; break;
+    case "bid.revealed": u.bid = { price: d.price, impressions: d.impressions, promised: d.promisedPer1000 }; u.status = "revealed"; break;
+    case "bid.rejected": u.status = "lost"; u.reject = d.reason; s.steps.bids = "done"; s.step = "allocation"; s.steps.allocation = "running"; break;
+    case "auction.ranked": d.ranking.forEach((r, i) => { s.sup[r.supplier].rank = i + 1; s.sup[r.supplier].pps = r.pricePerSignup; }); s.ranked = d.ranking.map((r) => r.supplier); break;
+    case "allocation.decided": d.accepted.forEach((r) => { const x = s.sup[r.supplier]; x.award = r.award; x.bond = r.bond; x.status = "ranked"; }); s.totalAward = d.totalAward; s.steps.allocation = "done"; s.step = "locks"; s.steps.locks = "running"; break;
+    case "escrow.locked": u.locks[d.kind] = d.receipt; s.locked += d.receipt.amount; if (d.kind === "award") s.out += d.receipt.amount; if (u.locks.award && u.locks.bond) u.status = "escrowed"; s.chips.wallet = true; s.chips.escrow = true; if (s.locked >= 25 - 1e-9) { s.steps.locks = "done"; s.step = "feed"; s.steps.feed = "running"; } break;
+    case "feed.served": u.imp = { target: d.impressions, at: e.at }; u.rec = { target: d.signupsReceived, at: e.at }; u.flagged = d.flaggedBySignals; u.status = "delivering"; break;
+    case "feed.generated": s.steps.feed = "done"; s.step = "verification"; s.steps.verification = "running"; break;
+    case "verification.completed": SUP.forEach((x) => { const y = s.sup[x.id]; if (y.imp) { y.verified = d.verified[x.id] || 0; y.vAt = e.at; y.rej = (d.perSupplier.find((p) => p.supplier === x.id) || {}).rejected || {}; } }); s.steps.verification = "done"; s.step = "verdicts"; s.steps.verdicts = "running"; break;
+    case "verdict.signed": u.verdict = d; u.status = "verdict"; if (d.kind === "under_gate") s.chips.dispute = true; if (Object.values(s.sup).filter((x) => x.verdict).length === 3) s.steps.verdicts = "done"; break;
+    case "settlement.started": s.step = "settlement"; s.steps.settlement = "running"; break;
+    case "settlement.transfer": u.tx.push(d.receipt); if (d.receipt.to === "consumer") { s.back += d.receipt.amount; if (d.receipt.action === "bond_forfeit") s.forfeit += d.receipt.amount; } if (d.receipt.action === "award_reclaim") s.heroAt = e.at; break;
+    case "settlement.completed": s.steps.settlement = "done"; break;
+    case "receipt.ready": s.receipt = d.receipt; break;
+    case "round2.decided": s.round2 = d.allocations; break;
+    case "run.completed": s.done = true; break;
+  }
+  if (!e.name.startsWith("run.") || e.name === "run.completed") s.ledger.push({ at: e.at, name: e.name, text: describe(e), rc: d.receipt && d.receipt.id ? d.receipt : null, seq: e.seq });
+  return s;
+}
+let S = init(), idx = 0;
+function seek(t) {
+  const fresh = [];
+  if (t < S.at) { S = init(); idx = 0; }
+  while (idx < D.events.length && D.events[idx].at <= t) { reduce(S, D.events[idx]); fresh.push(D.events[idx]); idx++; }
+  return fresh;
+}
+
+/* view model with tweened counters: impressions and signups climb after feed.served */
+function vm(u, t) {
+  const r = (x, dur) => (x ? Math.round(x.target * ease((t - x.at) / dur)) : 0);
+  const imp = r(u.imp, 3), recv = r(u.rec, 3);
+  const vDone = u.verified !== null && t >= u.vAt;
+  const count = vDone ? Math.round(u.verified + (u.rec.target - u.verified) * (1 - ease((t - u.vAt) / 1.2))) : recv;
+  const impT = u.imp ? u.imp.target : u.bid ? u.bid.impressions : 0;
+  const per1000 = impT ? (count / impT) * 1000 : 0;
+  return { imp, impT, recv, count, vDone, per1000, verified: u.verified };
+}
+const consumer = () => ({ out: S.out, back: S.back, net: S.back - S.out });
+
+/* ---- player and scaling ---- */
+const Player = { t: 0, playing: true, hooks: {} };
+function start(hooks) {
+  Player.hooks = hooks;
+  const stage = el("stage"); const box = document.createElement("div"); box.id = "box"; stage.parentNode.insertBefore(box, stage); box.appendChild(stage);
+  const ctl = document.createElement("div"); ctl.id = "ctl";
+  ctl.innerHTML = `<button id="bPlay">Pause</button><button id="bRe">Replay</button><div class="scrub" id="scrub"><i id="scrubI"></i></div><time id="tm">0.0 s</time><label class="tog"><input type="checkbox" id="tReal" checked> money badge REAL (warm run)</label>`;
+  box.appendChild(ctl);
+  STEP_AT.forEach(([lab, at]) => { const b = document.createElement("b"); b.style.left = (at / END * 100) + "%"; b.innerHTML = `<span>${lab}</span>`; el("scrub").appendChild(b); });
+  hooks.build(stage);
+  const fit = () => { const w = document.documentElement.clientWidth; const k = Math.min(1, w / 1280); stage.style.transform = `scale(${k})`; box.style.width = 1280 * k + "px"; box.style.height = 800 * k + 44 + "px"; };
+  addEventListener("resize", fit); fit();
+  el("bPlay").onclick = () => { Player.playing = !Player.playing; if (Player.t >= END) Player.t = 0; T("bPlay", Player.playing ? "Pause" : "Play"); };
+  el("bRe").onclick = () => { Player.t = 0; Player.playing = true; T("bPlay", "Pause"); seek(-1); };
+  el("scrub").onclick = (e) => { const r = el("scrub").getBoundingClientRect(); Player.t = Math.max(0, (e.clientX - r.left) / r.width * END); seek(Player.t); Player.skip = true; };
+  el("tReal").onchange = (e) => { REAL = e.target.checked; Player.dirty = true; };
+  const m = /#t=([\d.]+)/.exec(location.hash); if (m) { Player.t = Math.min(END, +m[1]); Player.skip = true; }
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches; if (reduced) { Player.t = END; Player.playing = false; Player.skip = true; T("bPlay", "Play"); }
+  let last = performance.now();
+  (function frame(now) {
+    if (Player.playing) Player.t = Math.min(END, Player.t + (now - last) / 1000);
+    if (Player.t >= END && Player.playing) { Player.playing = false; T("bPlay", "Play"); }
+    last = now;
+    const fresh = seek(Player.t);
+    if (hooks.onEvent && !Player.skip) fresh.forEach((e) => hooks.onEvent(e, S));
+    Player.skip = false;
+    hooks.update(S, Player.t);
+    P("scrubI", "width", (Player.t / END * 100) + "%"); T("tm", Player.t.toFixed(1) + " s");
+    requestAnimationFrame(frame);
+  })(last);
+}
+const STEP_AT = [["tender", 0.5], ["bids", 1.4], ["allocation", 7.2], ["locks", 9.6], ["feed", 13], ["verify", 18.6], ["verdicts", 20], ["settle", 23]];
+
+/* shared bits of markup */
+const stepsHtml = (s, cls = "st") => STEPS.map((k, i) => `<span class="${cls} ${s.steps[k] === "done" ? "done" : s.steps[k] === "running" ? "on" : ""}"><i>${String(i + 1).padStart(2, "0")}</i>${k}</span>`).join("");
+const sec = (n) => `${Math.floor(n / 60)}:${String(Math.floor(n % 60)).padStart(2, "0")}`;
+function ledgerHtml(s, max = 12, tail = (r) => "") {
+  return s.ledger.filter((r) => r.name !== "run.created").slice(-max).reverse().map((r, i) =>
+    `<li class="${i === 0 ? "new" : ""}"><em>${r.name}</em><span>${r.text}</span>${r.rc ? bdg(r.rc, false) : ""}${tail(r)}</li>`).join("");
+}
+function botHtml(s) {
+  return SUP.map((u) => {
+    const g = D.signals[u.id], x = s.sup[u.id];
+    if (!x.imp) return `<div class="bot"><b>${u.name}</b><span class="dim">—</span></div>`;
+    const flags = [g.clickBurst ? "click burst" : "", g.dcAsn ? "datacenter ASN " + g.asn[0] : ""].filter(Boolean);
+    return `<div class="bot"><b>${u.name}</b><span>${g.events ? g.events + " received" : "no signups"}</span><span class="${flags.length ? "warn" : "dim"}">${flags.length ? "1 flagged: " + flags.join(", ") : "0 flagged"}</span></div>`;
+  }).join("");
+}
+
+const RY=(i)=>132+i*116, RH=112, CY=(i)=>RY(i)+RH/2;
+const ORDER=SUP.map(u=>u.id);
+const PATHS={}; // id -> svg path
+function build(st){
+  let rails="";
+  ORDER.forEach((id,i)=>{const y=CY(i);
+    rails+=`<path id="pa-${id}" class="rail" d="M262,300 C345,300 345,${y-26} 424,${y-26}"/>`;
+    rails+=`<path id="pr-${id}" class="rail" d="M424,${y+26} C345,${y+26} 345,380 262,380"/>`;
+    rails+=`<path id="pb-${id}" class="rail" d="M880,${y+22} L756,${y+22}"/>`;
+    rails+=`<path id="pp-${id}" class="rail" d="M756,${y-22} L880,${y-22}"/>`;});
+  st.innerHTML=`<div class="flash"></div>
+  <header class="top"><div class="brand"><b>Bid Royale</b><em>money flow</em></div><div class="sp"></div><span>${BDG_PRE}</span><div class="clock num" id="clk">0:00</div></header>
+  <div class="steps" id="steps"></div>
+  <svg id="svg" viewBox="0 0 1280 800">${rails}</svg>
+  <section class="node" id="cons" style="left:24px;top:80px;width:238px;height:512px">
+    <div class="label">NeoRack · consumer agent</div>
+    <div class="quote">Budget 20 tUSDM, technical users, pay per verified signup.</div>
+    <div class="terms"><span class="chip" id="tc1">gate <b>5</b>/1,000</span><span class="chip" id="tc2">bond <b>25%</b></span><span class="chip" id="tc3">bid fee <b>0.2</b></span></div>
+    <div class="label" style="margin-top:14px">budget allocated <b class="num" id="bal" style="color:var(--cream)">0</b> / 20</div>
+    <div class="bar"><div class="seg r1" id="b1"></div><div class="seg r2" id="b2"></div><div class="seg r3" id="b3"></div></div>
+    <div class="label" style="margin-top:22px">wallet · net</div>
+    <div class="big num"><span id="wn">0</span><small>tUSDM</small></div>
+    <div style="margin-top:8px"><div class="ln"><span>escrowed <b class="num" id="wo">0</b></span><span id="wob"></span></div><div class="ln"><span>back <b class="num" id="wb">0</b></span><span id="wbb"></span></div><div class="ln"><span>bid fees paid by suppliers <b class="num" id="bfe">0</b></span></div></div>
+    <div class="label" style="margin-top:22px">money is released only on a signed verdict</div>
+  </section>
+  <section class="node" id="esc" style="left:424px;top:80px;width:332px;height:512px">
+    <div class="label">escrow · Masumi on Cardano preprod</div><div style="font:700 13px var(--f-mono);margin-top:3px">locked <span class="num" id="blk" style="color:var(--amber)">0</span> / 25 tUSDM <span id="bbd"></span></div>
+    <div style="position:absolute;left:0;right:0;top:51px;bottom:0">
+    ${ORDER.map((id,i)=>`<div class="er" id="er-${id}" style="top:${i*116}px"><div class="nm">${byId[id].name}</div><div class="cell" id="ea-${id}">award</div><div class="cell" id="eb-${id}">bond</div></div>`).join("")}</div>
+  </section>
+  ${ORDER.map((id,i)=>`<section class="node sup" id="L-${id}" style="left:880px;top:${RY(i)}px;width:376px;height:${RH}px"><div class="cr cr-${id}"><i></i><b>NeoRack</b><span>GPUs for builders</span><u>Sign up</u></div><div class="sb">
+    <div class="hd"><div style="display:flex;align-items:baseline"><h3>${byId[id].name}</h3><span class="per">${byId[id].persona}</span></div><div class="vcw"><span class="vc" id="v-${id}"></span></div></div>
+    <div class="bid" id="bd-${id}"></div>
+    <div class="gwrap"><div class="gauge"><i id="gf-${id}"></i><u style="left:${GATE/SCALE_MAX*100}%"><span>gate 5</span></u><u id="gt-${id}" style="display:none"><span id="gtl-${id}"></span></u></div></div>
+    <div class="row2"><b class="num" id="sc-${id}">0</b><span id="sl-${id}">verified signups</span><span id="im-${id}" style="margin-left:auto"></span></div></div>
+  </section>`).join("")}
+  <section class="pn" style="left:24px;width:380px"><div class="label">bot signals · context only, never the verdict</div><div id="bots" style="margin-top:4px"></div></section>
+  <section class="pn" style="left:416px;width:470px"><div class="label">board events · SSE</div><ul id="led"></ul></section>
+  <section class="pn" style="left:898px;width:358px"><div class="label">track fit</div><div class="chips" style="margin-top:4px"><span class="chip" id="k1">Discovery: Masumi registry</span><span class="chip" id="k2">Wallet</span><span class="chip" id="k3">Escrow: Masumi, Cardano preprod</span><span class="chip red" id="k4">Dispute path: refund</span></div>
+    <div class="rc off" id="rc" style="margin-top:2px"><div class="n num"><span id="rn">0</span> <small>tUSDM net</small></div><div class="t"><b>14</b> verified signups · <b>0.78</b> each<br>Round 2, shown not executed: TechBlog 50 · CodePodcast 50 · DevNewsletter 0 ${BDG_SIM}</div></div></section>
+  <div class="label" style="position:absolute;left:880px;top:104px">suppliers \u00b7 found in the Masumi registry</div><div class="label" style="position:absolute;left:424px;top:104px;display:none"></div><div class="refund">7 back<small>UNDER GATE REFUND</small></div><div id="coins"></div>`;
+  ORDER.forEach(id=>["pa","pr","pb","pp"].forEach(k=>PATHS[k+"-"+id]=el(k+"-"+id)));
+}
+const TXT={award_release:(a)=>`paid <b>${fmt(a)}</b>`,bond_return:(a)=>`bond back <b>${fmt(a)}</b>`,bond_forfeit:(a)=>`bond forfeited <b>${fmt(a)}</b>`,award_reclaim:(a)=>`award refunded <b>${fmt(a)}</b>`};
+const FLOWS=[]; // active coins
+function fly(pid,cls,label,dur=1100,delay=0){
+  const p=PATHS[pid];if(!p)return;const len=p.getTotalLength();const c=document.createElement("div");c.className="coin "+cls;c.textContent=label;c.style.opacity=0;el("coins").appendChild(c);FLOWS.push({p,c,len,t0:performance.now()+delay,dur});
+}
+function tickCoins(now){for(let i=FLOWS.length-1;i>=0;i--){const f=FLOWS[i];if(now<f.t0)continue;const k=Math.min(1,(now-f.t0)/f.dur);const pt=f.p.getPointAtLength(f.len*ease(k));f.c.style.transform=`translate(${pt.x}px,${pt.y}px) translate(-50%,-50%)`;f.c.style.opacity=k>0.9?(1-k)*10:1;if(k>=1){f.c.remove();FLOWS.splice(i,1)}}requestAnimationFrame(tickCoins)}
+requestAnimationFrame(tickCoins);
+function onEvent(e){const d=e.data;
+  if(e.name==="escrow.locked"){fly((d.kind==="award"?"pa-":"pb-")+d.supplier,"amb",fmt(d.receipt.amount))}
+  if(e.name==="settlement.transfer"){const a=d.receipt.action,id=d.supplier;
+    if(a==="award_release")fly("pp-"+id,"grn",fmt(d.receipt.amount));
+    if(a==="bond_return")fly("pp-"+id,"grn",fmt(d.receipt.amount));
+    if(a==="bond_forfeit")fly("pr-"+id,"red",fmt(d.receipt.amount),1100);
+    if(a==="award_reclaim"){for(let i=0;i<6;i++)fly("pr-"+id,"red sm","",1800,i*140);fly("pr-"+id,"red","+"+fmt(d.receipt.amount)+" back",1800,900);}}}
+function update(s,t){
+  T("clk",sec(t));H("steps",STEPS.map((k,i)=>`<span class="stp ${s.steps[k]==="done"?"done":s.steps[k]==="running"?"on":""}"><i></i>${k}</span>`).join(""));
+  ["b1","b2","b3"].forEach((b,i)=>{const id=s.ranked.filter(x=>s.sup[x].award)[i];P(b,"width",id?s.sup[id].award/20*100+"%":"0%")});
+  T("bal",fmt(s.totalAward));T("blk",fmt(s.locked));H("bbd",s.locked?bdg({action:"lock",id:"x"},false):"");T("bfe",fmt(s.fees));
+  const c=consumer();T("wn",fmt(c.net));T("wo",fmt(c.out));T("wb",fmt(c.back));H("wob",c.out?bdg({action:"lock",id:"x"},false):"");H("wbb",c.back?bdg({action:"x",id:"x"},false):"");
+  const hero=s.heroAt!==null&&t-s.heroAt<2.4;C("stage","hero",hero);C("cons","glow",hero);C("wn","pulse",hero);
+  ["tc1","tc2","tc3"].forEach(x=>C(x,"on",s.tender));
+  C("k1","on",s.chips.discovery);C("k2","on",s.chips.wallet);C("k3","on",s.chips.escrow);C("k4","on",s.chips.dispute);
+  H("bots",botHtml(s));H("led",ledgerHtml(s,6));
+  C("rc","off",!s.receipt);if(s.receipt)T("rn",fmt(s.receipt.consumer.net));
+  SUP.forEach(({id})=>{
+    const u=s.sup[id],v=vm(u,t),lost=u.status==="lost";const k=u.verdict?KCLS[u.verdict.kind]:lost?"lost":"";
+    el("L-"+id).className="node sup "+k;C("er-"+id,"dead",lost);
+    const vc=el("v-"+id);vc.className="vc "+k+(k?" on":"");T(vc,u.verdict?KIND[u.verdict.kind]:lost?KIND.lost_bid:"");
+    H("bd-"+id,u.bid?(lost?`promises <b>${u.bid.promised}</b>/1,000, gate is <b>5</b> ${BDG_SIM}`:`<b>${fmt(u.bid.price)}</b> · ${u.bid.impressions.toLocaleString("en-US")} impr. · <b>${u.bid.promised}</b>/1,000 · <b>${u.pps?u.pps.toFixed(2):"—"}</b>/signup`):u.commit?`sealed ${short(u.commit)}`:"");
+    P("gf-"+id,"width",Math.min(100,(u.imp?v.per1000:0)/SCALE_MAX*100)+"%");
+    const pr=u.bid&&!lost?u.bid.promised:null,gt=el("gt-"+id);gt.style.display=pr?"":"none";if(pr){P(gt,"left",pr/SCALE_MAX*100+"%");T("gtl-"+id,"promised "+pr)}
+    T("sc-"+id,u.imp?v.count:lost?"—":"0");T("sl-"+id,v.vDone?"verified":u.imp?"received, unverified":"verified");
+    T("im-"+id,u.imp?v.imp.toLocaleString("en-US")+" impr.":"");
+    // escrow rows
+    const lk=u.locks,ea=el("ea-"+id),eb=el("eb-"+id);
+    const rel=u.tx.find(r=>r.action==="award_release"),rec=u.tx.find(r=>r.action==="award_reclaim"),br=u.tx.find(r=>r.action==="bond_return"),bf=u.tx.find(r=>r.action==="bond_forfeit");
+    H(ea,lost?"no escrow":lk.award?`<span>award<b>${fmt(lk.award.amount)}</b></span><span>${rel?`<span style="color:var(--verified)">paid →</span> `:rec?`<span style="color:var(--ember)">← refunded</span> `:""}${bdg(rec||rel||lk.award)}</span>`:"award");
+    ea.className="cell "+(lost?"":rec?"red":rel?"out":lk.award?"on":"");
+    H(eb,lost?"no escrow":lk.bond?`<span>bond<b>${fmt(lk.bond.amount)}</b></span><span>${br?`<span style="color:var(--verified)">back → ${fmt(br.amount)}</span> `:""}${bf?`<span style="color:var(--ember)">← forfeit ${fmt(bf.amount)}</span> `:""}${bdg(bf||br||lk.bond)}</span>`:"bond");
+    eb.className="cell "+(lost?"":bf&&!br?"red":br?"out":lk.bond?"on":"");
+    // rails lit by state
+    const lit=(pid,cls,on)=>{const p=el(pid);p.setAttribute("class","rail"+(on?" "+cls:""))};
+    lit("pa-"+id,"amb",lk.award);lit("pb-"+id,"amb",lk.bond);lit("pp-"+id,"grn",rel||br);lit("pr-"+id,"red",rec||bf);
+  });
+}
+start({build,update,onEvent});
+</script>
+</body>
+</html>
