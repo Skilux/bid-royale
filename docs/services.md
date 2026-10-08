@@ -61,7 +61,7 @@ in from hour 1.
 
 | Item | Detail |
 |---|---|
-| What | ElevenLabs voiceover (the NeoRack agent's voice) for the <90 s video; captions always on |
+| What | ElevenLabs voiceover, two voices (NeoRack agent and Tender Board), for the <90 s video; captions always on |
 | Rule | Pre-generate before Oct 8; never burn quota live; captions are the fallback |
 | Status | ☐ narration MP3s rendered and downloaded |
 
