@@ -1,40 +1,37 @@
 @import "tailwindcss";
 
 /*
- * Design tokens. DESIGN.md is not final (#15), so every colour and font lives here and nowhere else.
- * A visual direction swap is a change to this file. Components use the generated utilities
- * (bg-paper, text-ink, border-line, text-gate, font-sans) and never a literal colour.
- * Values are the stand-in palette from docs/design/receipt/settlement-receipt.html.
+ * Design tokens, DESIGN.md section 5. Colours, fonts and easing live here and nowhere else, so a visual
+ * swap is a change to this file. Components use the generated utilities (bg-paper, bg-card, text-ink,
+ * border-line, text-under, font-display) and never a literal colour.
+ * Additions not in DESIGN.md: --color-wash and the three *-bg tints (soft surfaces for bubbles and badges).
  */
-:root {
-  color-scheme: light dark;
-}
-
 @theme {
-  --color-page: light-dark(#f2f3f0, #0f110f);
-  --color-paper: light-dark(#fafaf8, #161916);
-  --color-ink: light-dark(#202a23, #edf2ed);
-  --color-line: light-dark(#d9dfd9, #39433b);
-  --color-soft: light-dark(#edf2ec, #242e26);
-  --color-brand: light-dark(#24573c, #a1d9b4);
-  --color-on-brand: light-dark(#ffffff, #16231a);
-  --color-short: light-dark(#b9770e, #f0c36a);
-  --color-short-bg: light-dark(#fbf1d9, #3a2f12);
-  --color-on-short: light-dark(#ffffff, #2a1f05);
-  --color-gate: light-dark(#a3231f, #ff8a80);
-  --color-gate-bg: light-dark(#fbe6e4, #3a1b1a);
-  --color-on-gate: light-dark(#ffffff, #3a0f0d);
+  --color-paper: #f5f3ee;
+  --color-card: #ffffff;
+  --color-ink: #14130f;
+  --color-ink-2: #4a4740;
+  --color-ink-3: #8a867c;
+  --color-line: #e2ded4;
+  --color-cobalt: #2b4dff;
+  --color-pass: #14935a;
+  --color-short: #c98300;
+  --color-under: #e0321c;
 
-  --color-badge-real: light-dark(#0b5cad, #8cc4ff);
-  --color-badge-simulated: light-dark(#5b665e, #aab5ad);
-  --color-badge-prerecorded: light-dark(#7a3fb0, #d2b0f5);
+  --color-wash: #ece9e0;
+  --color-pass-bg: #e3f4eb;
+  --color-short-bg: #fbf0d6;
+  --color-under-bg: #fdeae7;
 
-  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-display: var(--font-space-grotesk), system-ui, sans-serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+
+  --ease-ui: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 body {
-  background: var(--color-page);
+  background: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-sans);
 }

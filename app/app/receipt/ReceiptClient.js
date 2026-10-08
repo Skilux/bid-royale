@@ -74,17 +74,17 @@ export function ReceiptClient({ runId, fixtureView }) {
 
   return (
     <main className="min-h-screen p-4">
-      <div className="mx-auto max-w-[760px] overflow-hidden rounded-xl border border-line bg-paper p-3.5 text-[15px] sm:p-[22px] leading-normal">
+      <div className="mx-auto max-w-[760px] overflow-hidden rounded-xl border border-line bg-card p-3.5 text-[15px] sm:p-[22px] leading-normal">
         <div className="mb-4 flex items-center justify-between gap-2.5">
           <div>
-            <h1 className="text-base font-semibold">Settlement, told by NeoRack&apos;s buying agent</h1>
+            <h1 className="font-display text-base">Settlement, told by NeoRack&apos;s buying agent</h1>
             <p className="text-[12.5px] opacity-75" data-testid="source">{source}</p>
           </div>
           {view?.settlementDone ? (
             <button
               type="button"
               onClick={() => setReplay((n) => n + 1)}
-              className="cursor-pointer rounded-[7px] bg-brand px-3 py-[7px] text-on-brand"
+              className="cursor-pointer rounded-[7px] bg-cobalt px-3 py-[7px] text-white"
             >
               Replay
             </button>
@@ -132,7 +132,7 @@ function Story({ view, replay }) {
           id: s.supplier,
           time: s.at,
           dot: "no",
-          timeClass: "font-bold text-gate",
+          timeClass: "font-bold text-under",
           node: <UnderGate s={s} shown={shown} reduced={reduced} currency={view.currency} />,
         });
       } else {
@@ -159,14 +159,14 @@ function Story({ view, replay }) {
           transition={{ duration: 0.5 }}
           className="grid grid-cols-[48px_18px_minmax(0,1fr)] gap-x-1.5 sm:grid-cols-[72px_22px_minmax(0,1fr)]"
         >
-          <div className={`pt-[11px] text-right text-[10px] tabular-nums sm:text-xs opacity-75 ${st.timeClass ?? ""}`}>
+          <div className={`pt-[11px] text-right font-mono text-[10px] tabular-nums sm:text-xs opacity-75 ${st.timeClass ?? ""}`}>
             {st.time ? formatClock(st.time) : ""}
           </div>
           <div className="relative">
             <span
               className={`absolute left-[10px] w-0.5 bg-line ${i === 0 ? "top-[18px]" : "top-0"} ${i === steps.length - 1 ? "bottom-[calc(100%-18px)]" : "bottom-0"}`}
             />
-            <span className={`absolute left-[4px] top-[13px] box-content size-3.5 -m-[3px] rounded-full border-[3px] border-paper ${DOT[st.dot ?? "ok"]}`} />
+            <span className={`absolute left-[4px] top-[13px] box-content size-3.5 -m-[3px] rounded-full border-[3px] border-card ${DOT[st.dot ?? "ok"]}`} />
           </div>
           <div className="pb-[18px]">{st.node}</div>
         </Motion.div>
@@ -177,16 +177,16 @@ function Story({ view, replay }) {
 }
 
 const DOT = {
-  ok: "bg-brand",
+  ok: "bg-pass",
   mid: "bg-short",
-  no: "bg-gate",
-  cut: "bg-paper !border-line",
+  no: "bg-under",
+  cut: "bg-card !border-line",
 };
 
 const TAG = {
-  pass: "bg-brand text-on-brand",
-  short_of_promise: "bg-short text-on-short",
-  under_gate: "bg-gate text-on-gate",
+  pass: "bg-pass text-white",
+  short_of_promise: "bg-short text-white",
+  under_gate: "bg-under text-white",
 };
 
 function Tag({ kind, children }) {
@@ -195,7 +195,7 @@ function Tag({ kind, children }) {
 
 function LockBubble({ view }) {
   return (
-    <div className="rounded-[4px_14px_14px_14px] bg-soft px-4 py-3 text-base">
+    <div className="rounded-[4px_14px_14px_14px] bg-wash px-4 py-3 text-base">
       The publishers have had their hour. I locked {formatAmount(view.lock.amount)} {view.currency}
       <Badges kinds={view.lock.badges} /> in {view.lock.count} escrows and asked the Board to check every signup.
     </div>
@@ -220,7 +220,7 @@ function VerdictBubble({ s }) {
       ? `delivered ${s.delivered}. I paid the full ${formatAmount(s.paid)} and returned its ${formatAmount(s.bondReturned)} deposit.`
       : `delivered ${s.delivered}. That clears the minimum of ${s.gate}, so I paid the full ${formatAmount(s.paid)}. It loses ${formatAmount(s.bondForfeited)} of its deposit.`;
   return (
-    <div className="rounded-[4px_14px_14px_14px] bg-soft px-4 py-3 text-base">
+    <div className="rounded-[4px_14px_14px_14px] bg-wash px-4 py-3 text-base">
       <Tag kind={s.kind}>{s.kindLabel}</Tag>
       <strong>{s.name}</strong> promised {s.promised} signups per 1,000 and {verb}
       <div className="mt-2 flex flex-wrap gap-x-3.5 gap-y-1.5 border-t border-line pt-2 text-[13.5px] tabular-nums">
@@ -244,21 +244,21 @@ function UnderGate({ s, shown, reduced, currency }) {
   const fill = Math.min(100, (s.delivered / promised) * 100);
   const showCount = shown.has(`slip:${s.supplier}:2`);
   return (
-    <div className="rounded-[6px_18px_18px_18px] border-2 border-gate bg-gate-bg px-3.5 py-4 text-lg leading-[1.4] sm:px-[22px] sm:py-5 sm:text-xl">
+    <div className="rounded-[6px_18px_18px_18px] border-2 border-under bg-under-bg px-3.5 py-4 text-lg leading-[1.4] sm:px-[22px] sm:py-5 sm:text-xl">
       <Tag kind="under_gate">Under gate</Tag>
       <strong>{s.name}</strong> promised {s.promised} signups per 1,000. It delivered{" "}
       <strong>{s.delivered > 0 ? s.delivered : "none"}</strong>
       {s.delivered > 0 ? `, below the minimum of ${s.gate}` : ""}. I do not pay for promises, so everything comes back to me.
       <div className="mb-1 mt-3.5 flex items-center gap-2.5 text-sm">
         <span>0</span>
-        <div className="relative h-2.5 flex-1 rounded-[5px] border border-line bg-paper">
-          <div className="h-full rounded-[4px] bg-gate" style={{ width: `${fill}%` }} />
+        <div className="relative h-2.5 flex-1 rounded-[5px] border border-line bg-card">
+          <div className="h-full rounded-[4px] bg-under" style={{ width: `${fill}%` }} />
           <i className="absolute -bottom-[5px] -top-[5px] w-0.5 bg-ink" style={{ left: `${markerAt}%` }} />
         </div>
         <span>{s.promised} promised · minimum {s.gate}</span>
       </div>
       {shown.has(`slip:${s.supplier}:0`) ? (
-        <div className="mt-4 rounded-xl border border-line bg-paper px-3 py-3 text-[15px] sm:px-[18px] sm:py-4 sm:text-base">
+        <div className="mt-4 rounded-xl border border-line bg-card px-3 py-3 text-[15px] sm:px-[18px] sm:py-4 sm:text-base">
           <div className="text-[12.5px] opacity-75">REFUND SLIP · verdict signed first, then the money moved</div>
           {rows.map((r, i) =>
             shown.has(`slip:${s.supplier}:${i}`) ? (
@@ -269,7 +269,7 @@ function UnderGate({ s, shown, reduced, currency }) {
             ) : null,
           )}
           {showCount ? (
-            <SlipRow className="flex-wrap items-baseline pt-3 text-[28px] font-bold text-gate sm:text-[32px]">
+            <SlipRow className="flex-wrap items-baseline pt-3 text-[28px] font-bold text-under sm:text-[32px]">
               <span className="text-base">Back in my wallet</span>
               <span>
                 <Counter to={s.refundTotal} reduced={reduced} /> {currency}
@@ -328,7 +328,7 @@ function ExplorerButton({ s }) {
         href={s.explorerUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="mt-3.5 block rounded-[10px] bg-gate px-3.5 py-3.5 text-center text-[17px] font-bold text-on-gate no-underline"
+        className="mt-3.5 block rounded-[10px] bg-under px-3.5 py-3.5 text-center text-[17px] font-bold text-white no-underline"
       >
         Check the refund on the Cardano explorer ↗
       </Motion.a>
@@ -339,7 +339,7 @@ function ExplorerButton({ s }) {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="mt-3.5 rounded-[10px] border border-dashed border-gate px-3.5 py-3 text-center text-sm"
+      className="mt-3.5 rounded-[10px] border border-dashed border-under px-3.5 py-3 text-center text-sm"
     >
       No explorer link: this refund is on the <Badge kind={s.refundBadge} /> ledger, not on chain.
     </Motion.div>
@@ -352,7 +352,7 @@ function FinalReceipt({ view }) {
   return (
     <div className="rounded-[6px_18px_18px_18px] border-2 border-ink p-[18px]">
       <div className="text-[12.5px] opacity-75">FINAL RECEIPT</div>
-      <div className="text-[28px] font-bold leading-[1.1] tabular-nums sm:text-4xl">
+      <div className="font-display text-[28px] leading-[1.1] tabular-nums sm:text-4xl">
         I paid <Money amount={f.paid} badges={f.badges} currency={view.currency} />
         <br />
         for {f.signups} verified signups.
@@ -370,20 +370,20 @@ function FinalReceipt({ view }) {
 }
 
 const CARD = {
-  pass: "border-l-brand",
+  pass: "border-l-pass",
   short_of_promise: "border-l-short",
-  under_gate: "border-l-gate bg-gate-bg",
+  under_gate: "border-l-under bg-under-bg",
   lost_bid: "border-l-line opacity-60",
 };
 
 function LeaderCard({ r }) {
   return (
     <div className={`grid grid-cols-[34px_1fr] items-center gap-x-2.5 gap-y-0.5 rounded-[10px] border border-line border-l-[6px] px-3 py-2.5 ${CARD[r.kind] ?? ""}`}>
-      <div className="row-span-2 text-[26px] font-bold">{r.rank}</div>
+      <div className="row-span-2 font-display text-[26px]">{r.rank}</div>
       <div>
         <strong>{r.name}</strong> <span className="text-[12.5px] opacity-75">· {r.kindLabel}</span>
       </div>
-      <div className={`text-[22px] font-bold leading-tight tabular-nums ${r.kind === "under_gate" ? "text-gate" : ""}`}>
+      <div className={`font-display text-[22px] leading-tight tabular-nums ${r.kind === "under_gate" ? "text-under" : ""}`}>
         {r.kind === "under_gate" ? "Refunded" : r.costPerSignup === null ? "·" : <Money amount={r.costPerSignup} badges={r.badges} />}
         <small className="block text-xs font-normal opacity-75">{cardCaption(r)}</small>
       </div>
@@ -409,7 +409,7 @@ function cardCaption(r) {
   return `per signup · ${r.signups} signups`;
 }
 
-const BAR = ["bg-brand text-on-brand", "bg-short text-on-short", "bg-ink text-paper", "bg-gate text-on-gate"];
+const BAR = ["bg-pass text-white", "bg-short text-white", "bg-cobalt text-white", "bg-ink text-white"];
 
 function RoundTwo({ roundTwo }) {
   const active = roundTwo.filter((r) => r.share > 0);

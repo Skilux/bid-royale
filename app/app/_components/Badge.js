@@ -1,16 +1,16 @@
 const STYLE = {
-  REAL: "text-badge-real",
-  SIMULATED: "text-badge-simulated",
-  "PRE-RECORDED": "text-badge-prerecorded",
+  REAL: "border border-pass bg-pass-bg text-pass",
+  SIMULATED: "border border-dashed border-short text-short",
+  "PRE-RECORDED": "border border-ink bg-ink text-white",
 };
 
-/** Money badge. `kind` is the derived badge from lib/receipt-view (REAL, SIMULATED or PRE-RECORDED). */
+/** Money badge, DESIGN.md section 6. `kind` is the badge derived in lib/receipt-view. */
 export function Badge({ kind, className = "" }) {
   const label = STYLE[kind] ? kind : "SIMULATED";
   return (
     <span
       data-badge={label}
-      className={`ml-1 inline-block rounded-[4px] border border-current px-[5px] py-px align-middle text-[10.5px] font-semibold tracking-[0.04em] ${STYLE[label]} ${className}`}
+      className={`ml-1 inline-block rounded-[4px] px-[5px] py-px align-middle font-mono text-[10.5px] font-semibold tracking-[0.04em] ${STYLE[label]} ${className}`}
     >
       {label}
     </span>
