@@ -8,11 +8,12 @@ import { Badge } from "./_components/Badge";
 import { Brief } from "./_components/Brief";
 import { Chip } from "./_components/Chip";
 import { Dashboard } from "./_components/Dashboard";
+import { flowFontClass } from "./_components/flowFonts";
 import { loadCanned } from "./_components/runSource";
 import { useRunPlayer } from "./_components/useRunPlayer";
 
-const btn = "cursor-pointer rounded-[7px] border border-line bg-card px-3 py-[7px] text-[13px] hover:border-ink disabled:cursor-default disabled:opacity-40";
-const primary = "cursor-pointer rounded-[9px] bg-cobalt px-6 py-3 text-[16px] font-semibold text-white hover:opacity-90";
+const btn = "cursor-pointer rounded-full border border-line bg-card px-3.5 py-[6px] font-mono text-[11px] uppercase tracking-[0.08em] hover:border-ink disabled:cursor-default disabled:opacity-40";
+const primary = "cursor-pointer rounded-[9px] bg-cobalt px-6 py-3 text-[16px] font-semibold text-paper hover:opacity-90";
 
 export function JudgeClient({ demoMode, attachId }) {
   const [phase, setPhase] = useState(attachId ? "run" : "brief");
@@ -61,7 +62,8 @@ export function JudgeClient({ demoMode, attachId }) {
 
   if (phase === "brief") {
     return (
-      <main className="mx-auto min-h-screen max-w-[1100px] p-6">
+      <main className={`flow ${flowFontClass} min-h-screen`}>
+        <div className="mx-auto max-w-[1100px] p-6">
         <Header />
         <div className="mt-5">
           <Brief quoteBadge={quoteBadge} />
@@ -104,6 +106,7 @@ export function JudgeClient({ demoMode, attachId }) {
           </form>
         </details>
         <Honesty />
+        </div>
       </main>
     );
   }
@@ -115,7 +118,8 @@ export function JudgeClient({ demoMode, attachId }) {
       : `Run ${p.meta.runId}.`;
 
   return (
-    <main className="mx-auto min-h-screen max-w-[1280px] p-4">
+    <main className={`flow ${flowFontClass} min-h-screen`}>
+      <div className="mx-auto max-w-[1280px] p-4">
       <div className="mb-3 flex flex-wrap items-center gap-3">
         <Header compact />
         <span data-testid="run-badge">
@@ -151,6 +155,7 @@ export function JudgeClient({ demoMode, attachId }) {
       <DiscoveryBar view={p.view} />
       <Dashboard
         view={p.view}
+        fresh={p.fresh}
         onSelectStep={(key) => {
           p.setPlaying(false);
           goToStep(key);
@@ -175,17 +180,17 @@ export function JudgeClient({ demoMode, attachId }) {
         Event {p.cursor} of {p.total}. Use ← and → to step.
       </p>
       <Honesty />
+      </div>
     </main>
   );
 }
 
 function Header({ compact = false }) {
   return (
-    <h1 className={`font-display leading-none ${compact ? "text-[22px]" : "text-[34px]"}`}>
-      Bid Royale{" "}
-      <span className={`font-sans font-medium text-cobalt ${compact ? "text-[14px]" : "text-[16px]"}`}>
-        AI agents bid for ad budget and get paid only for verified signups
-      </span>
+    <h1 className="flex flex-wrap items-baseline gap-x-2 leading-none">
+      <b className={`font-display font-extrabold uppercase tracking-[0.04em] ${compact ? "text-[22px]" : "text-[34px]"}`}>Bid Royale</b>
+      <em className={`font-serif text-under ${compact ? "text-[22px]" : "text-[34px]"}`}>money flow</em>
+      {compact ? null : <span className="ml-2 text-[13px] font-normal text-ink-2">AI agents bid for ad budget and get paid only for verified signups</span>}
     </h1>
   );
 }
@@ -193,12 +198,12 @@ function Header({ compact = false }) {
 function DiscoveryBar({ view }) {
   if (view.suppliers.length === 0) return null;
   return (
-    <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border border-line bg-card px-3 py-2 text-[13px]" data-testid="discovery">
+    <div className="mb-2.5 flex flex-wrap items-center gap-2 rounded-lg border border-line bg-card/80 px-3 py-1.5 text-[11px]" data-testid="discovery">
       <Chip tone={view.discovery?.source === "seeded" ? "neutral" : "cobalt"}>{view.discovery?.chip ?? "Discovery: Masumi registry"}</Chip>
-      <span className="text-ink-2">{view.suppliers.length} supplier agents:</span>
+      <span className="text-ink-2">{view.suppliers.length} supplier agents</span>
       {view.suppliers.map((s) => (
         <span key={s.id} className="rounded-full border border-line px-2.5 py-px text-[12px]">
-          <b>{s.name}</b> <span className="text-ink-3">{s.persona}</span>
+          <b>{s.name}</b>
         </span>
       ))}
     </div>

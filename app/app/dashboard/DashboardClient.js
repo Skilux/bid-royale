@@ -4,9 +4,10 @@ import { useState } from "react";
 import { SPEEDS } from "@/lib/dashboard/pace";
 import { Badge } from "../_components/Badge";
 import { Dashboard } from "../_components/Dashboard";
+import { flowFontClass } from "../_components/flowFonts";
 import { useRunPlayer } from "../_components/useRunPlayer";
 
-const btn = "cursor-pointer rounded-[7px] border border-line bg-card px-3 py-[6px] text-[13px] hover:border-ink disabled:cursor-default disabled:opacity-40";
+const btn = "cursor-pointer rounded-full border border-line bg-card px-3.5 py-[6px] font-mono text-[11px] uppercase tracking-[0.08em] hover:border-ink disabled:cursor-default disabled:opacity-40";
 
 export function DashboardClient({ initialMode, runId }) {
   const [mode, setMode] = useState(initialMode);
@@ -27,10 +28,12 @@ export function DashboardClient({ initialMode, runId }) {
       : `Live run ${p.meta.runId}.`;
 
   return (
-    <main className="mx-auto min-h-screen max-w-[1280px] p-4">
+    <main className={`flow ${flowFontClass} min-h-screen`}>
+      <div className="mx-auto max-w-[1280px] p-4">
       <header className="mb-3 flex flex-wrap items-center gap-3">
-        <h1 className="font-display text-[22px] leading-none">
-          Bid Royale <span className="font-sans text-[14px] font-medium text-cobalt">dashboard</span>
+        <h1 className="flex items-baseline gap-2 leading-none">
+          <b className="font-display text-[22px] font-extrabold uppercase tracking-[0.04em]">Bid Royale</b>
+          <em className="font-serif text-[22px] text-under">money flow</em>
         </h1>
         <span data-testid="run-badge" className="text-[12px]">
           <Badge kind={p.view.runBadge} />
@@ -61,10 +64,11 @@ export function DashboardClient({ initialMode, runId }) {
           </select>
         </div>
       </header>
-      <Dashboard view={p.view} />
+      <Dashboard view={p.view} fresh={p.fresh} onSelectStep={(key) => (p.setPlaying(false), p.goToStep(key))} />
       <footer className="mt-3 text-[12px] text-ink-3">
         Event {p.cursor} of {p.total}. Bid fees and traffic are SIMULATED. Suppliers are our own agents.
       </footer>
+      </div>
     </main>
   );
 }

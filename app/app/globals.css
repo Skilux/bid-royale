@@ -42,3 +42,67 @@ body {
     animation-duration: 0.01ms !important;
   }
 }
+
+/*
+ * Money flow dashboard theme (9 Oct 2026, #9, #43). Scoped to `.flow`, so /receipt keeps the light tokens.
+ * It redefines the same token names, so Money, Badge, Chip and the utilities restyle with no fork.
+ * Source: docs/design/dashboard/money-flow.html.
+ */
+.flow {
+  --color-paper: #0b0908;
+  --color-card: #151110;
+  --color-ink: #eee6d8;
+  --color-ink-2: rgb(238 230 216 / 0.72);
+  --color-ink-3: rgb(238 230 216 / 0.46);
+  --color-line: rgb(242 228 201 / 0.15);
+  --color-cobalt: #ffd9a0;
+  --color-pass: #72c99a;
+  --color-short: #e7a84b;
+  --color-under: #ed4b43;
+  --color-wash: rgb(238 230 216 / 0.08);
+  --color-pass-bg: rgb(114 201 154 / 0.1);
+  --color-short-bg: rgb(231 168 75 / 0.1);
+  --color-under-bg: rgb(237 75 67 / 0.1);
+  --font-display: var(--font-barlow-cond), "Arial Narrow", sans-serif;
+  --font-sans: var(--font-jb-mono), ui-monospace, monospace;
+  --font-mono: var(--font-jb-mono), ui-monospace, monospace;
+  --font-serif: var(--font-instrument-serif), Georgia, serif;
+  color-scheme: dark;
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  background:
+    radial-gradient(70% 55% at 50% 0%, rgb(207 53 46 / 0.2), transparent 70%),
+    linear-gradient(#0b0908, #100a09);
+}
+/* compact pill badges, as in the concept */
+.flow [data-badge] {
+  border-radius: 999px;
+  padding: 3px 5px;
+  font-size: 8.5px;
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+.flow .rail {
+  fill: none;
+  stroke: rgb(238 230 216 / 0.18);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 5;
+  transition: stroke 600ms var(--ease-ui);
+}
+.flow .rail.amb { stroke: var(--color-short); stroke-dasharray: none; opacity: 0.55; }
+.flow .rail.grn { stroke: var(--color-pass); stroke-dasharray: none; opacity: 0.6; }
+.flow .rail.red { stroke: var(--color-under); stroke-dasharray: none; opacity: 0.9; stroke-width: 2.5; }
+/* CSS-only ad mockups on the supplier cards */
+.flow .cr { position: relative; flex: 0 0 56px; height: 92px; border-radius: 7px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; padding: 6px; border: 1px solid var(--color-line); }
+.flow .cr i { position: absolute; inset: 0; }
+.flow .cr b, .flow .cr span, .flow .cr u { position: relative; display: block; }
+.flow .cr b { font: 800 11px/1 var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; color: #fff; }
+.flow .cr span { font: 700 9px/1.1 var(--font-display); color: rgb(255 255 255 / 0.85); margin: 2px 0 4px; text-transform: uppercase; }
+.flow .cr u { font: 600 7px var(--font-mono); text-decoration: none; text-align: center; padding: 2px 0; border-radius: 2px; background: #fff; color: #111; }
+.flow .cr-techblog i { background: linear-gradient(160deg, #0f2a3a, #1e5f74 60%, #72c99a); }
+.flow .cr-codepodcast i { background: repeating-linear-gradient(90deg, #4b2a6b 0 4px, #7a3fa0 4px 6px), #4b2a6b; }
+.flow .cr-devnewsletter i { background: linear-gradient(180deg, #f4efe4 0 38%, #c9362e 38%); }
+.flow .cr-devnewsletter b { color: #111; }
+.flow .cr-gamingforum i { background: radial-gradient(80% 60% at 50% 0%, #ff3df0, #2a0a4a 70%); }
+.flow .cr-lost { filter: grayscale(1); }

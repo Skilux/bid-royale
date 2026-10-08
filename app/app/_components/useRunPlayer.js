@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { gapsFor, isStepEvent } from "@/lib/dashboard/pace";
 import { reduceEvents } from "@/lib/dashboard/reduce";
 import { buildDashboardView, summarizeSignals } from "@/lib/dashboard/view";
@@ -59,6 +59,15 @@ export function useRunPlayer({ mode = "canned", runId = null, speed = 1, autopla
     return () => clearTimeout(timer);
   }, [playing, cursor, events.length, gaps, meta.kind, speed]);
 
+  // The events newly shown by a small forward step, for the money tokens. A jump, Back or a restart shows none.
+  const prev = useRef({ cursor: 0, runKey });
+  const [fresh, setFresh] = useState({ key: 0, events: [] });
+  useEffect(() => {
+    const before = prev.current.runKey === runKey ? prev.current.cursor : 0;
+    prev.current = { cursor, runKey };
+    if (cursor > before && cursor - before <= 4) setFresh((f) => ({ key: f.key + 1, events: events.slice(before, cursor) }));
+  }, [cursor, runKey, events]);
+
   const state = useMemo(() => reduceEvents(events.slice(0, cursor), { replay: meta.replay }), [events, cursor, meta.replay]);
   const signals = useMemo(() => (snapshot?.feed?.events ? summarizeSignals(snapshot.feed.events) : null), [snapshot]);
   const view = useMemo(() => buildDashboardView(state, { signals }), [state, signals]);
@@ -93,5 +102,5 @@ export function useRunPlayer({ mode = "canned", runId = null, speed = 1, autopla
   );
   const finished = ended && cursor >= events.length && events.length > 0;
 
-  return { view, meta, degraded, playing, setPlaying, cursor, setCursor, total: events.length, ended, finished, next, back, goToStep, events, snapshot };
+  return { view, meta, degraded, playing, setPlaying, cursor, setCursor, total: events.length, ended, finished, next, back, goToStep, events, snapshot, fresh };
 }

@@ -1,7 +1,7 @@
 const STYLE = {
   REAL: "border border-pass bg-pass-bg text-pass",
   SIMULATED: "border border-dashed border-short text-short",
-  "PRE-RECORDED": "border border-ink bg-ink text-white",
+  "PRE-RECORDED": "border border-ink bg-ink text-paper",
   PENDING: "border border-dotted border-ink-3 bg-wash text-ink-2",
 };
 
