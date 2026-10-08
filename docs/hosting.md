@@ -77,7 +77,8 @@ See `.env.example` for the full list. Rules:
   - Lane A — Masumi/payments: API wiring, 10 escrows (6 critical-path REAL, 4 bid fees SIMULATED first), settlement, dry runs
   - Lane B — Wrapper UI/agents/video: UI, agent loops, SSE ledger, script, video
 - **Merge points:** escrow-lock API shape (night start), UI↔settlement
-  wiring (~midnight), full run + video (Oct 7 evening / ~05:00).
+  wiring (~midnight), full run + video (~05:00 on Oct 9). The real build window is
+  Oct 8 21:00 to Oct 9 07:14 (code freeze).
 - **Vercel:** both added to the Vercel project; preview deploys per push.
 - **GitHub:** Vladimir invited as collaborator (Settings → Collaborators)
   before Oct 8.
@@ -88,8 +89,8 @@ See `.env.example` for the full list. Rules:
 git push main ──▶ Vercel auto-deploy ──▶ public URL updates (~1–2 min)
 ```
 
-- The deployed URL is the demo URL. Test it from venue wifi at 17:30 on
-  Oct 8, before building starts.
+- The deployed URL is the demo URL. Test it from venue wifi and from a phone on
+  cellular early in the build window (Oct 8 21:00 to Oct 9 07:14).
 - `/api/health` pre-flight route reports: model reachability, Masumi API
   reachability, wallet balances (tADA) → green/amber/red on the Wrapper UI.
 - Payments are Masumi only. No x402, no second rail.

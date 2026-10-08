@@ -1,6 +1,9 @@
 # Masumi integration notes
 
-How we use the hosted preprod — the rails. Source of truth for API shapes:
+How we use Masumi on preprod — the rails. Our Payment Service is self-hosted on
+Railway ([ADR 0001](adr/0001-railway-for-masumi-rails-vercel-for-product.md),
+[ADR 0002](adr/0002-seller-agents-on-vercel.md)); the registry, faucet and
+explorer are Masumi's. Status as of 9 Oct 2026. Source of truth for API shapes:
 the Masumi docs (https://docs.masumi.network) and
 `masumi-payment-service/CLAUDE.md`
 (https://github.com/masumi-network/masumi-payment-service/blob/main/CLAUDE.md).
@@ -10,7 +13,7 @@ Verify endpoint signatures against the live API on the night; don't trust memory
 
 | Masumi primitive | Our usage |
 |---|---|
-| Payment service (hosted preprod) | 6 escrows per run, all tADA (spec ×10, #24): 3 awards + 3 bonds, REAL. 4 bid fees SIMULATED (PRD D13). Settlement per verdict: every call, amount and measured time in [`docs/money-flow.md`](money-flow.md) |
+| Payment service (self-hosted on Railway, ADR 0001) | 6 escrows per run, all tADA (spec ×10, #24): 3 awards + 3 bonds, REAL. 4 bid fees SIMULATED (PRD D13). Settlement per verdict: every call, amount and measured time in [`docs/money-flow.md`](money-flow.md) |
 | Registry | Board discovers supplier agents for the tender; register OUR 4 policy-bound supplier agents (TechBlog, CodePodcast, DevNewsletter, GamingForum) so discovery is real |
 | Escrow state machine | `FundsLocked → ResultSubmitted → RefundRequested → Disputed` — surfaced in the UI ledger (full state list below) |
 | Decision logging | We send hashes (tender terms, outcome report, signed verdicts); Masumi anchors them |
@@ -22,7 +25,11 @@ Verify endpoint signatures against the live API on the night; don't trust memory
 Facts only — strategy suggestions from that research are discussed separately.
 Items marked **UNVERIFIED** could not be confirmed; verify at preflight.
 
-### Hosted API endpoints & auth
+### Masumi public endpoints & auth
+
+From the 4 Oct research. The Payment API rows below are Masumi's public
+instance. We run our own node instead (ADR 0001), so `MASUMI_PAYMENT_BASE_URL`
+points at our Railway domain. The registry, Swagger shape and explorer rows still apply.
 
 | Resource | URL |
 |---|---|
@@ -37,7 +44,7 @@ Items marked **UNVERIFIED** could not be confirmed; verify at preflight.
 - Auth = API key in the literal **`token`** header, NOT `Authorization: Bearer`.
 - Env names (same set in `docs/hosting.md` and `.env.example`): `MASUMI_PAYMENT_BASE_URL`, `MASUMI_PAYMENT_API_KEY`, `MASUMI_REGISTRY_BASE_URL`, `MASUMI_REGISTRY_API_KEY`, `MASUMI_NETWORK` (`Preprod`), `MASUMI_SELLING_WALLET_VKEY` (registration field `sellingWalletVkey`).
 - Permission levels: **Read** (queries, status reads) / **ReadAndPay** (everything for this build: create, lock, submit result, request/authorize refund) / **Admin** (key management, operator ops). Use `ReadAndPay`; keep `Admin` out of Vercel.
-- **UNVERIFIED:** public self-service issuance of credentials for `payment.masumi.network` — confirm organizer-provided keys before Oct 8. The public Registry service is explicitly experimental / for testing & development (fine for the hackathon, not production).
+- The organizers did not provide a hosted Payment Service or keys (ADR 0001). We issue one wallet-scoped, Preprod-only `ReadAndPay` key per party on our own node (ADR 0002). The public Registry service is explicitly experimental / for testing & development (fine for the hackathon, not production).
 
 ### Endpoints we use
 
@@ -214,7 +221,7 @@ demo on a synchronous chain call — job-token + poll.
 
 ## What we need from the organizers / Masumi mentor
 
-- [ ] Hosted payment-service base URL + API keys (ReadAndPay)
+- [x] ~~Hosted payment-service base URL + API keys (ReadAndPay)~~ Not provided. We self-host on Railway (ADR 0001).
 - [ ] Registry base URL + permission to register our 4 supplier agents
 - [ ] Faucet access / pre-funded wallets (tADA)
 - [ ] Contract version on preprod (V1 or V2) and whether a buyer can reclaim an award after `submitResultTime` without the seller (D9)

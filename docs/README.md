@@ -46,11 +46,13 @@ trail.
 
 | # | Contradiction | Authority | Owner | Status |
 |---|---|---|---|---|
-| C1 | `docs/masumi.md` says the payment service is organizer-**hosted** and still asks organizers for a hosted base URL + keys; `docs/services.md` + ADR 0001 + reality say **we self-host on Railway** (`...5263.up.railway.app`, image `0.29.0`) | ADR 0001 | Danila | OPEN |
-| C2 | `docs/services.md` Status row is all unchecked (`☐ credentials ☐ auth ☐ wallets funded`); `docs/plan/lane-masumi.md` reports the key working, `masumi check` passing, both seeded wallets at 10,000 tADA on-chain | lane doc | Vladimir | OPEN |
-| C3 | `docs/hosting.md` timeline says "venue wifi 17:30 Oct 8, before building starts" and "full run + video (Oct 7 evening / ~05:00)"; the real window is **Oct 8 21:00 → Oct 9 07:14** | `AGENTS.md` §Build order | Danila | OPEN |
+| C1 | `docs/masumi.md` says the payment service is organizer-**hosted** and still asks organizers for a hosted base URL + keys; `docs/services.md` + ADR 0001 + reality say **we self-host on Railway** (`...5263.up.railway.app`, image `0.29.0`) | ADR 0001 | Danila | RESOLVED 9 Oct 2026 (#48): `docs/masumi.md`, `docs/architecture.md` now say self-hosted on Railway, organizer keys marked not provided |
+| C2 | `docs/services.md` Status row is all unchecked (`☐ credentials ☐ auth ☐ wallets funded`); `docs/plan/lane-masumi.md` reports the key working, `masumi check` passing, both seeded wallets at 10,000 tADA on-chain | lane doc | Vladimir | OPEN: needs Vladimir to attest the lane doc balances, then update the `docs/services.md` Status row or leave it marked stale |
+| C3 | `docs/hosting.md` timeline says "venue wifi 17:30 Oct 8, before building starts" and "full run + video (Oct 7 evening / ~05:00)"; the real window is **Oct 8 21:00 → Oct 9 07:14** | `AGENTS.md` §Build order | Danila | RESOLVED 9 Oct 2026 (#48): `docs/hosting.md` and `docs/architecture.md` use the real window and drop the Oct 7 video |
 | C4 | 8 files / 545 lines in `docs/research/` carry no status marker, so a reader cannot tell whether they still hold | this file — `research/` is reference by default | — | PROPOSED |
-| C5 | The shared worktree `/root/bid-royale` sits at `334835b`, **5 commits behind `origin/main`**. Reading files from it yields no `app/lib/board/`, no `/api/run` routes, no `app/scripts/check.mjs`, and the *old* lane doc (0.22.0, wallets unfunded) | `origin/main` | Danila | OPEN |
+| C5 | The shared worktree `/root/bid-royale` sits at `334835b`, **5 commits behind `origin/main`**. Reading files from it yields no `app/lib/board/`, no `/api/run` routes, no `app/scripts/check.mjs`, and the *old* lane doc (0.22.0, wallets unfunded) | `origin/main` | Danila | OPEN: a worktree state, not fixable in docs |
+| C6 | `DESIGN.md` §12 and its header say the video is **2:00** (storyboard #5); `AGENTS.md`, `docs/demo-runbook.md` and the README say **under 90 s** (Win Plan) | `AGENTS.md` (<90 s) | Danila | OPEN (found in #48) |
+| C7 | `app/README.md` says Tailwind and zod are "not there yet" and plans the OpenAI Agents SDK, and lists only `layout.js` and `page.js`; `package.json` has Tailwind and zod, no `@openai/agents`, models run through OpenRouter, and routes `/receipt` and `/api/*` exist | code | Danila | OPEN (found in #48) |
 
 ### C5 in practice, until it is fixed
 

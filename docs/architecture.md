@@ -37,13 +37,13 @@ Paths in the diagram are relative to `app/` (the Vercel root directory), so
 │                     → verified signup counts                           │
 │  lib/settlement/    3 verdict branches per supplier (Pass / Short of   │
 │                     promise / Under gate) → award, bond, forfeit       │
-│  lib/masumi/        Thin client for Masumi hosted preprod: registry    │
+│  lib/masumi/        Thin client for Masumi on preprod: registry        │
 │                     reads, payment-service escrow ops, tx-hash +       │
 │                     explorer-link surfacing                            │
 │  data/seeds/        Seeded supplier registry, tender terms schema      │
 └───────────────┬─────────────────────────────────────┬──────────────────┘
 ┌───────────────▼──────────────────┐  ┌───────────────▼──────────────────┐
-│ MASUMI HOSTED PREPOD (Cardano)   │  │ LLM PROVIDERS                    │
+│ MASUMI PREPOD (Cardano)          │  │ LLM PROVIDERS                    │
 │ • Registry: discovery (read)     │  │ OpenAI (primary)                 │
 │ • Payment service: 10 escrows    │  │ Groq / Gemini keys as fallback   │
 │   (award + bond REAL; bid fee    │  └──────────────────────────────────┘
@@ -54,6 +54,9 @@ Paths in the diagram are relative to `app/` (the Vercel root directory), so
 │ • Explorer: tx links             │
 │   (cardanoscan preprod)          │
 └──────────────────────────────────┘
+
+The Payment Service itself runs on our Railway node (ADR 0001); registry,
+faucet and explorer are Masumi's.
 
 Degrade path if preprod is unreachable: labelled simulated ledger
 (`SIMULATE_PAYMENTS`) + canned replay. Masumi-only by team decision.
@@ -173,6 +176,6 @@ QUOTED.
   ledger continues the demo; badges flip to SIMULATED.
 - LLM provider down → fall back to the Groq or Gemini keys; if all fail →
   `DEMO_MODE=canned`.
-- Anything else on fire at 06:30 → canned replay + the Oct 7 video. The demo
+- Anything else on fire at 06:30 → canned replay + the pre-recorded run. The demo
   never dies; it degrades with honest labels. (06:30 and 07:00 are internal
   buffers before the 07:14 code freeze.)
