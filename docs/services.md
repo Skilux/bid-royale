@@ -10,19 +10,19 @@ need it on the night.
 | What | Hosted payment-service API (escrow), registry (discovery), faucet, explorer |
 | Why | Topic partner's rails; escrow + dispute primitives; 25% track relevance |
 | Access | Provided for the event (confirmed Oct 2): hosted payment-service API + docs |
-| We need from organizers/partner | API base URL, API keys (ReadAndPay level minimum), faucet access for tADA + test USDM, registry write for our 3 publisher agents |
-| Our usage | 3 escrow locks (€6 each) early in the night, in parallel; settlement release/refund; registry reads for discovery; tx hashes → cardanoscan preprod links in UI |
-| Permission levels | Read (queries) / ReadAndPay (lock, release, refund — **this is what we need**) / Admin (disputed arbitration — we do NOT plan to use; our refund path is publisher-authorized, uncontested) |
+| We need from organizers/partner | API base URL, API keys (ReadAndPay level minimum), faucet access for tADA + tUSDM (test USDM on preprod is **UNVERIFIED**, fallback tADA with scaled amounts), registry write for our 4 supplier agents |
+| Our usage | 11 escrows (tUSDM) per run: 6 on the critical path (3 awards, 3 bonds), 5 in the background (4 bid fees, 1 Validator fee); locked early, in parallel. Settlement per verdict (Pass, Short of promise, Under gate). Registry reads for discovery; tx hashes → cardanoscan preprod links in UI |
+| Permission levels | Read (queries) / ReadAndPay (lock, submit result, request/authorize refund — **this is what we need**) / Admin (key management, not arbitration — keep out of Vercel) |
 | Gotchas | Polling is multi-minute per state transition → lock early, parallel; verify auth + reachability before Oct 8 |
-| Status | ☐ API credentials in hand · ☐ auth verified · ☐ wallets funded · ☐ one lock→release dry run with tx hash saved |
+| Status | ☐ API credentials in hand · ☐ auth verified · ☐ wallets funded (Consumer, 4 suppliers, Board, Validator) · ☐ one lock → submit-result → withdraw dry run with tx hash saved · ☐ one refund dry run (Under-gate path, D9) |
 
 ## Vercel (hosting)
 
 | Item | Detail |
 |---|---|
-| What | Next.js 16 hosting for the playground — the single public URL judges open |
+| What | Next.js 16 hosting for the Wrapper UI and the Tender Board — the single public URL judges open |
 | Why | Public URL in minutes; all chain/LLM calls happen server-side; venue wifi only needs HTTPS |
-| Setup | `vercel` CLI; link repo; env vars in project settings; Hobby plan is enough |
+| Setup | Project `ad-slot-auction` exists (created 4 Oct, do not recreate); Git remote is now `bid-royale`; env vars in project settings; Hobby plan is enough |
 | Limits to respect | ~60s function timeout → stepwise scenario + SSE + job-token/poll for settlement |
 | Status | ☐ project linked · ☐ env vars set · ☐ deploy pipeline green |
 
@@ -30,8 +30,8 @@ need it on the night.
 
 | Item | Detail |
 |---|---|
-| Primary | OpenAI (credits confirmed for the event — mechanics to confirm at kickoff) |
-| Fallback | Groq → Gemini, env-swap via AI SDK provider switch; keys pre-tested |
+| Primary | OpenAI Agents SDK (final call at kickoff); OpenAI credits for the event, activation to confirm at kickoff |
+| Fallback | Vercel AI SDK v7, or raw OpenAI function calling; Groq → Gemini keys as LLM fallback, pre-tested |
 | Usage | Agent tool loops only; tight prompts, ≤6–8 tool calls per scenario run |
 | Status | ☐ OpenAI key working · ☐ Groq key tested · ☐ Gemini key tested |
 
@@ -47,13 +47,13 @@ need it on the night.
 
 | Item | Detail |
 |---|---|
-| What | Private repo (flip to public at code freeze Oct 9 — open-sourcing may help the overall prize) |
+| What | Private repo `bid-royale` (flip to public at code freeze Oct 9 — open-sourcing may help the overall prize) |
 | Why | Codebase is a judged deliverable; commit history is evidence |
 | Collab | Invite Vladimir as collaborator before Oct 8; both push to `main` |
 
 ## Payment rail: Masumi ONLY (team decision Oct 4)
 
-No x402, no second rail. If Masumi preprod is unreachable, the demo degrades
+No x402, Masumi-only, no second rail. If Masumi preprod is unreachable, the demo degrades
 to the labelled simulated ledger + canned replay — both honest, both built
 in from hour 1.
 

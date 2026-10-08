@@ -9,8 +9,10 @@
 > Danila first.** Do not assume the scaffold is decided. Do not build blindly on it.
 
 This repo is the **Ad Slot Auction** entry for the Agentic Economy track.
-The PRD (v2.2, in Notion: "Ad Slot Auction — PRD & build brief") is the spec.
-This file is the law for how we build it on Oct 8–9.
+The spec is in Notion: "Ad Slot Auction — PRD & build brief" (v3.0), plus
+"Ad Slot Auction: Money Flow, Step by Step" and "Ad Auction — Diagrams". Where
+they differ from PRD v2.2, the Money Flow and Diagrams pages win. Terms are in
+`GLOSSARY.md`. This file is the law for how we build it on Oct 8–9.
 
 ## Agent skills
 
@@ -50,8 +52,8 @@ Canonical five: `needs-triage`, `needs-info`, `ready-for-agent`,
 
 ### Domain docs
 
-Single-context: `GLOSSARY.md` + `docs/adr/` at the repo root (created lazily
-when terms or decisions land). See `docs/agents/domain.md`.
+Single-context: `GLOSSARY.md` (exists) + `docs/adr/` at the repo root (ADRs
+created lazily when decisions land). See `docs/agents/domain.md`.
 
 ## The one rule above all
 
@@ -62,16 +64,19 @@ you're off the rails.
 
 ## Build order (PRD §12 — follow it)
 
-1. Outcome feed: simulated shop + signed conversion events + attribution
+1. NeoRack signup feed: simulated shop + signed signup events + attribution
    (the heart — build first)
 2. Wrapper UI shell: brief → dashboard → receipt (static first)
-3. Verifier: signature + attribution + window checks (deterministic)
-4. Allocation engine: bid evaluation + winner picking; round-2 decision logic
-5. Masumi: discover publisher agents via registry; publish tender on our board,
-   collect sealed bids + 3 escrow locks (early in the night, in parallel)
-   + settlement wiring
-6. Publisher agents (3 bidders): two clean, one bot-flood (the rehearsed failure)
-7. Settlement beat + ROI leaderboard + receipt
+3. Verifier module (exposed as the Validator agent): signature + attribution +
+   window checks (deterministic)
+4. Tender Board auction engine: commit-reveal bid evaluation + winner picking;
+   round-2 decision logic (shown on the receipt, no chain ops)
+5. Masumi: discover Supplier agents via registry; publish tender on our board,
+   collect sealed bids + 11 escrow locks (early in the night, in parallel;
+   6 on the critical path) + settlement wiring
+6. Supplier agents (4 bidders): TechBlog Pass, CodePodcast Short of promise,
+   DevNewsletter Under gate (the rehearsed failure), GamingForum below the gate
+7. Settlement beat (3 verdict branches) + ROI leaderboard + receipt
 8. 2-min video cut
 
 ## Hard rules
@@ -83,17 +88,18 @@ you're off the rails.
 - **Label everything money-related:** `REAL` (preprod tx + explorer link),
   `SIMULATED` (labelled ledger), `PRE-RECORDED` (canned replay). A simulated
   payment without a badge is a bug.
-- **Chain gets hashes only.** On-chain: task ID, agent DIDs, price + escrow
+- **Chain gets hashes only.** On-chain: task ID, agent identifiers, price + escrow
   ref, hashes of spec/result/verification report, settlement outcome,
   timestamp. Evidence (logs, reports, attribution) stays off-chain in the
   evidence store.
-- **The verifier is deterministic.** Signature valid? Session attributed to
-  the publisher? Timestamp within window? → count. Bot signals (click bursts,
+- **The verifier is deterministic.** Signature valid? Signup attributed to
+  the supplier? Timestamp within window? → count. Bot signals (click bursts,
   datacenter ASNs) are dashboard context only — never the verdict.
 - **Timeouts on every `fetch`.** AbortController everywhere; every agent run
   gets a max-turn cap. On failure: degrade to canned mode, never crash.
 - **Canned mode from hour 1.** `DEMO_MODE=canned` replays a recorded
-  successful run. This is the 07:00 lifeline — do not build it at 6am.
+  successful run. This is the 07:00 lifeline (an internal buffer before the 07:14 code freeze) —
+  do not build it at 6am.
 - **Lock escrows early, in parallel.** Payment-service polling is
   multi-minute per transition. Escrow ops start as soon as bids are in.
 - **Vercel-friendly runs.** Functions have ~60s limits: stepwise scenario,
@@ -113,7 +119,7 @@ a merged violation is expensive.
       scenario with a visible outcome" true? Sandbox transactions count; every
       simulated payment is labelled.
 - [ ] **In scope:** does this serve the allocate → verify → settle loop
-      (PRD v2.2)? A new capability outside that loop is scope creep — ask first.
+      (PRD v3.0)? A new capability outside that loop is scope creep — ask first.
 - [ ] **Honestly labelled:** every money-related element carries the right badge —
       `REAL` (preprod tx + explorer link), `SIMULATED`, or `PRE-RECORDED`.
       No exceptions.
@@ -123,18 +129,43 @@ a merged violation is expensive.
 - [ ] **Architecture-dependent?** If this touches the stack, services, hosting,
       or component contracts — the scaffold rule applies: verify with Danila first.
 
+## Non-goals (PRD)
+
+- Real fraud forensics (bot signals are dashboard context only)
+- Creative production
+- A generalized DSP
+- Multi-round live reallocation on-chain (round 2 is shown on the receipt, no chain ops)
+- A Sokosumi-style marketplace
+- A generic pay-for-APIs agent
+- Any feature that does not serve the allocate → verify → settle loop
+
 ## What "done" means per component
 
-- Outcome valid: signed by shop key, session attributed to publisher,
+- Signup valid: signed by shop key, attributed to the supplier,
   timestamp within window.
-- Bid valid: sealed, on time, quote schema valid (promised outcome rate + price).
-- Performance gate: ≥5 verified outcomes / 1k impressions → release; else refund.
-- Settlement checks measured outcomes against the bid quote AND the gate.
+- Bid valid: sealed (commit hash before the deadline, reveal after close,
+  Board recomputes and rejects mismatches), on time, quote schema valid
+  (promised signups per 1,000 + price + impressions). Eligible only if promised
+  per 1,000 ≥ 5.
+- Bond: 25% of award, locked by each winner in escrow (Board is seller).
+- Verdict, one of 3 per supplier (plus Lost bid, rejected before the auction):
+  - **Pass**: delivered ≥ promised. Supplier is paid the full award, bond returned.
+  - **Short of promise**: gate (5 per 1,000) ≤ delivered < promised. Supplier is
+    paid the full award, bond forfeited pro rata:
+    bond × (promised − delivered) ÷ promised.
+  - **Under gate**: delivered < 5 per 1,000. Award goes back to the Consumer,
+    full bond forfeited to the Consumer. Refund path A2 (supplier never submits,
+    Consumer reclaims after the submit-result deadline) is open until the D9
+    preprod dry run.
+- Universal checks, every verdict: deadline met, report schema valid, evidence
+  attached. Delivery sanity is advisory, not gating.
+- Settlement checks measured signups against the bid quote AND the gate.
 
 ## Never cut (in this order, cut top-down everything else)
 
 1. ElevenLabs voiceover → captions
-2. Arbiter autonomy → scripted verdict (keep the visible refund)
+2. Bot-signal panel and round-2 on the receipt (dashboard polish)
 3. Multi-seller discovery → seeded registry (discovery UI stays)
-4. **Never cut:** real escrow + refund tx with explorer links, <30s playground,
-   badges, 2-min video, README honest-limitations section.
+4. **Never cut:** real escrow + award and bond tx with explorer links
+   (including the Under-gate refund), <30s Wrapper UI run, badges, 2-min video,
+   README honest-limitations section.

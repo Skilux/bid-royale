@@ -1,22 +1,33 @@
-# `app/` — the playground
+# `app/` — the Wrapper UI
 
-**Build on the night:** `npx create-next-app@latest` (TypeScript, App Router,
-Tailwind) scaffolded here.
+**Already scaffolded:** Next 16.3.8, React 19, plain JS (no TypeScript).
+Package name `ad-slot-auction`; scripts `dev`, `build`, `start`. Exists today:
+`app/package.json`, `app/app/layout.js`, `app/app/page.js` (a placeholder
+heading). Not there yet: Tailwind, zod, the agent SDK, any route below.
+
+**To add on the night (plan):** Tailwind, zod, the OpenAI Agents SDK (final
+call at kickoff), the routes below.
 
 ## Purpose
 
 The one public URL the judges open. No signup, no wallet, no install.
-Campaign brief → tender board → live dashboard → settlement beat → receipt.
+Brief → tender → live dashboard → settlement beat → receipt.
 
 ## Contract
 
 - **Inputs:** user clicks ("Run demo"), SSE subscription.
 - **Outputs:** rendered scenario stages; live event ledger; REAL / SIMULATED /
   PRE-RECORDED badges on every money element.
-- **Routes (plan):** `/` (brief + run button), `/tender` (board + bids),
-  `/dashboard` (impressions + verified outcomes per publisher, ROI),
-  `/receipt` (spent / refunded, round-2 allocation), `/api/health` (pre-flight),
-  `/api/events` (SSE stream), `/api/*` (orchestrator: tender, bids, settle).
+- **Dashboard (plan):** the tender, the 4 bids, GamingForum shown as rejected
+  below the gate, impressions and verified signups per supplier, verdict
+  badges (Pass, Short of promise, Under gate, Lost bid).
+- **Receipt (plan):** Consumer net −10.875 tUSDM for 14 verified signups;
+  round-2 reallocation shown as the optimizer's decision (illustrative).
+- **Routes (plan):** `/` (brief + run button), `/tender` (tender + bids),
+  `/dashboard` (impressions + verified signups per supplier, verdicts),
+  `/receipt` (spent / returned / forfeited, round-2 allocation),
+  `/api/health` (pre-flight), `/api/events` (SSE stream), `/api/*` (Tender
+  Board: tender, bids, settle).
 
 ## Done when
 

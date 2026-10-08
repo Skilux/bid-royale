@@ -10,11 +10,11 @@ Verify endpoint signatures against the live API on the night; don't trust memory
 
 | Masumi primitive | Our usage |
 |---|---|
-| Payment service (hosted preprod) | 3 escrow locks (€6 each, test USDM) + settlement: 2 releases, 1 publisher-authorized refund |
-| Registry | Discover publisher agents for the tender; register OUR 3 policy-bound publisher agents so discovery is real |
+| Payment service (hosted preprod) | 11 escrows per run, all tUSDM: 6 critical (3 awards, 3 bonds) + 5 background (4 bid fees, 1 Validator fee). Settlement per verdict, calls per branch in "The escrow lifecycle in our demo" |
+| Registry | Board discovers supplier agents for the tender; register OUR 4 policy-bound supplier agents (TechBlog, CodePodcast, DevNewsletter, GamingForum) so discovery is real |
 | Escrow state machine | `FundsLocked → ResultSubmitted → RefundRequested → Disputed` — surfaced in the UI ledger (full state list below) |
-| Decision logging | We send hashes (spec, outcome report, verification report); Masumi anchors them |
-| Faucet | tADA (fees) + test USDM (escrow funds) for our wallets — ⚠️ test USDM on preprod is **UNVERIFIED**, see "Funding" below |
+| Decision logging | We send hashes (tender terms, outcome report, signed verdicts); Masumi anchors them |
+| Faucet | tADA (fees) + tUSDM (escrow funds) for our wallets — ⚠️ test USDM on preprod is **UNVERIFIED**, see "Funding" below |
 | Explorer | cardanoscan preprod links per tx, shown in the UI |
 
 ## Masumi platform facts (Perplexity deep research, 2026-10-04)
@@ -35,7 +35,7 @@ Items marked **UNVERIFIED** could not be confirmed; verify at preflight.
 | Preprod explorer | `https://preprod.cardanoscan.io/transaction/{txHash}` |
 
 - Auth = API key in the literal **`token`** header, NOT `Authorization: Bearer`.
-- Env naming convention: `MASUMI_PAYMENT_BASE_URL`, `MASUMI_PAYMENT_API_KEY`, `MASUMI_REGISTRY_BASE_URL`, `MASUMI_REGISTRY_API_KEY`; network `Preprod`.
+- Env names (same set in `docs/hosting.md` and `.env.example`): `MASUMI_PAYMENT_BASE_URL`, `MASUMI_PAYMENT_API_KEY`, `MASUMI_REGISTRY_BASE_URL`, `MASUMI_REGISTRY_API_KEY`, `MASUMI_NETWORK` (`Preprod`), `MASUMI_SELLING_WALLET_VKEY` (registration field `sellingWalletVkey`).
 - Permission levels: **Read** (queries, status reads) / **ReadAndPay** (everything for this build: create, lock, submit result, request/authorize refund) / **Admin** (key management, operator ops). Use `ReadAndPay`; keep `Admin` out of Vercel.
 - **UNVERIFIED:** public self-service issuance of credentials for `payment.masumi.network` — confirm organizer-provided keys before Oct 8. The public Registry service is explicitly experimental / for testing & development (fine for the hackathon, not production).
 
@@ -44,9 +44,9 @@ Items marked **UNVERIFIED** could not be confirmed; verify at preflight.
 | Operation | Endpoint | Permission |
 |---|---|---|
 | Get selling wallet | `GET /registry/wallet?network=Preprod` | Read |
-| Register publisher agent | `POST /registry` (goes through the **Payment Service**, not the read-only Registry service) | ReadAndPay |
+| Register supplier agent | `POST /registry` (goes through the **Payment Service**, not the read-only Registry service) | ReadAndPay |
 | Registration status | `GET /registry?network=Preprod` | Read |
-| Discover publishers | Registry `POST /registry-entry-search/` | Registry API key |
+| Discover supplier agents | Registry `POST /registry-entry-search/` | Registry API key |
 | Create escrow terms | `POST /payment` — produces signed `blockchainIdentifier`; does **NOT** lock funds | ReadAndPay |
 | Lock funds | `POST /purchase` — buyer builds & submits the lock tx | ReadAndPay |
 | Seller-side status | `GET /payment` | Read |
@@ -59,8 +59,9 @@ Items marked **UNVERIFIED** could not be confirmed; verify at preflight.
 **Critical:** there is no documented manual `/release` endpoint. "Release" in our
 demo = `POST /payment/submit-result` → `ResultSubmitted` → after `unlockTime`,
 the Payment Service authorizes and collects automatically → `Withdrawn`. Do NOT
-mark the publisher as paid on HTTP 200 from submit-result — only when the
-seller-side payment reaches `Withdrawn`.
+mark the supplier as paid on HTTP 200 from submit-result — only when the
+seller-side payment reaches `Withdrawn`. "Withdraw" is therefore not an API call
+we make: we poll for `Withdrawn` (payment) or `RefundWithdrawn` (refund).
 
 ### Escrow state machine (`onChainState` values)
 
@@ -80,7 +81,8 @@ seller-side payment reaches `Withdrawn`.
 | `RefundRequested` | Seller submits a result | Seller | `Disputed` |
 | Any active state, malformed datum | Automatic reconciliation | Automatic | `FundsOrDatumInvalid` |
 
-- The arbitrated path to `DisputedWithdrawn` is **UNVERIFIED** — avoid it by having the publisher auto-authorize failed verification results.
+- The arbitrated path to `DisputedWithdrawn` is **UNVERIFIED** — avoid it: verify first, call submit-result only on Pass / Short of promise, and never after a buyer refund request (a refund request after `ResultSubmitted` gives `Disputed`).
+- **D9 (open, deadline before 8 Oct):** preprod contract V1 vs V2. V2 allows `AuthorizeRefund` from any state, V1 only from `Disputed`. This decides whether the `RefundRequested` → `RefundAuthorized` rows above and the bond refund on Pass work as written. Settle it with the preprod dry run.
 - No idempotency-key header is documented for `POST /purchase`: if the call times out, query status by `blockchainIdentifier` before retrying — duplicate attempts can conflict.
 
 Terminal states for polling: `Withdrawn`, `RefundWithdrawn`, `DisputedWithdrawn`, `FundsOrDatumInvalid`.
@@ -110,8 +112,8 @@ Terminal states for polling: `Withdrawn`, `RefundWithdrawn`, `DisputedWithdrawn`
 
 ### Decision logging
 
-- On-chain: hashes only — `inputHash` commits the tender/bid terms (version, tender, publisher `agentIdentifier`, bid commitment, accepted bid, creative hash, verification-policy hash); `resultHash` commits the outcome manifest (escrow id, outcome, impressions/clicks/conversions, policy version, evidence Merkle root, evidence URI, evaluated-at). `resultHash` is the proof used in settlement/dispute.
-- Off-chain (evidence store): tender body, all sealed bids + salts, losing bids, creatives, impression/click/conversion logs, user identifiers/IPs, oracle receipts, full verification trace, hash preimages. Store manifests immutably; if an object URL can change, hash the bytes and include the content hash in the anchored manifest.
+- On-chain: hashes only — `inputHash` commits the tender/bid terms (version, tender, supplier `agentIdentifier`, bid commitment, accepted bid, creative hash, verification-policy hash); `resultHash` commits the outcome manifest (escrow id, outcome, impressions/signups, policy version, evidence Merkle root, evidence URI, evaluated-at). `resultHash` is the proof used in settlement/dispute.
+- Off-chain (evidence store): tender body, all sealed bids + salts, losing bids, creatives, impression/signup logs, user identifiers/IPs, oracle receipts, full verification trace, hash preimages. Store manifests immutably; if an object URL can change, hash the bytes and include the content hash in the anchored manifest.
 
 ### Identity / DID note
 
@@ -127,14 +129,15 @@ Terminal states for polling: `Withdrawn`, `RefundWithdrawn`, `DisputedWithdrawn`
 ### Funding & faucets
 
 - The safe payment asset is **tADA**: Cardano testnet faucet; preprod tADA has no monetary value.
-- Funding checklist: advertiser purchasing wallet (3 budgets + tx overhead), every seller wallet (tADA for submit-result/refund-authorization fees), registry minting wallet; add collateral if requested. Fund ≥24h before the event; don't rely on a faucet during the demo.
+- Funding checklist (tUSDM + ADA): Consumer purchasing wallet (20 tUSDM of awards + tx overhead), 4 supplier wallets (bid fee 0.2 + bond; they also sell, so each needs ADA for submit-result fees), Board wallet (bonds, Validator fee, forwarded forfeits; sells bid fees and bonds), Validator wallet (sells; ADA for fees), registry minting wallet; add collateral if requested. Fund ≥24h before the event; don't rely on a faucet during the demo.
+- Amounts like 0.2, 0.375 and 1.125 tUSDM need the asset's decimals as integer strings; the decimals are **UNVERIFIED** with the asset itself.
 - **Test USDM on Preprod is UNVERIFIED and contradictory:** the Masumi Dispenser advertises ADA + USDM for Testnet but requires a verification code + ADA collateral; older official docs say USDM is not available on Preprod. Research recommendation: **tADA for the judged flow**; use test USDM only if organizers provide a dispenser code, exact policy/asset ID, decimals, and funded wallets. Never hard-code mainnet USDM's policy ID into Preprod. Dispenser rate limits: **UNVERIFIED**. Commonly reported faucet limit: one request per address per 24h (confirm in the faucet UI on the day).
-- ⚠️ Conflicts with this file's current plan ("€6 each, test USDM") — to be decided with Vladimir.
+- ⚠️ Conflicts with this file's plan (all amounts in tUSDM, test USDM **UNVERIFIED**): fallback is tADA with scaled amounts. Decide with Vladimir once the organizers answer.
 
 ### Fees & minimums
 
 - V2: 0% Masumi protocol fee; Cardano network fees still apply. V1 fee is payment-source configuration, not a fixed number — inspect `GET /payment-source` or the hosted dashboard; treat the hosted V1 fee as **UNVERIFIED until preflight**.
-- No universal minimum escrow amount is documented; transactions must satisfy Cardano min-UTxO + collateral. Avoid dust — a few tADA per escrow for the demo. Keep the purchasing wallet funded well above the sum of bids; keep several tADA in every seller wallet.
+- No universal minimum escrow amount is documented; transactions must satisfy Cardano min-UTxO + collateral. Avoid dust — a few tADA per escrow in the tADA fallback. Keep the purchasing wallet funded well above the 20 tUSDM of awards; keep several tADA in every seller wallet.
 
 ### Integration paths (TypeScript team, ~10h)
 
@@ -166,22 +169,66 @@ Missing `/api/v1` in base URL · `Authorization: Bearer` instead of `token` head
 - **Read** — registry queries, payment status reads.
 - **ReadAndPay** — lock escrow, submit results (release happens automatically
   after `unlockTime`), request/authorize refunds. **This is the level we need.**
-- **Admin** — disputed arbitration. We do NOT plan to use it: our failure
-  path is the uncontested publisher-authorized refund (the publisher agent
-  signed the policy card, so it authorizes its own refund).
+- **Admin** — key management and operator ops, not arbitration. We do NOT use
+  it and keep it out of Vercel. Our failure path is the refund path below,
+  not the arbitrated `DisputedWithdrawn` path.
 
 ## The escrow lifecycle in our demo
 
+All 11 escrows use the same two lock calls: the seller creates terms with
+`POST /payment` (no funds move), the buyer locks with `POST /purchase`.
+Every escrow ends in `Withdrawn` or `RefundWithdrawn`, collected by the node.
+
+| Escrow | Count | Path | Buyer (locks) | Seller (submits result, collects) |
+|---|---|---|---|---|
+| Bid fee, 0.2 tUSDM | 4 | background | Supplier agent | Board |
+| Award (7, 6, 7) | 3 | critical | Consumer agent | Supplier agent |
+| Bond, 25% of award (1.75, 1.5, 1.75) | 3 | critical | Supplier agent (winner) | Board |
+| Validator fee, 0.8 tUSDM | 1 | background | Board | Validator agent |
+
+Bid fee and Validator fee: seller calls `submit-result`, then collects after
+`unlockTime`. No refund calls, ever (the bid fee is never returned). The
+Validator's `resultHash` commits its signed verdicts (inferred from "Decision logging").
+
+Award and bond calls per settlement branch (verdict comes from the Validator
+agent before any call; "collect" = automatic after `unlockTime`):
+
+| Branch | Award (Consumer buys from Supplier) | Bond (Supplier buys from Board) |
+|---|---|---|
+| Pass (delivered ≥ promised) | Supplier `submit-result`, collects the full award → `Withdrawn` | Board `authorize-refund`, Supplier collects the full bond → `RefundWithdrawn` |
+| Short of promise (≥ 5, < promised) | Same as Pass | Board `submit-result`, collects the full bond → `Withdrawn`; then plain transfers: bond − forfeit to Supplier, forfeit to Consumer. Forfeit = bond × (promised − delivered) ÷ promised |
+| Under gate (< 5) | Path A2 (below): Supplier never submits; Consumer reclaims after `submitResultTime` | Board `submit-result`, collects the full bond → `Withdrawn`; then a plain transfer of the full bond to Consumer |
+| Lost bid | No award | No bond; bid fee only, not returned |
+
+- **A2, Under-gate award (open until the D9 dry run):** the Supplier never calls
+  `submit-result`. After `submitResultTime` the Consumer reclaims the award with
+  no supplier signature. The exact Masumi call for a buyer-only reclaim is not in
+  this research: confirm it in the dry run. Fallback if the contract rejects it:
+  Consumer `POST /purchase/request-refund` (`FundsLocked` → `RefundRequested`),
+  then Supplier `POST /payment/authorize-refund` → `RefundWithdrawn`. Our own
+  supplier agent signs it. Never `submit-result` here: a refund request after
+  `ResultSubmitted` gives `Disputed`.
+- **Pass, bond refund (inferred, depends on D9):** under V1 the Board's
+  `authorize-refund` may need the Supplier's `request-refund` first
+  (`RefundRequested`); under V2 it works from `FundsLocked`.
+- **Plain transfers** (bond remainder, forfeit) are not escrows and not Masumi
+  calls. They are a trust assumption on the Board and go in honest limitations.
+- Per-supplier states: Pass and Short of promise end `SETTLED`, Under gate ends
+  `REFUNDED`, Lost bid never leaves `QUOTED`.
+
 ```text
-1. Allocation engine picks 3 winners from sealed bids
-2. For each winner (IN PARALLEL, early in the night):
-     lock €6 → FundsLocked (save tx hash + explorer link)
-3. Traffic serves (off-chain, simulated)
-4. Publishers submit outcome reports → ResultSubmitted (hash on-chain)
-5. OUR verifier runs deterministic checks (off-chain)
-6. Settlement engine decides per publisher:
-     gate passed → submit result → auto-release → SETTLED (Withdrawn)
-     gate failed → publisher agent authorizes refund → RefundRequested → REFUNDED
+1. Brief + tender: Consumer publishes the tender (gate 5/1,000, bond 25%); Board
+   finds suppliers in the registry, POSTs /tender-invite to each api_base_url
+2. Bidding: each of 4 suppliers locks the 0.2 bid fee (4 escrows, background);
+   commit hash, reveal, Board checks hashes, ranks cheapest per promised signup,
+   picks 3 winners within budget 20
+3. Lock (IN PARALLEL, early in the night): Consumer locks 3 awards, each winner
+   locks its bond → FundsLocked (save tx hash + explorer link)
+4. Traffic serves (off-chain, simulated); NeoRack signup feed → Validator;
+   Board locks the 0.8 Validator fee; Validator signs a verdict per supplier
+5. Settlement engine, per supplier, by verdict (table above):
+     Pass / Short of promise → submit result → collect → SETTLED
+     Under gate → refund path → REFUNDED
 ```
 
 **Timing reality:** polling a state transition takes minutes. Locks go out as
@@ -190,18 +237,23 @@ Never block the demo on a synchronous chain call — job-token + poll.
 
 ## Registry usage
 
-- Our 3 publisher agents (TechBlog, CodePodcast, DevNewsletter) get registered
-  with service cards: capability ("tech-audience ad inventory"), input/output
-  schema, price, delivery window.
-- The advertiser agent discovers them via registry query → invites them to
-  the tender on OUR board. (The registry is passive — it doesn't run bidding;
-  the tender board + sealed-bid auction is our product layer.)
+- Our 4 supplier agents (TechBlog, CodePodcast, DevNewsletter, GamingForum) get
+  registered with service cards: capability ("tech-audience ad inventory"),
+  input/output schema, price, delivery window.
+- The Board discovers them via registry query (`POST /registry-entry-search/`),
+  reads each entry's `apiBaseUrl` and sends the tender to our custom
+  `POST /tender-invite`. MIP-003 `/start_job` is NOT used: calling it would make
+  the Board a paying buyer. (Reading `apiBaseUrl` implies registering as
+  `Standard`, not `OpenApi`: confirm at preflight.) The registry is passive: it
+  doesn't run bidding; the Tender Board + sealed-bid auction is our product layer.
+  Proactive supplier discovery (GamingForum finds the Board) is pitch only.
 
 ## What we need from the organizers / Masumi mentor
 
 - [ ] Hosted payment-service base URL + API keys (ReadAndPay)
-- [ ] Registry base URL + permission to register our 3 agents
-- [ ] Faucet access / pre-funded wallets (tADA + test USDM — ⚠️ test USDM UNVERIFIED, see above)
+- [ ] Registry base URL + permission to register our 4 supplier agents
+- [ ] Faucet access / pre-funded wallets (tADA + tUSDM — ⚠️ test USDM UNVERIFIED, see above)
+- [ ] Contract version on preprod (V1 or V2) and whether a buyer can reclaim an award after `submitResultTime` without the seller (D9)
 - [ ] Kickoff questions: recommended integration path for a 10h build
       (payment-service REST vs `pip-masumi` vs MCP server)? What breaks most
       often? Any rate limits for the night?

@@ -1,24 +1,36 @@
-# `lib/verifier/` — deterministic outcome verification
+# `lib/verifier/` — deterministic signup verification
 
 ## Purpose
 
-Turns signed conversion events into verified outcome counts. Deterministic —
+Turns signed signup events into verified signup counts and a signed verdict
+per supplier. Exposed as the Validator agent (`lib/agents/`). Deterministic —
 no LLM, no judgement calls.
 
 ## Contract
 
-- **Inputs:** conversion events + shop public key + attribution map
-  (session → publisher) + campaign window.
+- **Inputs:** signup events + shop public key + attribution map
+  (session → supplier) + campaign window + per supplier: impressions served
+  and promised signups per 1,000 + the gate (5 per 1,000).
 - **Checks (all three must pass):**
   1. Signature valid (shop key)?
-  2. Session ID attributed to this publisher?
+  2. Session ID attributed to this supplier?
   3. Timestamp within the campaign window?
-- **Outputs:** `VerifiedCounts { publisherId: count }`.
+- **Outputs (plan):** `VerifiedCounts { supplierId: count }` and
+  `Verdict { supplierId, delivered, promised, verdict }`, signed by the
+  Validator.
+  `verdict` = `Pass | ShortOfPromise | UnderGate`. `LostBid` is set by the
+  Board before the auction and never reaches the verifier.
+- **Verdict rule:** delivered ≥ promised → Pass; delivered ≥ 5 but below
+  promised → ShortOfPromise; delivered < 5 → UnderGate. Delivered = verified
+  signups per 1,000 impressions.
 - **Rules:** bot signals (click bursts, datacenter ASNs) are supporting
   context for the dashboard only — never the verdict. The gate is crude on
-  purpose; the threshold is a policy choice (default ≥5 / 1k).
+  purpose; 5 per 1,000 is a policy choice. The verdict hash goes to the
+  decision log. The Validator is paid 0.8 tUSDM by the Board out of the bid
+  fees.
 
 ## Done when
 
-8 / 6 / 0 counts are reproduced exactly, and a tampered signature or
+Delivered 8 / 6 / 0 is reproduced exactly (TechBlog Pass, CodePodcast Short
+of promise, DevNewsletter Under gate), and a tampered signature or
 out-of-window event is rejected.
