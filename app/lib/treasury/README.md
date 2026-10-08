@@ -19,11 +19,12 @@ Both return `{ id, state, txHash, explorerUrl, badge, error? }`.
 REAL requires a 64-character tx hash and a preprod Cardanoscan link. Other
 results are PENDING, including rejections and failures; they are not paid.
 
-The exact adapter receipt id keys `treasury:transfer:<id>` in the shared Board
-Upstash store. Persistent SET NX reserves it before POST; no TTL is used because
+The SHA-256 hex of the exact adapter receipt id keys
+`treasury:transfer:<sha256(id)>` in the shared Board Upstash store. The full
+receipt id is retained as `id` inside the record for audit. Persistent SET NX reserves it before POST; no TTL is used because
 expiry could pay twice. The record binds the id to the signed verdict hash and
 move. Duplicate requests poll `/wallet/transfer-funds?id=<transferId>` when an id
-has been saved. Concurrent requests never both POST. Timeout, 5xx, missing node
+has been saved (Masumi POST returns `data.id`, stored as `transferId`). Concurrent requests never both POST. Timeout, 5xx, missing node
 id, or failed persistence after submission leave a permanent reservation:
 operator reconciliation against node records is required. Never delete a
 reservation or retry the mutation just because its hash is absent. This favors

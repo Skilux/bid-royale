@@ -36,8 +36,8 @@ export async function executeTransfer({ id, verdict, move, boardPublicKey, store
       const data = await client.post("/wallet/transfer-funds", {
         fromWalletAddress: fromAddress, toAddress: addresses[move.to], lovelaceAmount: String(lovelace),
       });
-      if (typeof data?.transferId !== "string" || !data.transferId) throw new Error("Missing transferId; reconcile reservation before retry");
-      await store.setTransfer(id, { ...record, transferId: data.transferId });
+      if (typeof data?.id !== "string" || !data.id) throw new Error("Missing transfer id; reconcile reservation before retry");
+      await store.setTransfer(id, { ...record, transferId: data.id });
       return pending();
     } catch {
       // Never release this reservation: the node may already have accepted the transfer.

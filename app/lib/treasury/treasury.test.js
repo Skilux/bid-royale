@@ -5,7 +5,7 @@ import { Readable } from "node:stream";
 import { installNextResolution } from "../board/test-alias.js";
 installNextResolution();
 const { buildVerdict } = await import("@/lib/verifier");
-const { publicKeyHex, publicKeyFromSecret } = await import("@/lib/signing");
+const { publicKeyHex, publicKeyFromSecret, sha256Hex } = await import("@/lib/signing");
 const { planSettlement } = await import("@/lib/settlement/plan");
 const { createMemoryStore, createUpstashStore } = await import("@/lib/board/store");
 const { createClient } = await import("@/lib/masumi/client");
@@ -22,7 +22,7 @@ function fixture(fetchImpl) {
   const client = createClient({ baseUrl: "https://node.invalid/api/v1", token: "test-credential", timeoutMs: 5,
     fetch: fetchImpl ?? (async (url, options) => {
       calls.push({ url: String(url), ...options });
-      return new Response(JSON.stringify({ data: options.method === "POST" ? { transferId: "node-id" } : { transfers: [{ status: "Confirmed", txHash: hash }] } }));
+      return new Response(JSON.stringify({ status: "success", data: options.method === "POST" ? { id: "node-id", status: "Pending", txHash: null } : { transfers: [{ status: "Confirmed", txHash: hash }] } }));
     }) });
   return { id: "receipt", verdict, move: moves[0], boardPublicKey, store: createMemoryStore(), client,
     fromAddress: "board-wallet", addresses: { consumer: "consumer-wallet", codepodcast: "supplier-wallet" }, calls };
@@ -39,6 +39,43 @@ test("signed forfeiture and remainder use exact addresses and lovelace; repeat p
     assert.equal(result.explorerUrl, `https://preprod.cardanoscan.io/transaction/${hash}`);
     assert.equal(f.calls.filter((c) => c.method === "POST").length, 1);
   }
+});
+test("Masumi data.id is persisted as transferId and used for status polling", async () => {
+  const f = fixture();
+  const result = await executeTransfer(f);
+  assert.equal(result.error, undefined);
+  assert.equal((await f.store.getTransfer(f.id)).transferId, "node-id");
+  assert.equal((await executeTransfer(f)).txHash, hash);
+  assert.equal(new URL(f.calls[1].url).searchParams.get("id"), "node-id");
+});
+test("5000-character receipt ids use distinct SHA-256 Redis keys and retain audit ids", async () => {
+  const records = new Map();
+  const commands = [];
+  const store = createUpstashStore({ url: "https://redis.invalid", token: "fixture", fetchImpl: async (url, options) => {
+    const command = JSON.parse(options.body);
+    commands.push(command);
+    const [operation, key, value, nx] = command;
+    let result;
+    if (operation === "GET") result = records.get(key) ?? null;
+    else if (nx === "NX" && records.has(key)) result = null;
+    else { records.set(key, value); result = "OK"; }
+    return new Response(JSON.stringify({ result }));
+  } });
+  const f = { ...fixture(), store, id: "a".repeat(5000) };
+  const other = `${"a".repeat(4999)}b`;
+  assert.equal((await executeTransfer(f)).error, undefined);
+  assert.equal((await executeTransfer({ ...f, id: other })).error, undefined);
+  assert.equal(records.size, 2);
+  for (const id of [f.id, other]) {
+    const key = `treasury:transfer:${sha256Hex(id)}`;
+    assert.equal(key.length, 82);
+    assert.ok(records.has(key));
+    const record = await store.getTransfer(id);
+    assert.equal(record.id, id);
+    assert.equal(record.transferId, "node-id");
+    assert.equal(await store.reserveTransfer(id, { state: "Pending" }), false);
+  }
+  assert.ok(commands.every((command) => /^treasury:transfer:[a-f0-9]{64}$/.test(command[1])));
 });
 test("tampering, bad signatures, and changed moves cannot submit", async () => {
   for (const change of [
@@ -85,12 +122,12 @@ test("Upstash uses durable exact-key SET NX and same REST client with timeouts",
   const store = createUpstashStore({ url: "https://redis.invalid", token: "fixture", fetchImpl: async (url, options) => {
     assert.ok(options.signal instanceof AbortSignal);
     const command = JSON.parse(options.body); calls.push(command);
-    return new Response(JSON.stringify({ result: command[0] === "GET" ? JSON.stringify({ transferId: "saved" }) : "OK" }));
+    return new Response(JSON.stringify({ result: command[0] === "GET" ? JSON.stringify({ id: "r", transferId: "saved" }) : "OK" }));
   } });
   assert.equal(await store.reserveTransfer("r", { state: "Pending" }), true);
   await store.setTransfer("r", { transferId: "saved" });
-  assert.deepEqual(await store.getTransfer("r"), { transferId: "saved" });
-  assert.deepEqual(calls[0], ["SET", "treasury:transfer:r", JSON.stringify({ state: "Pending" }), "NX"]);
+  assert.deepEqual(await store.getTransfer("r"), { id: "r", transferId: "saved" });
+  assert.deepEqual(calls[0], ["SET", `treasury:transfer:${sha256Hex("r")}`, JSON.stringify({ state: "Pending", id: "r" }), "NX"]);
 });
 async function http(config, method, url, authorization, body) {
   const req = Readable.from(body ? [JSON.stringify(body)] : []);
