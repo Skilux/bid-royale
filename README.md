@@ -100,6 +100,27 @@ registration transactions, listed with explorer links in
 [`docs/plan/lane-masumi.md`](docs/plan/lane-masumi.md). They show the setup, not an
 auction run, so they are not in the tables above.
 
+## Evidence and on-chain hashes
+
+Each run keeps an evidence bundle in the Board store: tender terms, brief, every sealed bid
+(commit hash, reveal, receive time), the ranking and budget fill, the signed signup events,
+one verification report and one signed verdict per supplier, the money ledger, settlement
+decisions and receipt. Every item is stored as canonical JSON (sorted keys, no whitespace, UTF-8)
+next to its SHA-256, so a reader can recompute the hash from the exact bytes.
+`GET /api/run/<id>/evidence` lists the items with hashes and sizes,
+`GET /api/run/<id>/evidence/<name>` returns one. The receipt page has an Evidence panel: Verify
+recomputes the hash in the browser. Details: [`app/lib/evidence/README.md`](app/lib/evidence/README.md).
+
+| Goes on chain (Masumi escrow) | Stays off chain (evidence store) |
+|---|---|
+| `inputHash` on each award and bond lock: SHA-256 of the action, supplier, amount and a nonce | Tender and brief, sealed bids and salts, rejected bids |
+| `submitResultHash` on the award and bond settlement: the Board's verdict hash (becomes `sha256(canonical delivery report + verdict hash)` once #51 is wired) | Signed signup events, verification reports, bot signals |
+| Escrow ids, amounts, tx hashes (Cardano itself) | Signed verdicts, delivery reports, ledger, receipt |
+
+Not on chain today: the tender (spec) hash, the bid commit hashes (#50), the verification report
+hash and the bundle hash. Raw reports, signup events and secrets never go on chain or into the repo.
+In a canned replay the bundle is restored from the recording and shown PRE-RECORDED.
+
 ## Run it
 
 1. **Judge URL:** `https://ad-slot-auction.vercel.app` (public, no signup, no wallet). Deploys are manual, so the URL can lag `main`. `GET /api/health` reports flags, payment adapter and which env vars are set.
@@ -211,7 +232,7 @@ bid-royale/
 └── app/                 ← Next.js project root = Vercel root directory
     ├── app/             ← routes: /receipt, /api/run, /api/events, /api/agents, /api/health
     ├── scripts/         ← check.mjs, treasury-server.mjs, poc-masumi.mjs
-    ├── data/seeds/      ← worked-example run fixture
+    ├── data/seeds/      ← worked-example run fixture, with its evidence bundle
     └── lib/
         ├── board/           ← Tender Board run API, store, SSE, receipt
         ├── auction/         ← sealed-bid engine (pure functions)

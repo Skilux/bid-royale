@@ -7,6 +7,7 @@ import { Badge, Badges } from "../_components/Badge";
 import { Chip } from "../_components/Chip";
 import { formatClock, formatAmount, formatFixed } from "../_components/format";
 import { Money } from "../_components/Money";
+import { EvidencePanel, EvidenceProvider } from "./EvidencePanel";
 
 const FETCH_TIMEOUT_MS = 8000;
 const POLL_MS = 2000;
@@ -29,7 +30,7 @@ async function fetchRun(runId) {
   }
 }
 
-export function ReceiptClient({ runId, fixtureView }) {
+export function ReceiptClient({ runId, fixtureView, fixtureEvidence }) {
   const [view, setView] = useState(runId ? null : fixtureView);
   const [notice, setNotice] = useState(null);
   const [replay, setReplay] = useState(0);
@@ -90,7 +91,10 @@ export function ReceiptClient({ runId, fixtureView }) {
             </button>
           ) : null}
         </div>
-        {view ? <Story view={view} replay={replay} /> : null}
+        <EvidenceProvider runId={isFixture ? null : runId} fixtureEvidence={fixtureEvidence} version={view}>
+          {view ? <Story view={view} replay={replay} /> : null}
+          {view?.settlementDone ? <EvidencePanel /> : null}
+        </EvidenceProvider>
       </div>
     </main>
   );
@@ -230,6 +234,7 @@ function VerdictBubble({ s }) {
           </span>
         ))}
       </div>
+      <EvidencePanel supplier={s.supplier} />
     </div>
   );
 }
@@ -280,6 +285,7 @@ function UnderGate({ s, shown, reduced, currency }) {
         </div>
       ) : null}
       {shown.has(`button:${s.supplier}`) ? <ExplorerButton s={s} /> : null}
+      <EvidencePanel supplier={s.supplier} />
     </div>
   );
 }

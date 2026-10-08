@@ -24,6 +24,10 @@ const PREFIX = "bidroyale";
  * @property {(runId: string) => Promise<void>} markSettling    run has settlement work left (Railway trigger)
  * @property {(runId: string) => Promise<void>} unmarkSettling
  * @property {() => Promise<string[]>} listSettling
+ * @property {(runId: string, item: object, opts?: {overwrite?: boolean}) => Promise<"created" | "updated" | "same" | "conflict">} putEvidence
+ *   evidence item `{name, hash, size, bytes, ...}`. Without `overwrite` an existing item is never replaced
+ * @property {(runId: string, name: string) => Promise<object | null>} getEvidence
+ * @property {(runId: string) => Promise<object[]>} listEvidence  every item of the run's bundle, bytes included
  */
 
 /** @returns {BoardStore} */
@@ -34,9 +38,25 @@ export function createMemoryStore() {
   const jobs = new Map();
   const transfers = new Map();
   const settling = new Set();
+  const evidence = new Map();
 
   return {
     kind: "memory",
+    async putEvidence(runId, item, { overwrite = false } = {}) {
+      const items = evidence.get(runId) ?? new Map();
+      const old = items.get(item.name);
+      if (old && !overwrite) return old.hash === item.hash ? "same" : "conflict";
+      items.set(item.name, structuredClone(item));
+      evidence.set(runId, items);
+      return old ? "updated" : "created";
+    },
+    async getEvidence(runId, name) {
+      const item = evidence.get(runId)?.get(name);
+      return item ? structuredClone(item) : null;
+    },
+    async listEvidence(runId) {
+      return [...(evidence.get(runId)?.values() ?? [])].map((i) => structuredClone(i));
+    },
     async markSettling(runId) { settling.add(runId); },
     async unmarkSettling(runId) { settling.delete(runId); },
     async listSettling() { return [...settling]; },
@@ -120,9 +140,34 @@ export function createUpstashStore({ url, token, fetchImpl = fetch, timeoutMs = 
   const claimKey = (key) => `${PREFIX}:claim:${key}`;
   const jobKey = (agent, id) => `${PREFIX}:masumi:job:${agent}:${id}`;
   const settlingKey = `${PREFIX}:settling`;
+  const evidenceKey = (id) => `${PREFIX}:run:${id}:evidence`;
 
   return {
     kind: "upstash",
+    async putEvidence(runId, item, { overwrite = false } = {}) {
+      const key = evidenceKey(runId);
+      const body = JSON.stringify(item);
+      if (overwrite) {
+        const out = await call("/pipeline", [["HSET", key, item.name, body], ["EXPIRE", key, RUN_TTL_SECONDS]]);
+        if (out?.[0]?.error) throw new Error(`Upstash: ${out[0].error}`);
+        return out?.[0]?.result === 0 ? "updated" : "created";
+      }
+      const out = await call("/pipeline", [["HSETNX", key, item.name, body], ["EXPIRE", key, RUN_TTL_SECONDS]]);
+      if (out?.[0]?.error) throw new Error(`Upstash: ${out[0].error}`);
+      if (out?.[0]?.result === 1) return "created";
+      const old = await command("HGET", key, item.name);
+      return old && JSON.parse(old).hash === item.hash ? "same" : "conflict";
+    },
+    async getEvidence(runId, name) {
+      const raw = await command("HGET", evidenceKey(runId), name);
+      return raw ? JSON.parse(raw) : null;
+    },
+    async listEvidence(runId) {
+      const flat = (await command("HGETALL", evidenceKey(runId))) ?? [];
+      const items = [];
+      for (let i = 1; i < flat.length; i += 2) items.push(JSON.parse(flat[i]));
+      return items;
+    },
     async markSettling(runId) {
       await command("SADD", settlingKey, runId);
     },

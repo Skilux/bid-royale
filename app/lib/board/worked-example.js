@@ -24,10 +24,10 @@ export async function createFixtureBoard(overrides = {}) {
   return board;
 }
 
-/** One full simulated run of the worked example. Returns the GET /api/run/:id body and the SSE events in order. */
+/** One full simulated run of the worked example. Returns the GET /api/run/:id body, the SSE events in order and the evidence bundle. */
 export async function recordWorkedExample() {
   const board = await createFixtureBoard();
   const created = await board.createRun();
   const run = await board.runAll(created.id);
-  return { run, events: await board.getEvents(run.id) };
+  return { run, events: await board.getEvents(run.id), evidence: await board.exportEvidence(run.id) };
 }

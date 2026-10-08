@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { commit, evaluateBids } from "../auction/index.js";
 import { TENDER, getFlags } from "../config.js";
+import { createEvidence } from "../evidence/index.js";
 import { generateFeed } from "../outcome-feed/index.js";
 import { publicKeyFromSecret, publicKeyHex } from "../signing/index.js";
 import { buildVerdict, verify, verifyVerdict } from "../verifier/index.js";
@@ -36,6 +37,7 @@ const round = (n) => Math.round(n * 1e6) / 1e6;
  * @param {(args: {tender: object, suppliers: object[], run: object}) => Promise<object[]>} [deps.bidSource]
  * @param {((args: {runId: string}) => Promise<{run: object, events: object[]}> | null) | null} [deps.canned]
  * @param {Partial<typeof import("./reconcile.js").SETTLEMENT>} [deps.settlement]   timing overrides (tests)
+ * @param {ReturnType<typeof createEvidence>} [deps.evidence]   evidence bundle recorder, defaults to one on `store`
  * @param {() => number} [deps.clock]   wall clock for the per-tick budget; `now` may be a fixture clock
  * @param {(ms: number) => Promise<void>} [deps.sleep]   runAll's wait between settlement ticks
  */
@@ -49,6 +51,7 @@ export function createBoard({
   newJobId = () => `job_${randomUUID().slice(0, 12)}`,
   bidSource = pinnedBids,
   canned = null,
+  evidence = createEvidence({ store }),
   settlement = {},
   clock = Date.now,
   sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
@@ -58,6 +61,16 @@ export function createBoard({
   const emit = (runId, name, data = {}) => store.appendEvent(runId, { ts: iso(now()), name, data });
   const timing = { ...SETTLEMENT, ...settlement };
   const reconciler = createReconciler({ adapter, now, emit, clock, options: timing });
+
+  /** Writes the evidence items of a finished step. A failure is logged, never thrown: evidence must not stop a run. */
+  async function record(run, step) {
+    try {
+      const out = await evidence.recordStep(run, step);
+      if (out.failed.length) console.error(`evidence: ${step} items failed`, out.failed);
+    } catch (err) {
+      console.error(`evidence: ${step} failed`, err);
+    }
+  }
 
   async function need(runId) {
     const run = await store.getRun(runId);
@@ -83,6 +96,7 @@ export function createBoard({
     await store.setRun(run);
     if (cause) await emit(runId, EVENTS.modeDegraded, { mode: "canned", ...cause });
     for (const event of transcript.events) await store.appendEvent(runId, event);
+    await evidence.importBundle(runId, transcript.evidence);
     // Read back through the store: a paced replay shows only what is due, like a live run.
     return (await store.getRun(runId)) ?? run;
   }
@@ -142,6 +156,7 @@ export function createBoard({
     await emit(runId, EVENTS.runCreated, { runId, mode: run.mode, badge: run.badge, keys: run.keys });
     await emit(runId, EVENTS.tenderPublished, { tender: run.tender, brief, suppliers: SUPPLIERS });
     await emit(runId, EVENTS.stepCompleted, { step: "tender" });
+    await record(run, "tender");
     return run;
   }
 
@@ -293,6 +308,7 @@ export function createBoard({
     await emit(runId, EVENTS.stepStarted, { step });
     try {
       await handler(run);
+      await record(run, step);
       run.steps[step] = { ...run.steps[step], status: "done", finishedAt: iso(now()) };
       run.nextStep = pendingStep(run);
       await store.setRun(run);
@@ -375,6 +391,7 @@ export function createBoard({
     try {
       await reconciler.tick(run);
       await store.setRun(run);
+      await record(run, "settlement");
       if (!reconciler.isActive(run)) await store.unmarkSettling(runId);
       return run;
     } catch (err) {
@@ -471,5 +488,16 @@ export function createBoard({
     pollSettlement,
     reconcile,
     reconcileActive,
+    /** Evidence manifest of a run. `source` is PRE-RECORDED for a canned replay. */
+    async evidenceManifest(runId) {
+      const run = await need(runId);
+      return evidence.manifest(runId, { source: run.mode === "canned" ? "PRE-RECORDED" : "live" });
+    },
+    async evidenceItem(runId, name) {
+      await need(runId);
+      return evidence.getItem(runId, name);
+    },
+    exportEvidence: (runId) => evidence.exportBundle(runId),
+    evidenceHash: (runId, name) => evidence.hashOf(runId, name),
   };
 }

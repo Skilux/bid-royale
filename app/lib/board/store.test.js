@@ -30,6 +30,16 @@ function fakeUpstash() {
       return { result: Number(cmd === "SADD" ? !had : had) };
     }
     if (cmd === "SMEMBERS") return { result: [...(data.get(key) ?? [])] };
+    if (cmd === "HSET" || cmd === "HSETNX") {
+      const hash = data.get(key) ?? new Map();
+      const had = hash.has(args[0]);
+      if (cmd === "HSETNX" && had) return { result: 0 };
+      hash.set(args[0], args[1]);
+      data.set(key, hash);
+      return { result: Number(!had) };
+    }
+    if (cmd === "HGET") return { result: data.get(key)?.get(args[0]) ?? null };
+    if (cmd === "HGETALL") return { result: [...(data.get(key) ?? new Map())].flat() };
     if (cmd === "LRANGE") return { result: (data.get(key) ?? []).slice(Number(args[0])) };
     return { error: `unknown command ${cmd}` };
   };
@@ -52,6 +62,21 @@ for (const [label, make] of [
     assert.equal(await store.getRun("r1"), null);
     await store.setRun({ id: "r1", status: "in_progress", n: [1, 2] });
     assert.deepEqual(await store.getRun("r1"), { id: "r1", status: "in_progress", n: [1, 2] });
+  });
+
+  test(`${label} store: evidence is write-once unless overwrite is set`, async () => {
+    const store = make();
+    const item = { name: "tender", hash: "aa", size: 2, bytes: "{}" };
+    assert.equal(await store.putEvidence("r1", item), "created");
+    assert.equal(await store.putEvidence("r1", item), "same");
+    assert.equal(await store.putEvidence("r1", { ...item, hash: "bb", bytes: "[]" }), "conflict");
+    assert.deepEqual(await store.getEvidence("r1", "tender"), item);
+    assert.equal(await store.putEvidence("r1", { name: "ledger", hash: "cc", bytes: "1" }, { overwrite: true }), "created");
+    assert.equal(await store.putEvidence("r1", { name: "ledger", hash: "dd", bytes: "2" }, { overwrite: true }), "updated");
+    assert.equal((await store.getEvidence("r1", "ledger")).hash, "dd");
+    assert.deepEqual((await store.listEvidence("r1")).map((i) => i.name).sort(), ["ledger", "tender"]);
+    assert.equal(await store.getEvidence("r1", "missing"), null);
+    assert.deepEqual(await store.listEvidence("other"), []);
   });
 
   test(`${label} store: events get contiguous seq numbers and can be read from a cursor`, async () => {
