@@ -129,22 +129,32 @@ The Vercel project builds with **`app/` as its root directory**. Files outside
   push to `main` as you go — the repo is private for now (flip to public at
   code freeze) and commit history is evidence.
 
-## Deploying (manual, Danila triggers it)
+## Deploying (manual, from Danila's MacBook with the Vercel CLI)
 
 **Pushing to `main` does not deploy.** Vercel is on the Hobby plan, which blocks
 Git-triggered deploys when the commit author (`Skilux`) is not the account owner,
-so `app/vercel.json` turns Git deploys off. Production changes only when Danila
-triggers a deploy. Agents never deploy on their own.
+so `app/vercel.json` turns Git deploys off. We deploy production by hand from
+Danila's MacBook with the Vercel CLI, logged in as `dkosygincz-1148`
+(`vercel whoami`). Agents deploy only when Danila asks, never on their own.
 
 - After you push to `main`, tell Danila: "pushed `<sha>`, trigger a deploy."
-- Trigger: GitHub → Actions → `deploy` → Run workflow, or
-  `gh workflow run deploy.yml --repo Skilux/bid-royale`. The workflow deploys
-  production with a Vercel token, then checks `/api/health` for `ok: true`.
-- **Known problem (#18, #35):** GitHub Actions currently ends every run in
-  `startup_failure` on this account, so `deploy` does not run yet. Fallback,
-  from a machine logged in to Vercel as `dkosygincz-1148`: copy the repo to a
-  temp dir without `.git` (the CLI attaches the commit author and Vercel blocks
-  it), then `vercel deploy --prod --yes --cwd <copy>`.
+- Before deploying, check that `HEAD` equals `origin/main` and the tree is clean.
+  Deploy the committed `HEAD` only, so other sessions' uncommitted work and local
+  env files stay out of the build:
+
+  ```bash
+  D=$(mktemp -d /tmp/br-deploy.XXXXXX)
+  git archive HEAD | tar -x -C "$D"
+  cd "$D" && vercel link --yes --project ad-slot-auction && vercel deploy --prod --yes
+  ```
+
+  The copy has no `.git` because the CLI attaches the commit author and Vercel
+  blocks it. Delete the copy afterwards.
+- Env changes: `vercel env add <NAME> <production|preview> --value ...` from the
+  linked temp dir. `--force` does not overwrite an existing secret: run
+  `vercel env rm` first. A new value reaches the site only after the next deploy.
+- The GitHub `deploy` workflow is not used. Actions ends every run in
+  `startup_failure` on this account (#18, #35).
 - After any deploy, quote the `/api/health` response. A green deploy is not proof.
 
 ## Checks before every commit (mandatory)

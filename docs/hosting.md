@@ -60,8 +60,8 @@ See `.env.example` for the full list. Rules:
   `MASUMI_REGISTRY_BASE_URL`, `MASUMI_REGISTRY_API_KEY`, `MASUMI_NETWORK`
   (`Preprod`), `MASUMI_SELLING_WALLET_VKEY`. Names match `docs/masumi.md`
   and `.env.example`.
-- Models: `OPENROUTER_API_KEY`, `OPENROUTER_MODELS` (comma list, first is primary,
-  the rest are fallbacks; decided 8 Oct, no OpenAI credits received)
+- Models: `OPENROUTER_API_KEY` only. The model list and caps live in
+  `app/lib/supplier-agents/llm-config.js`, not in env vars (#40)
 - Board state: `KV_REST_API_URL`, `KV_REST_API_TOKEN` (Upstash, injected by the Vercel integration)
 - Flags: `SIMULATE_PAYMENTS` (false = real preprod), `DEMO_MODE` (live | canned)
 - Shop signing key for the NeoRack signup feed: `SHOP_SIGNING_KEY` (demo-only
