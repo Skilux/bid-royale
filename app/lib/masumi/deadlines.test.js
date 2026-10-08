@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { installNextResolution } from "../board/test-alias.js";
 installNextResolution();
 const { paymentDeadlines, PAY_RESULT_GAP_MS, RESULT_MIN_MS, UNLOCK_GAP_MS, DISPUTE_GAP_MS } = await import("@/lib/masumi/deadlines");
@@ -26,4 +27,11 @@ test("default safety margin covers the purchase clock recheck by at least two mi
   assert.ok(Date.parse(deadlines.submitResultTime) - now >= RESULT_MIN_MS + 120000);
   assert.ok(Date.parse(deadlines.unlockTime) - Date.parse(deadlines.submitResultTime) >= UNLOCK_GAP_MS + 120000);
   assert.ok(Date.parse(deadlines.externalDisputeUnlockTime) - Date.parse(deadlines.unlockTime) >= DISPUTE_GAP_MS + 120000);
+});
+
+test("deadline documentation cites verified V2 floors and the purchase clock recheck", () => {
+  const comment = readFileSync(new URL("./deadlines.js", import.meta.url), "utf8").split("export const")[0];
+  assert.match(comment, /V2.*0\.29\.0/);
+  assert.match(comment, /purchase creation re-checks against its own clock/);
+  assert.match(comment, /docs\/research\/masumi-settlement-timing\.md.*V2/);
 });

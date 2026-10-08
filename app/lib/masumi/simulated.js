@@ -2,7 +2,8 @@ import { createHash } from "node:crypto";
 import { planSettlement } from "@/lib/settlement/plan";
 
 /**
- * @typedef {"REAL" | "SIMULATED" | "PRE-RECORDED"} Badge
+ * @typedef {"REAL" | "SIMULATED" | "PRE-RECORDED" | "PENDING"} Badge
+ * PENDING: real Masumi operation submitted, no transaction yet; money has not moved.
  *
  * @typedef {Object} Receipt
  * @property {string} id

@@ -4,7 +4,7 @@ import { installNextResolution } from "../board/test-alias.js";
 installNextResolution();
 const { createClient } = await import("@/lib/masumi/client");
 
-const response = (data, status = 200) => ({ ok: status < 300, status, json: async () => data });
+const response = (data, status = 200) => ({ ok: status < 300, status, text: async () => JSON.stringify(data) });
 const options = { baseUrl: "https://masumi.invalid/api/v1", token: "test-party" };
 
 test("client times out and aborts fetch", async () => {
@@ -63,4 +63,22 @@ test("no blind retry on purchase failure or ambiguous status", async () => {
     retry: { query: { path: "/purchase" }, decide: () => ({}) },
   }), /lost/);
   assert.equal(calls, 2);
+});
+
+test("HTML 502 errors preserve HTTP status and a clear non-JSON message", async () => {
+  const client = createClient({ ...options, fetch: async () => new Response("<html>Bad Gateway</html>", { status: 502 }) });
+  await assert.rejects(client.request("/payment"), (error) => error.status === 502 && error.message === "Masumi HTTP 502: non-JSON response");
+});
+
+test("HTML 502 retry reconciles status before another mutation", async () => {
+  const calls = [];
+  const client = createClient({ ...options, fetch: async (url, init) => {
+    calls.push(init.method);
+    if (calls.length === 1) return new Response("<html>Bad Gateway</html>", { status: 502 });
+    return response({ data: calls.length === 2 ? { absent: true } : { id: "purchase" } });
+  } });
+  assert.deepEqual(await client.post("/purchase", {}, {
+    retry: { query: { path: "/purchase" }, decide: (status) => ({ retry: status.absent === true }) },
+  }), { id: "purchase" });
+  assert.deepEqual(calls, ["POST", "GET", "POST"]);
 });

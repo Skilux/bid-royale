@@ -20,8 +20,9 @@ Plain JS REST wrapper for the Masumi 0.29.0 V2 payment service. No chain code.
 Receipt fields: `id`, `action`, `amount`, `from`, `to`, `state`, `badge`,
 `txHash`, `explorerUrl`, optional `error`. Real receipts use `REAL` only with a
 service-reported 64-character tx hash and a preprod Cardanoscan link. Until then
-`PENDING` explicitly identifies an unconfirmed real operation; hashes and links
-are null. HTTP success does not mean paid: seller payment must reach `Withdrawn`.
+PENDING = real Masumi operation submitted, no transaction yet. For the Product
+lane, the UI must never show it as money moved; it becomes REAL with an explorer link once a hash exists.
+Pending hashes and links are null. HTTP success does not mean paid: seller payment must reach `Withdrawn`.
 Configuration and API failures return `Error` receipts, without throwing into the
 caller or silently creating simulated money. Bid fees retain SIMULATED receipts.
 
@@ -51,13 +52,15 @@ this ticket retains the seed/plan numbers. #24 owns the ×10 migration.
 
 `createClient({ baseUrl, token, fetch, timeoutMs })` supports injected fetch and
 an AbortController timeout (15 seconds by default). Errors include HTTP status
-and JSON message. POST has no automatic retry. Optional `retry: { query,
+and JSON message; HTML/non-JSON responses report `Masumi HTTP <status>: non-JSON response`
+with the same status available for retry reconciliation. POST has no automatic retry. Optional `retry: { query,
 decide }` first executes a read-only status query; `decide` may return existing
 `data`, explicitly prove `retry: true`, or leave the outcome ambiguous (error).
 Never retry a purchase based only on a timeout or absent transaction hash.
 Repeated settlement checks state, result hash and queued action before submitting.
 
-`paymentDeadlines({ now, marginMs })` uses named V1 floors pending #20: result
+`paymentDeadlines({ now, marginMs })` uses named V2 API floors verified in
+`docs/research/masumi-settlement-timing.md` (V2 section, #20): result
 ≥ now + 15 min, payment ≤ result − 5 min, unlock ≥ result + 15 min, dispute
 unlock ≥ unlock + 15 min. Default safety margin is 2 min at each boundary, covering the purchase
 clock recheck. Explicit `marginMs` overrides must also be at least two minutes.
@@ -79,8 +82,9 @@ fallback if the Supplier never authorizes; no result is submitted on that award.
 Short of promise submits both award and full bond results; Under gate also
 submits the full bond result. Result submission waits for `FundsLocked`.
 Pending award result receipts can also be progressed with `advance(id)`;
-repeat `settle(verdict)` with the saved lock ids to progress bond collection and
-plain transfers. Calls return current states, with no chain confirmation loop.
+repeat `settle(verdict)` with the saved lock ids to progress bond collection.
+Plain-transfer receipts also carry portable follow-ups: `advance(id)` re-reads
+the Board-side bond state and sends the transfer once it reaches `Withdrawn`. Calls return current states, with no chain confirmation loop.
 All seller mutations use the payment creator's key; refund requests use the
 purchase creator's buyer key. The default HTTP path takes at most two sequential
 15-second calls per progress step (status reads run in parallel).
@@ -88,8 +92,14 @@ purchase creator's buyer key. The default HTTP path takes at most two sequential
 The plan's plain transfers (forfeit and bond remainder) return `TransferPending`
 with null hashes by default. An injected `treasury({ id, ...transfer, verdict,
 bondEscrowId }) → { state, txHash }` runs only once the bond reaches `Withdrawn`.
-The treasury must deduplicate by the stable per-bond/per-move `id`, verify authorization, implement its own
-bounded timeout and status-before-retry, and persist/query transfer outcomes.
+The idempotency key passed to the treasury is the exact receipt `id`, stable
+through pending and paid states. The adapter caches treasury results carrying a
+tx hash so repeated advances in that instance do not call the treasury again.
+Across instances the treasury result is the source of truth: it must persist and
+deduplicate by `id`, returning an existing result rather than sending again.
+It must also verify authorization and implement its own bounded timeout and
+status-before-retry. Without a treasury, advances remain `TransferPending` with
+no hash even after bond withdrawal.
 Its Admin-only transport is #23; no Admin key or transfer endpoint is wired here.
 Polling escrow state alone cannot confirm a plain transfer.
 

@@ -40,6 +40,7 @@ function receipt(job, action, amount, from, to, data = {}, error) {
 /** Keys are read lazily; callers receive Error receipts for configuration/API failures. */
 export function createRealAdapter({ env = process.env, fetch, timeoutMs, now = Date.now, marginMs, treasury } = {}) {
   const locks = new Map();
+  const transferResults = new Map();
   function config() {
     for (const name of ["MASUMI_PAYMENT_BASE_URL", "MASUMI_NETWORK", "MASUMI_SMART_CONTRACT_ADDRESS"]) {
       if (!env[name]) throw new Error(`Masumi configuration missing ${name}`);
@@ -141,12 +142,26 @@ export function createRealAdapter({ env = process.env, fetch, timeoutMs, now = D
     const requested = await change(job, "request-refund", undefined, buyerStatus);
     return { ...requested, onChainState: "RefundRequestedPending" };
   }
+  async function transferStep(job, knownBondStatus) {
+    const id = encode(job);
+    if (transferResults.has(id)) return transferResults.get(id);
+    const { bond, move, verdict } = job.followup;
+    const current = knownBondStatus ?? await status(bond);
+    if (current.onChainState !== "Withdrawn" || !treasury) return { onChainState: "TransferPending" };
+    // The treasury persists/deduplicates this exact receipt id across invocations.
+    const transfer = await treasury({ ...move, verdict, bondEscrowId: encode(bond), id });
+    const data = transfer ? { onChainState: transfer.state, CurrentTransaction: { txHash: transfer.txHash } }
+      : { onChainState: "TransferPending" };
+    if (/^[0-9a-f]{64}$/i.test(transfer?.txHash ?? "")) transferResults.set(id, data);
+    return data;
+  }
   async function advance(id) {
     const job = decode(id);
     const followup = job?.followup;
-    if (!followup || !job.blockchainIdentifier) return receipt(job ?? {}, "advance", 0, "", "", {}, new Error("Masumi follow-up receipt id required"));
+    if (!followup || !(followup.operation === "transfer" ? followup.bond?.blockchainIdentifier : job.blockchainIdentifier)) return receipt(job ?? {}, "advance", 0, "", "", {}, new Error("Masumi follow-up receipt id required"));
     try {
-      const data = followup.operation === "refund" ? await refundStep(job) : await change(job, "submit-result", followup.resultHash);
+      const data = followup.operation === "transfer" ? await transferStep(job)
+        : followup.operation === "refund" ? await refundStep(job) : await change(job, "submit-result", followup.resultHash);
       return receipt(job, followup.action, followup.amount, followup.from, followup.to, data);
     } catch (error) { return receipt(job, followup.action, followup.amount, followup.from, followup.to, {}, error); }
   }
@@ -170,14 +185,13 @@ export function createRealAdapter({ env = process.env, fetch, timeoutMs, now = D
         try {
           if (move.via === "plain_transfer") {
             const bond = escrow(verdict, "bond");
-            job = { ...job, bondIdentifier: bond.blockchainIdentifier };
+            job = { ...job, bondIdentifier: bond.blockchainIdentifier,
+              followup: { operation: "transfer", action: move.reason, amount: move.amount,
+                from: move.from, to: move.to, move, bond, verdict } };
             const { data, error } = await bondProgress;
             if (error) throw error;
-            const transfer = treasury && data?.onChainState === "Withdrawn"
-              ? await treasury({ ...move, verdict, bondEscrowId: encode(bond), id: encode(job) }) : null;
             results[index] = receipt(job, move.reason, move.amount, move.from, move.to,
-              transfer ? { onChainState: transfer.state, CurrentTransaction: { txHash: transfer.txHash } }
-                : { onChainState: "TransferPending" });
+              await transferStep(job, data));
             return;
           }
           job = escrow(verdict, move.reason.startsWith("award") ? "award" : "bond");

@@ -15,7 +15,14 @@ export function createClient({ baseUrl, token, fetch: fetchImpl = globalThis.fet
         signal: controller.signal,
         ...(body === undefined ? {} : { body: JSON.stringify(body) }),
       });
-      const payload = await response.json();
+      const text = await response.text();
+      let payload;
+      try { payload = JSON.parse(text); }
+      catch {
+        const error = new Error(`Masumi HTTP ${response.status}: non-JSON response`);
+        error.status = response.status;
+        throw error;
+      }
       if (!response.ok) {
         const message = payload.message ?? payload.error?.message ?? payload.error ?? "Request failed";
         const error = new Error(`Masumi HTTP ${response.status}: ${String(message).replaceAll(token, "[redacted]")}`);

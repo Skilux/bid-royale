@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { installNextResolution } from "../board/test-alias.js";
 installNextResolution();
 const { createRealAdapter, lovelace, realAdapter } = await import("@/lib/masumi/real");
@@ -44,7 +45,7 @@ function fixture({ state = "FundsLocked", treasury } = {}) {
       }
       record[side] = data;
     }
-    return { ok: true, status: 200, json: async () => ({ status: "Success", data }) };
+    return { ok: true, status: 200, text: async () => JSON.stringify({ status: "Success", data }) };
   };
   return { adapter: createRealAdapter({ env, fetch, now: () => Date.parse("2026-10-08T22:00:00Z"), treasury }), calls, env, fetch, records };
 }
@@ -170,7 +171,7 @@ test("pending purchase has no invented hash or REAL badge", async () => {
   const { env, fetch } = fixture();
   const adapter = createRealAdapter({ env, fetch: async (url, init) => {
     const response = await fetch(url, init);
-    if (url.pathname.endsWith("/purchase")) return { ok: true, json: async () => ({ data: { NextAction: { requestedAction: "FundsLockingRequested" } } }) };
+    if (url.pathname.endsWith("/purchase")) return { ok: true, text: async () => JSON.stringify({ data: { NextAction: { requestedAction: "FundsLockingRequested" } } }) };
     return response;
   } });
   const receipt = await adapter.lockAward({ supplier: "techblog", amount: 7 });
@@ -210,7 +211,7 @@ test("Under-gate retry checks seller authorization independently of buyer refund
     calls.push(url.pathname);
     if (body.blockchainIdentifier === awardId && url.pathname.endsWith("resolve-blockchain-identifier")) {
       const seller = url.pathname.includes("/payment/");
-      return { ok: true, json: async () => ({ data: {
+      return { ok: true, text: async () => JSON.stringify({ data: {
         onChainState: "FundsLocked", NextAction: { requestedAction: seller ? "AuthorizeRefundInitiated" : "SetRefundRequestedRequested" },
       } }) };
     }
@@ -232,7 +233,7 @@ test("queued buyer refund uses the OpenAPI action names and is not repeated", as
   const resumed = createRealAdapter({ env, fetch: async (url, init) => {
     calls.push(url.pathname);
     if (url.pathname === "/api/v1/purchase/resolve-blockchain-identifier") {
-      return { ok: true, json: async () => ({ data: {
+      return { ok: true, text: async () => JSON.stringify({ data: {
         onChainState: "FundsLocked", NextAction: { requestedAction: "SetRefundRequestedInitiated" },
       } }) };
     }
@@ -291,4 +292,71 @@ test("award submit waits for a confirmed lock and can advance without a new purc
   assert.equal(advanced.state, "FundsLocked");
   assert.equal(calls.filter(({ path }) => path.endsWith("submit-result")).length, 1);
   assert.equal(calls.filter(({ path }) => path === "/purchase").length, 0);
+});
+
+for (const verdict of [verdicts[1], verdicts[2]]) {
+  test(`${verdict.kind}: transfer advances after bond withdrawal and never pays twice`, async () => {
+    const paid = new Map();
+    let payments = 0;
+    let treasuryCalls = 0;
+    const treasury = async (move) => {
+      treasuryCalls++;
+      if (!paid.has(move.id)) {
+        payments++;
+        paid.set(move.id, { state: "TransferSent", txHash: TX });
+      }
+      return paid.get(move.id);
+    };
+    const { adapter, records, env, fetch } = fixture({ treasury });
+    await adapter.lockAward({ supplier: verdict.supplier, amount: verdict.award });
+    const bond = await adapter.lockBond({ supplier: verdict.supplier, amount: verdict.bond });
+    const transfers = (await adapter.settle(verdict)).filter(({ state }) => state === "TransferPending");
+    assert.equal(transfers.length, verdict.kind === "short_of_promise" ? 2 : 1);
+    const resumed = createRealAdapter({ env, fetch, treasury });
+    for (const transfer of transfers) {
+      const waiting = await resumed.advance(transfer.id);
+      assert.equal(waiting.state, "TransferPending");
+      assert.equal(waiting.txHash, null);
+    }
+    assert.equal(treasuryCalls, 0);
+    const bondId = JSON.parse(Buffer.from(bond.id.slice(7), "base64url")).blockchainIdentifier;
+    records.get(bondId).payment.onChainState = "Withdrawn";
+    for (const transfer of transfers) {
+      const advanced = await resumed.advance(transfer.id);
+      assert.equal(advanced.id, transfer.id);
+      assert.equal(advanced.state, "TransferSent");
+      assert.equal(advanced.badge, "REAL");
+      assert.equal(advanced.txHash, TX);
+      assert.equal(advanced.explorerUrl, `https://preprod.cardanoscan.io/transaction/${TX}`);
+      assert.ok(paid.has(transfer.id), "receipt id is the treasury idempotency key");
+      const callsBefore = treasuryCalls;
+      assert.deepEqual(await resumed.advance(advanced.id), advanced);
+      assert.deepEqual(await resumed.advance(transfer.id), advanced);
+      assert.equal(treasuryCalls, callsBefore);
+    }
+    assert.equal(payments, transfers.length);
+    const anotherInstance = createRealAdapter({ env, fetch, treasury });
+    await anotherInstance.advance(transfers[0].id);
+    assert.equal(payments, transfers.length, "persistent treasury deduplication prevents payment after restart");
+  });
+}
+
+test("transfer advance without treasury stays pending even after bond Withdrawn", async () => {
+  const { adapter } = fixture({ state: "Withdrawn" });
+  await adapter.lockAward({ supplier: "codepodcast", amount: 6 });
+  await adapter.lockBond({ supplier: "codepodcast", amount: 1.5 });
+  const pending = (await adapter.settle(verdicts[1])).find(({ action }) => action === "bond_return");
+  const advanced = await adapter.advance(pending.id);
+  assert.equal(advanced.state, "TransferPending");
+  assert.equal(advanced.txHash, null);
+  assert.equal(advanced.explorerUrl, null);
+});
+
+test("PENDING receipts are part of the shared Badge contract with Product UI guidance", () => {
+  const source = readFileSync(new URL("./simulated.js", import.meta.url), "utf8");
+  const badgeDefinition = source.match(/@typedef \{([^}]+)\} Badge/)[1];
+  assert.ok(badgeDefinition.includes('"PENDING"'));
+  const docs = readFileSync(new URL("./README.md", import.meta.url), "utf8");
+  assert.match(docs, /UI must never show it as money moved/);
+  assert.match(docs, /becomes REAL with an explorer link once a hash exists/);
 });

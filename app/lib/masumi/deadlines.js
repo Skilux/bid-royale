@@ -1,4 +1,7 @@
-// V1 floors, retained as named constants until the measured V2 findings land (#20).
+// V2 on 0.29.0 has the same API floors: submit >= now + 15 min, unlock >=
+// submit + 15 min, dispute >= unlock + 15 min, payBy <= submit - 5 min;
+// purchase creation re-checks against its own clock, so retain the safety margin.
+// Verified in docs/research/masumi-settlement-timing.md (V2 section, #20).
 export const PAY_RESULT_GAP_MS = 5 * 60 * 1000;
 export const RESULT_MIN_MS = 15 * 60 * 1000;
 export const UNLOCK_GAP_MS = 15 * 60 * 1000;
