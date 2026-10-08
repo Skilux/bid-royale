@@ -38,8 +38,9 @@ just REST calls with the API key in the `token` header.
   gives `Disputed`); on Under gate the Consumer reclaims the award (path A2,
   open until the D9 dry run) or requests a refund and the supplier authorizes;
   when `SIMULATE_PAYMENTS=true`, return labelled simulated receipts instead.
-- **Escrows per run (11, all REAL on preprod unless the flag is on):**
-  awards 3 + bonds 3 on the critical path; bid fees 4 + Validator fee 1 in the background.
+- **Escrows per run (10):** awards 3 + bonds 3 on the critical path, REAL on
+  preprod unless the flag is on; bid fees 4 in the background, SIMULATED
+  first and REAL only if the critical path passes its dry run and time allows.
 
 ## Done when
 

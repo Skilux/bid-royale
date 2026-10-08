@@ -1,15 +1,14 @@
 # Glossary
 
-Canonical terms for this repo (spec v3.0: Notion "Ad Slot Auction: Money Flow, Step by Step" + "Ad Auction — Diagrams"). Use these, not the old ones.
+Canonical terms for this repo (spec v3.1: Notion "Ad Slot Auction: Money Flow, Step by Step" + "Ad Auction — Diagrams"). Use these, not the old ones.
 
 ## Actors
 
 - **User NeoRack**: the human advertiser. NeoRack is a GPU neocloud.
 - **Consumer agent**: the NeoRack Consumer agent. Publishes the tender, locks the awards, receives refunds and forfeits.
 - **Supplier agent**: a role. Bids, serves impressions, posts a bond, submits results. Business type stays publisher: TechBlog, CodePodcast, DevNewsletter, GamingForum.
-- **Tender Board**: our service, the middleman. Not an agent. Parts: Tender API, Auction engine, Settlement engine. Collects bid fees, holds bonds, pays the Validator. Must not be the same entity as the customer.
-- **Validator agent**: the off-chain judge. A deterministic verifier module wrapped as an agent. Signs a verdict per supplier. Its hash goes to the decision log.
-- **Verifier module**: `lib/verifier`. Checks signature, attribution and time window, counts verified signups. No LLM in the verdict.
+- **Tender Board**: our service, the middleman. Not an agent. Parts: Tender API, Auction engine, Verifier, Settlement engine. Collects bid fees, holds bonds, verifies delivery and signs the verdict per supplier. Must not be the same entity as the customer.
+- **Verifier**: `lib/verifier`, a module inside the Tender Board service. Not an agent. Checks signature, attribution and time window, counts verified signups, and the Board signs the verdict per supplier. Its hash goes to the decision log. No LLM in the verdict.
 - **Masumi escrow**: the on-chain escrow every payment goes through. Rails we do not rebuild.
 - **NeoRack signup feed**: the source of signed signup events (simulated shop).
 - **Wrapper UI**: the judge-facing UI: tender, bids, dashboard, receipt. Replaces "playground".
@@ -32,10 +31,9 @@ Canonical terms for this repo (spec v3.0: Notion "Ad Slot Auction: Money Flow, S
 - **tUSDM**: test USDM, the demo currency. Availability on Cardano preprod is unverified. Fallback is tADA with scaled amounts. Replaces €.
 - **Award**: the winning bid price, locked by the Consumer in escrow. Supplier is seller.
 - **Bond**: 25% × award, locked by a winner in escrow. Board is seller.
-- **Bid fee**: 0.2 tUSDM per bidder, never returned. Board is seller. Funds the Validator.
-- **Validator fee**: 0.8 tUSDM, paid by the Board to the Validator in escrow out of the bid fees.
+- **Bid fee**: 0.2 tUSDM per bidder, never returned. Board is seller. Stays with the Board as an anti-spam fee.
 - **Forfeit**: bond × (promised − delivered) ÷ promised, for Short of promise. Escrows cannot split, so the remainder returns as a plain transfer, and the Board forwards the forfeit to the Consumer as a plain transfer (trust assumption on the Board).
-- **Escrow count**: 11 per run. 4 bid fees and 1 Validator fee in the background, 3 awards and 3 bonds on the critical path.
+- **Escrow count**: 10 per run. 3 awards and 3 bonds on the critical path, REAL. 4 bid fees in the background, SIMULATED first and REAL if time allows (PRD D13).
 
 ## Verdicts
 
@@ -54,4 +52,5 @@ Canonical terms for this repo (spec v3.0: Notion "Ad Slot Auction: Money Flow, S
 
 - **Arbiter**: removed. No arbiter exists.
 - **Allocator agent**: replaced by the Tender Board service.
+- **Validator agent, Validator fee**: removed in v3.1 (PRD D7). Verification runs inside the Tender Board.
 - **x402 / Base Sepolia fallback**: removed. Masumi-only.

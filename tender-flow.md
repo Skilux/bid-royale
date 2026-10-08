@@ -1,7 +1,7 @@
 <aside>
 🧭
 
-Who pays whom, and what happens at each step. Copied from the sequence diagram on the Miro financial flow board, plus the worked example (frame 4) and settlement rules (frame 5). Units are **tUSDM on Cardano preprod**, a sandbox currency, not real money. Escrows run on Masumi
+Who pays whom, and what happens at each step. Copied from the sequence diagram on the Miro financial flow board, plus the worked example (frame 4) and settlement rules (frame 5). Units are **tUSDM on Cardano preprod**, a sandbox currency, not real money. Escrows run on Masumi. **Updated 8 Oct 2026 (Danila):** verification runs inside the Tender Board service, not as a separate Validator agent, so there is no Validator fee. 10 escrows; the 6 on the critical path are REAL, the 4 bid fees start SIMULATED and become REAL if time allows.
 
 </aside>
 
@@ -39,7 +39,7 @@ A **performance bond** is a deposit a winning supplier locks in escrow before it
 <aside>
 💡
 
-The bond and the bid fee are different. The **bid fee** (0.2 tUSDM) is paid by every bidder, is never returned, and funds the Validator. The **bond** is paid only by winners and comes back in full if they deliver.
+The bond and the bid fee are different. The **bid fee** (0.2 tUSDM) is paid by every bidder, is never returned, and stays with the Board as an anti-spam fee. The **bond** is paid only by winners and comes back in full if they deliver.
 
 </aside>
 
@@ -49,11 +49,11 @@ The bond and the bid fee are different. The **bid fee** (0.2 tUSDM) is paid by e
 | --- | --- |
 | **User NeoRack** | Human advertiser (NeoRack, a GPU neocloud). Gives the brief. |
 | **NeoRack Consumer agent** | Advertiser's agent. Publishes the tender and pays the awards. |
-| **Tender Board - middleman** | Our auction service. Collects bid fees, holds bonds, pays the Validator. Cannot be same as customer - unfair |
+| **Tender Board - middleman** | Our auction service. Collects bid fees, holds bonds, verifies delivery and signs the verdict per supplier. Cannot be same as customer - unfair |
 | **Supplier agents** | Publishers (TechBlog, CodePodcast, DevNewsletter, GamingForum). They bid, serve impressions and post bonds. |
 | **Masumi escrow** | On-chain escrow contract. Every payment below goes through it. |
 | **NeoRack signup feed** | Source of signed outcome events (signup). |
-| **Validator agent - middleman** | Off-chain judge. Issues a signed verdict per supplier. |
+| **Verifier (inside the Tender Board)** | Deterministic check in our service, not a separate agent: signature, attribution, time window. Issues a signed verdict per supplier. |
 
 ## Notes
 
@@ -117,10 +117,8 @@ Consumer sends a request with audience as a parameter (jev model)
 ### Phase 4: Delivery and verification
 
 1. **Suppliers → NeoRack:** serve impressions.
-2. **NeoRack feed → Validator:** signed signup events. 
-3. 💸 **Board → Validator, 0.8 tUSDM** (escrow, Validator is the seller), paid out of the bid fees.
-4. **Validator → Consumer:** signed verdict per supplier. Its hash goes to the decision log.
-5. **Validator → Board:** the same signed verdict.
+2. **NeoRack feed → Board:** signed signup events. The Board's verifier counts verified signups per supplier.
+3. **Board → Consumer:** signed verdict per supplier (Pass, Short of promise or Under gate). Its hash goes to the decision log.
 
 **Notes**
 
@@ -170,19 +168,17 @@ All values are in tUSDM. Verdict rules: delivered ≥ promised is **Pass**. Deli
 ### Net result
 
 - **Consumer:** −20 escrowed, +7 refund, +2.125 forfeits (1.75 + 0.375) = **−10.875 tUSDM for 14 verified signups** (8 + 6). That's 10.875 ÷ 14 ≈ 0.78 tUSDM per signup.
-- **Board:** +0.8 in bid fees, −0.8 to the Validator = **0**.
-- **Validator:** **+0.8**.
+- **Board:** +0.8 in bid fees = **+0.8**.
 
 ## Escrow count
 
 | Escrow | Buyer → Seller | Count | Path |
 | --- | --- | --- | --- |
-| Bid fee | Supplier → Board | 4 | Background |
-| Payment (award) | Consumer → Supplier | 3 | Critical |
-| Performance bond | Supplier → Board | 3 | Critical |
-| Validator fee | Board → Validator | 1 | Background |
+| Bid fee | Supplier → Board | 4 | Background. SIMULATED first, REAL if time allows |
+| Payment (award) | Consumer → Supplier | 3 | Critical. REAL |
+| Performance bond | Supplier → Board | 3 | Critical. REAL |
 
-That's 11 escrows, 6 of them on the critical path.
+That's 10 escrows, 6 of them on the critical path. The 6 critical-path escrows must be REAL (preprod tx + explorer link). The 4 bid fees run SIMULATED (labelled) and become REAL only if the critical path passes its dry run and time allows.
 
 ## Sequence diagram (source)
 
@@ -195,7 +191,6 @@ sequenceDiagram
     participant S as Supplier agents
     participant M as Masumi escrow
     participant P as NeoRack signup feed
-    participant V as Validator agent
     U->>C: Brief - 20 tUSDM budget, technical users, pay per verified signup
     C->>B: Publish tender (gate 5 signups per 1,000 impressions, bond 25% of award)
     B-->>S: Look up suppliers in Masumi registry, POST invite to each api_base_url
@@ -207,10 +202,9 @@ sequenceDiagram
     C->>M: Lock each award - 7, 6, 7 tUSDM (seller is Supplier)
     S->>M: Winners lock 25% bond - 1.75, 1.5, 1.75 tUSDM (seller is Board)
     S->>P: Serve impressions
-    P-->>V: Signed signup events
-    B->>M: Pay Validator 0.8 tUSDM from bid fees (seller is Validator)
-    V->>C: Signed verdict per supplier, hash to decision log
-    V->>B: Same signed verdict
+    P-->>B: Signed signup events
+    B->>B: Verify signups (signature, attribution, window), sign verdict per supplier
+    B->>C: Signed verdict per supplier, hash to decision log
     alt Pass - delivered at or above promise
         S->>M: Submit result, withdraw full award after unlock_time
         B->>M: Authorize bond refund, supplier withdraws full bond

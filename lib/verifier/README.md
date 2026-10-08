@@ -3,7 +3,8 @@
 ## Purpose
 
 Turns signed signup events into verified signup counts and a signed verdict
-per supplier. Exposed as the Validator agent (`lib/agents/`). Deterministic —
+per supplier. A module inside the Tender Board service, not an agent; the
+Board signs the verdict. Deterministic —
 no LLM, no judgement calls.
 
 ## Contract
@@ -17,7 +18,7 @@ no LLM, no judgement calls.
   3. Timestamp within the campaign window?
 - **Outputs (plan):** `VerifiedCounts { supplierId: count }` and
   `Verdict { supplierId, delivered, promised, verdict }`, signed by the
-  Validator.
+  Board.
   `verdict` = `Pass | ShortOfPromise | UnderGate`. `LostBid` is set by the
   Board before the auction and never reaches the verifier.
 - **Verdict rule:** delivered ≥ promised → Pass; delivered ≥ 5 but below
@@ -26,8 +27,7 @@ no LLM, no judgement calls.
 - **Rules:** bot signals (click bursts, datacenter ASNs) are supporting
   context for the dashboard only — never the verdict. The gate is crude on
   purpose; 5 per 1,000 is a policy choice. The verdict hash goes to the
-  decision log. The Validator is paid 0.8 tUSDM by the Board out of the bid
-  fees.
+  decision log. No Validator fee.
 
 ## Done when
 

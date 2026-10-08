@@ -11,10 +11,10 @@ need it on the night.
 | Why | Topic partner's rails; escrow + dispute primitives; 25% track relevance |
 | Access | Provided for the event (confirmed Oct 2): hosted payment-service API + docs |
 | We need from organizers/partner | API base URL, API keys (ReadAndPay level minimum), faucet access for tADA + tUSDM (test USDM on preprod is **UNVERIFIED**, fallback tADA with scaled amounts), registry write for our 4 supplier agents |
-| Our usage | 11 escrows (tUSDM) per run: 6 on the critical path (3 awards, 3 bonds), 5 in the background (4 bid fees, 1 Validator fee); locked early, in parallel. Settlement per verdict (Pass, Short of promise, Under gate). Registry reads for discovery; tx hashes → cardanoscan preprod links in UI |
+| Our usage | 10 escrows (tUSDM) per run: 6 on the critical path (3 awards, 3 bonds), REAL; 4 bid fees in the background, SIMULATED first and REAL if time allows; locked early, in parallel. Settlement per verdict (Pass, Short of promise, Under gate). Registry reads for discovery; tx hashes → cardanoscan preprod links in UI |
 | Permission levels | Read (queries) / ReadAndPay (lock, submit result, request/authorize refund — **this is what we need**) / Admin (key management, not arbitration — keep out of Vercel) |
 | Gotchas | Polling is multi-minute per state transition → lock early, parallel; verify auth + reachability before Oct 8 |
-| Status | ☐ API credentials in hand · ☐ auth verified · ☐ wallets funded (Consumer, 4 suppliers, Board, Validator) · ☐ one lock → submit-result → withdraw dry run with tx hash saved · ☐ one refund dry run (Under-gate path, D9) |
+| Status | ☐ API credentials in hand · ☐ auth verified · ☐ wallets funded (Consumer, 4 suppliers, Board) · ☐ one lock → submit-result → withdraw dry run with tx hash saved · ☐ one refund dry run (Under-gate path, D9) |
 
 ## Vercel (hosting)
 

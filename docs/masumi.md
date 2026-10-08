@@ -10,7 +10,7 @@ Verify endpoint signatures against the live API on the night; don't trust memory
 
 | Masumi primitive | Our usage |
 |---|---|
-| Payment service (hosted preprod) | 11 escrows per run, all tUSDM: 6 critical (3 awards, 3 bonds) + 5 background (4 bid fees, 1 Validator fee). Settlement per verdict, calls per branch in "The escrow lifecycle in our demo" |
+| Payment service (hosted preprod) | 10 escrows per run, all tUSDM: 6 critical (3 awards, 3 bonds), REAL + 4 background bid fees, SIMULATED first and REAL if time allows (PRD D13). Settlement per verdict, calls per branch in "The escrow lifecycle in our demo" |
 | Registry | Board discovers supplier agents for the tender; register OUR 4 policy-bound supplier agents (TechBlog, CodePodcast, DevNewsletter, GamingForum) so discovery is real |
 | Escrow state machine | `FundsLocked → ResultSubmitted → RefundRequested → Disputed` — surfaced in the UI ledger (full state list below) |
 | Decision logging | We send hashes (tender terms, outcome report, signed verdicts); Masumi anchors them |
@@ -129,7 +129,7 @@ Terminal states for polling: `Withdrawn`, `RefundWithdrawn`, `DisputedWithdrawn`
 ### Funding & faucets
 
 - The safe payment asset is **tADA**: Cardano testnet faucet; preprod tADA has no monetary value.
-- Funding checklist (tUSDM + ADA): Consumer purchasing wallet (20 tUSDM of awards + tx overhead), 4 supplier wallets (bid fee 0.2 + bond; they also sell, so each needs ADA for submit-result fees), Board wallet (bonds, Validator fee, forwarded forfeits; sells bid fees and bonds), Validator wallet (sells; ADA for fees), registry minting wallet; add collateral if requested. Fund ≥24h before the event; don't rely on a faucet during the demo.
+- Funding checklist (tUSDM + ADA): Consumer purchasing wallet (20 tUSDM of awards + tx overhead), 4 supplier wallets (bid fee 0.2 + bond; they also sell, so each needs ADA for submit-result fees), Board wallet (forwarded forfeits and bond remainders; sells bid fees and bonds), registry minting wallet; add collateral if requested. Fund ≥24h before the event; don't rely on a faucet during the demo.
 - Amounts like 0.2, 0.375 and 1.125 tUSDM need the asset's decimals as integer strings; the decimals are **UNVERIFIED** with the asset itself.
 - **Test USDM on Preprod is UNVERIFIED and contradictory:** the Masumi Dispenser advertises ADA + USDM for Testnet but requires a verification code + ADA collateral; older official docs say USDM is not available on Preprod. Research recommendation: **tADA for the judged flow**; use test USDM only if organizers provide a dispenser code, exact policy/asset ID, decimals, and funded wallets. Never hard-code mainnet USDM's policy ID into Preprod. Dispenser rate limits: **UNVERIFIED**. Commonly reported faucet limit: one request per address per 24h (confirm in the faucet UI on the day).
 - ⚠️ Conflicts with this file's plan (all amounts in tUSDM, test USDM **UNVERIFIED**): fallback is tADA with scaled amounts. Decide with Vladimir once the organizers answer.
@@ -175,23 +175,22 @@ Missing `/api/v1` in base URL · `Authorization: Bearer` instead of `token` head
 
 ## The escrow lifecycle in our demo
 
-All 11 escrows use the same two lock calls: the seller creates terms with
+All 10 escrows use the same two lock calls: the seller creates terms with
 `POST /payment` (no funds move), the buyer locks with `POST /purchase`.
 Every escrow ends in `Withdrawn` or `RefundWithdrawn`, collected by the node.
 
 | Escrow | Count | Path | Buyer (locks) | Seller (submits result, collects) |
 |---|---|---|---|---|
-| Bid fee, 0.2 tUSDM | 4 | background | Supplier agent | Board |
-| Award (7, 6, 7) | 3 | critical | Consumer agent | Supplier agent |
-| Bond, 25% of award (1.75, 1.5, 1.75) | 3 | critical | Supplier agent (winner) | Board |
-| Validator fee, 0.8 tUSDM | 1 | background | Board | Validator agent |
+| Bid fee, 0.2 tUSDM | 4 | background, SIMULATED first | Supplier agent | Board |
+| Award (7, 6, 7) | 3 | critical, REAL | Consumer agent | Supplier agent |
+| Bond, 25% of award (1.75, 1.5, 1.75) | 3 | critical, REAL | Supplier agent (winner) | Board |
 
-Bid fee and Validator fee: seller calls `submit-result`, then collects after
-`unlockTime`. No refund calls, ever (the bid fee is never returned). The
-Validator's `resultHash` commits its signed verdicts (inferred from "Decision logging").
+Bid fee: seller calls `submit-result`, then collects after `unlockTime`. No
+refund calls, ever (the bid fee is never returned). The Board's signed
+verdicts are hashed into the decision log (inferred from "Decision logging").
 
-Award and bond calls per settlement branch (verdict comes from the Validator
-agent before any call; "collect" = automatic after `unlockTime`):
+Award and bond calls per settlement branch (the Board's verifier signs the
+verdict before any call; "collect" = automatic after `unlockTime`):
 
 | Branch | Award (Consumer buys from Supplier) | Bond (Supplier buys from Board) |
 |---|---|---|
@@ -219,13 +218,15 @@ agent before any call; "collect" = automatic after `unlockTime`):
 ```text
 1. Brief + tender: Consumer publishes the tender (gate 5/1,000, bond 25%); Board
    finds suppliers in the registry, POSTs /tender-invite to each api_base_url
-2. Bidding: each of 4 suppliers locks the 0.2 bid fee (4 escrows, background);
+2. Bidding: each of 4 suppliers locks the 0.2 bid fee (4 escrows, background,
+   SIMULATED first);
    commit hash, reveal, Board checks hashes, ranks cheapest per promised signup,
    picks 3 winners within budget 20
 3. Lock (IN PARALLEL, early in the night): Consumer locks 3 awards, each winner
    locks its bond → FundsLocked (save tx hash + explorer link)
-4. Traffic serves (off-chain, simulated); NeoRack signup feed → Validator;
-   Board locks the 0.8 Validator fee; Validator signs a verdict per supplier
+4. Traffic serves (off-chain, simulated); NeoRack signup feed → Board; the
+   Board's verifier counts verified signups and the Board signs a verdict per
+   supplier
 5. Settlement engine, per supplier, by verdict (table above):
      Pass / Short of promise → submit result → collect → SETTLED
      Under gate → refund path → REFUNDED

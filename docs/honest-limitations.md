@@ -6,8 +6,9 @@ and it's the cheapest 10 points available.
 ## What's real
 
 - Escrow locks and settlements on Masumi **preprod** (Cardano testnet):
-  real state transitions, real tx hashes, real explorer links. 11 escrows per
-  run: 3 awards, 3 bonds, 4 bid fees, 1 Validator fee.
+  real state transitions, real tx hashes, real explorer links. 10 escrows per
+  run: 3 awards and 3 bonds are REAL; 4 bid fees are SIMULATED (labelled)
+  unless time allows making them REAL.
 - Supplier agents are identified via the registry (agent identifiers,
   service cards).
 - The auction mechanism is real: tender → commit-reveal sealed bids →
@@ -39,7 +40,11 @@ and it's the cheapest 10 points available.
 - The Tender Board is a trust assumption: escrows cannot split, so the Board
   returns bond remainders and forwards forfeits to the Consumer as plain
   transfers. It also holds bonds and collects bid fees.
-- The Validator checks signature, attribution and time window. It does not
+- The Board both runs the auction and verifies delivery; there is no
+  independent validator. An independent, paid validator agent is the
+  production path. Tonight the check is deterministic and its inputs are on
+  the dashboard.
+- The verifier checks signature, attribution and time window. It does not
   check whether a signup is a real human. Bot signals are dashboard context
   only, never the verdict.
 - The 3 verdicts, the pro-rata forfeit (bond × (promised − delivered) ÷

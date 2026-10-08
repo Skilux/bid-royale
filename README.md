@@ -36,9 +36,10 @@ budget in a sealed-bid auction, and the Consumer pays only for verified signups.
 │ AGENTS               │  │ TENDER BOARD (ours)  │  │ MASUMI RAILS         │
 │ • Consumer agent     │  │ • Tender API         │  │ • Registry           │
 │ • 4 Supplier agents  │  │ • Auction engine     │  │ • Escrow contract    │
-│ • Validator agent    │  │ • Settlement engine  │  │   (11 escrows/run)   │
-│   (verifier module,  │  │                      │  │ • faucet, explorer   │
-│   signs verdicts)    │  │ A service, not an    │  │ Rails we do NOT      │
+│                      │  │ • Verifier (signs    │  │   (10 escrows/run)   │
+│                      │  │   verdicts)          │  │ • faucet, explorer   │
+│                      │  │ • Settlement engine  │  │                      │
+│                      │  │ A service, not an    │  │ Rails we do NOT      │
 │                      │  │ agent.               │  │ rebuild.             │
 └──────────────────────┘  └──────────────────────┘  └──────────────────────┘
 ┌──────────────────────┐  ┌──────────────────────┐
@@ -52,15 +53,15 @@ budget in a sealed-bid auction, and the Consumer pays only for verified signups.
 via the Masumi registry → 4 commit-reveal sealed bids (0.2 bid fee each) →
 3 winners (TechBlog 7, CodePodcast 6, DevNewsletter 7 = 20) → Consumer locks
 3 awards, winners lock 3 bonds (25% of award = 5) → traffic serves → NeoRack
-signup feed emits signed signups → Validator counts verified signups and
-signs a verdict per supplier → settlement, one of 3 verdicts:
+signup feed emits signed signups → the Board's verifier counts verified
+signups and the Board signs a verdict per supplier → settlement, one of 3 verdicts:
 TechBlog **Pass** (7 paid, 1.75 bond returned) /
 CodePodcast **Short of promise** (6 paid, 0.375 of bond forfeited to Consumer) /
 DevNewsletter **Under gate** (0 signups: 7 back to Consumer, 1.75 bond forfeited to Consumer) →
 receipt: Consumer net -10.875 for 14 verified signups (about 0.78 each) +
 round-2 allocation (illustrative, shown not executed).
 GamingForum bids below the gate (4 per 1,000 promised) and is a **Lost bid**.
-11 escrows total: 4 bid fees + 1 Validator fee in the background, 3 awards + 3 bonds on the critical path.
+10 escrows total: 3 awards + 3 bonds on the critical path (REAL), 4 bid fees in the background (SIMULATED first, REAL if time allows).
 
 **Per-supplier state machine:**
 `DRAFT → TENDERED → QUOTED → AUTHORIZED → ESCROWED → IN_PROGRESS → DELIVERED → VALIDATING → SETTLED | REFUNDED`
@@ -89,8 +90,8 @@ originality 10%, honest limitations 10%.
 
 ## Constraints the stack must respect
 
-- 11 escrows per run: 6 on the critical path (3 awards + 3 bonds), 5 in the
-  background (4 bid fees + 1 Validator fee). Payment-service polling is
+- 10 escrows per run: 6 on the critical path (3 awards + 3 bonds, REAL), 4 in
+  the background (bid fees, SIMULATED first, REAL if time allows). Payment-service polling is
   multi-minute per transition → **lock escrows early in the night, in parallel**.
 - Vercel Hobby functions: ~60s limit → stepwise scenario, SSE streaming,
   job-token + poll for the settlement step.
@@ -117,7 +118,7 @@ bid-royale/
 ├── app/                 ← Next.js Wrapper UI (scaffolded, plain JS)
 ├── lib/
 │   ├── masumi/          ← Masumi client (payment service + registry)
-│   ├── agents/          ← agent runtime (Consumer, Suppliers, Validator)
+│   ├── agents/          ← agent runtime (Consumer, Suppliers)
 │   ├── outcome-feed/    ← NeoRack signup feed + signed signup events
 │   ├── verifier/        ← deterministic outcome verification
 │   └── settlement/      ← 3 verdict branches → award / bond settlement wiring

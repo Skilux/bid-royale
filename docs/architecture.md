@@ -20,11 +20,12 @@ described by contract (inputs → outputs, "done when"). Terms: `GLOSSARY.md`.
 │  TENDER BOARD       our service, not an agent. Tender API: publish     │
 │                     tender, invite suppliers, collect bids. Auction    │
 │                     engine: commit-reveal check, eligibility, rank,    │
-│                     fill budget. Settlement engine: lib/settlement.    │
+│                     fill budget. Verifier: lib/verifier, Board         │
+│                     signs verdicts. Settlement engine:                 │
+│                     lib/settlement.                                    │
 │  lib/agents/        OpenAI Agents SDK instances: Consumer agent        │
 │                     (publishes tender, pays awards), 4 Supplier        │
-│                     agents (bid, serve, report, post bond), Validator  │
-│                     agent (wraps the verifier, signs verdicts)         │
+│                     agents (bid, serve, report, post bond)             │
 │  lib/outcome-feed/  NeoRack signup feed: simulated shop, serves        │
 │                     impressions, emits SIGNED signup events (shop key  │
 │                     signs; attribution by click/session ID)            │
@@ -41,9 +42,9 @@ described by contract (inputs → outputs, "done when"). Terms: `GLOSSARY.md`.
 ┌───────────────▼──────────────────┐  ┌───────────────▼──────────────────┐
 │ MASUMI HOSTED PREPOD (Cardano)   │  │ LLM PROVIDERS                    │
 │ • Registry: discovery (read)     │  │ OpenAI (primary)                 │
-│ • Payment service: 11 escrows    │  │ Groq / Gemini keys as fallback   │
-│   (award, bond, bid fee,         │  └──────────────────────────────────┘
-│   Validator fee), lock →         │
+│ • Payment service: 10 escrows    │  │ Groq / Gemini keys as fallback   │
+│   (award + bond REAL; bid fee    │  └──────────────────────────────────┘
+│   SIMULATED first), lock →       │
 │   release / refund               │
 │ • Faucet: tADA + test USDM       │
 │   (tUSDM unverified)             │
@@ -83,11 +84,11 @@ tADA with scaled amounts).
    Bidding, serving and measurement are off-chain; only locks and settlement
    touch the chain.
 4. **Delivery and verification.** Traffic serves. The NeoRack signup feed
-   sends signed signup events to the Validator agent, which counts verified
+   sends signed signup events to the Tender Board. Its verifier
+   (`lib/verifier`, inside the Board service, not an agent) counts verified
    signups per supplier (TechBlog 8 · CodePodcast 6 · DevNewsletter 0 per
-   1,000). The Board pays the Validator 0.8 in escrow out of the bid fees. The
-   Validator sends a signed verdict per supplier to the Consumer and the
-   Board; its hash goes to the decision log.
+   1,000). The Board signs a verdict per supplier and sends it to the
+   Consumer; its hash goes to the decision log. No Validator fee.
 5. **Settlement**, one of 3 verdicts per supplier (delivered ≥ promised =
    Pass; delivered ≥ 5 but below promise = Short of promise; delivered < 5 =
    Under gate):
@@ -109,10 +110,11 @@ tADA with scaled amounts).
    optimizer's decision (TechBlog 50 / CodePodcast 50 / DevNewsletter 0) —
    illustrative, no chain ops.
 
-Escrows per run: 11. Bid fee (Supplier → Board) 4 and Validator fee
-(Board → Validator) 1 run in the background. Award (Consumer → Supplier) 3
-and bond (Supplier → Board) 3 are the critical path (6 total). Lock early,
-in parallel.
+Escrows per run: 10. Award (Consumer → Supplier) 3 and bond (Supplier →
+Board) 3 are the critical path (6 total) and must be REAL. Bid fee
+(Supplier → Board) 4 run in the background, SIMULATED first and REAL if the
+critical path passes its dry run and time allows (PRD D13). Lock early, in
+parallel.
 
 Payout mechanics (remainder and forfeit as plain transfers) are a trust
 assumption on the Board.
@@ -122,8 +124,8 @@ assumption on the Board.
 | Component | Inputs | Outputs | Done when |
 |---|---|---|---|
 | `app/` Wrapper UI | user clicks, SSE subscription | rendered tender → bids → dashboard → receipt; event ledger | <30s to a running demo; every money element badged |
-| Tender Board (service in the app, not an agent) | tender, commit hashes, reveals, verdicts | invitations, eligible + ranked bids, winners, settlement calls | commit-reveal mismatches rejected; budget fill ≤ 20 |
-| `lib/agents/` | tender terms, bids, signup counts | bids, tender, signed verdicts | ≤6–8 tool calls per run; roles distinct (Consumer / 4 Suppliers / Validator) |
+| Tender Board (service in the app, not an agent) | tender, commit hashes, reveals, verified signup counts | invitations, eligible + ranked bids, winners, Board-signed verdicts, settlement calls | commit-reveal mismatches rejected; budget fill ≤ 20 |
+| `lib/agents/` | tender terms, bids | bids, tender | ≤6–8 tool calls per run; roles distinct (Consumer / 4 Suppliers) |
 | `lib/outcome-feed/` | supplier list, scenario script | signed signup events + impression counts | verifier accepts its signatures; DevNewsletter emits 0 verified signups |
 | `lib/verifier/` | events + shop public key | verified signup counts per supplier | 3 deterministic checks only; bot signals never gate |
 | `lib/settlement/` | verified counts, bids, gate | Pass / Short of promise / Under gate settlement + Masumi calls | checks measured signups vs bid quote AND gate; forfeit = bond × (promised − delivered) ÷ promised |
@@ -136,7 +138,7 @@ Our per-supplier states map onto Masumi escrow states:
 
 ```text
 OURS:      ESCROWED → IN_PROGRESS → DELIVERED → VALIDATING → SETTLED | REFUNDED
-MASUMI:    FundsLocked → (work) → ResultSubmitted → (Validator verdict) → withdraw (Pass, Short of promise)
+MASUMI:    FundsLocked → (work) → ResultSubmitted → (Board verdict) → withdraw (Pass, Short of promise)
                                                                       ↘ refund (Under gate; path A2, open)
                                                                       (Disputed = third-party path; not our demo path)
 ```

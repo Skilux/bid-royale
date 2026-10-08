@@ -67,13 +67,15 @@ you're off the rails.
 1. NeoRack signup feed: simulated shop + signed signup events + attribution
    (the heart — build first)
 2. Wrapper UI shell: brief → dashboard → receipt (static first)
-3. Verifier module (exposed as the Validator agent): signature + attribution +
-   window checks (deterministic)
+3. Verifier module (inside the Tender Board service, not an agent):
+   signature + attribution + window checks (deterministic), Board signs the
+   verdict
 4. Tender Board auction engine: commit-reveal bid evaluation + winner picking;
    round-2 decision logic (shown on the receipt, no chain ops)
 5. Masumi: discover Supplier agents via registry; publish tender on our board,
-   collect sealed bids + 11 escrow locks (early in the night, in parallel;
-   6 on the critical path) + settlement wiring
+   collect sealed bids + 10 escrow locks (early in the night, in parallel;
+   6 critical-path locks REAL, 4 bid fees SIMULATED first, REAL if time
+   allows) + settlement wiring
 6. Supplier agents (4 bidders): TechBlog Pass, CodePodcast Short of promise,
    DevNewsletter Under gate (the rehearsed failure), GamingForum below the gate
 7. Settlement beat (3 verdict branches) + ROI leaderboard + receipt

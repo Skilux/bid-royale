@@ -48,7 +48,7 @@ See `.env.example` for the full list. Rules:
 - **Commits:** conventional commits, lowercase, <72 chars:
   `feat(ui): tender board renders bids`, `fix(settlement): verdict uses bid quote`
 - **Lanes (merge points in `docs/demo-runbook.md`):**
-  - Lane A — Masumi/payments: API wiring, 11 escrows (6 on the critical path), settlement, dry runs
+  - Lane A — Masumi/payments: API wiring, 10 escrows (6 critical-path REAL, 4 bid fees SIMULATED first), settlement, dry runs
   - Lane B — Wrapper UI/agents/video: UI, agent loops, SSE ledger, script, video
 - **Merge points:** escrow-lock API shape (night start), UI↔settlement
   wiring (~midnight), full run + video (Oct 7 evening / ~05:00).

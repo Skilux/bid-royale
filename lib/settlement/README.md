@@ -3,7 +3,7 @@
 ## Purpose
 
 Settlement engine of the Tender Board. Decides money movement per supplier
-from the Validator's signed verdict and executes it via `lib/masumi/`.
+from the Board-signed verdict (`lib/verifier/`) and executes it via `lib/masumi/`.
 
 ## Contract
 
@@ -11,8 +11,9 @@ from the Validator's signed verdict and executes it via `lib/masumi/`.
   with delivered, promised and gate (5 signups per 1,000 impressions); the
   award and bond escrow ids per winner; revealed bids.
 - **Money per winner:** award (Consumer → Supplier) + bond (25% of award,
-  Supplier → Board). Bid fees (4) and the Validator fee (1) settle in the
-  background. 11 escrows total, 6 on the critical path.
+  Supplier → Board), REAL. Bid fees (4) settle in the background,
+  SIMULATED first and REAL if time allows. 10 escrows total, 6 on the
+  critical path.
 - **Decision per supplier:**
   - **Pass** (delivered ≥ promised): supplier submits the result, withdraws
     the full award after `unlockTime`. Board authorizes a bond refund, supplier

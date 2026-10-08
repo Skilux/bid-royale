@@ -24,15 +24,15 @@ Money Flow spec and may change. All amounts are tUSDM.
 
 1. NeoRack signup feed first (the heart) → 2. Wrapper UI shell (static) →
    3. verifier module → 4. Tender Board auction engine → 5. Masumi wiring
-   **in parallel, early** (11 escrows; bid-fee locks at bid time, award and
-   bond locks as soon as winners are picked) → 6. 4 Supplier agents
+   **in parallel, early** (10 escrows; award and bond locks REAL as soon as
+   winners are picked; bid fees SIMULATED first, REAL if time allows) → 6. 4 Supplier agents
    (TechBlog, CodePodcast, DevNewsletter, GamingForum) → 7. settlement beat +
    leaderboard + receipt → 8. video cut.
 
 ## Pre-flight checklist (before Oct 8)
 
 - [ ] Vercel project linked, env vars set, deploy green, URL opens on cellular
-- [ ] Masumi API auth verified; Consumer, Supplier, Board and Validator
+- [ ] Masumi API auth verified; Consumer, Supplier and Board
   wallets funded (tUSDM + ADA)
 - [ ] tUSDM availability on preprod confirmed (unverified; fallback tADA with
   scaled amounts)
