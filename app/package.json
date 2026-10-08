@@ -1,0 +1,1 @@
+{"dependencies":{"next":"16.3.8","react":"^19.2.0","react-dom":"^19.2.0"},"name":"ad-slot-auction","private":true,"scripts":{"build":"next build","dev":"next dev","start":"next start"},"version":"0.0.0"}
