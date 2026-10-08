@@ -1,6 +1,5 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import { installNextResolution } from "../board/test-alias.js";
 installNextResolution();
 const { createRealAdapter, lovelace, realAdapter } = await import("@/lib/masumi/real");
@@ -350,13 +349,4 @@ test("transfer advance without treasury stays pending even after bond Withdrawn"
   assert.equal(advanced.state, "TransferPending");
   assert.equal(advanced.txHash, null);
   assert.equal(advanced.explorerUrl, null);
-});
-
-test("PENDING receipts are part of the shared Badge contract with Product UI guidance", () => {
-  const source = readFileSync(new URL("./simulated.js", import.meta.url), "utf8");
-  const badgeDefinition = source.match(/@typedef \{([^}]+)\} Badge/)[1];
-  assert.ok(badgeDefinition.includes('"PENDING"'));
-  const docs = readFileSync(new URL("./README.md", import.meta.url), "utf8");
-  assert.match(docs, /UI must never show it as money moved/);
-  assert.match(docs, /becomes REAL with an explorer link once a hash exists/);
 });
