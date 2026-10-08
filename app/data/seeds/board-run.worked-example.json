@@ -47,7 +47,7 @@
       "settlement": {
         "status": "done",
         "startedAt": "2026-10-08T22:00:00.630Z",
-        "finishedAt": "2026-10-08T22:00:00.750Z"
+        "finishedAt": "2026-10-08T22:00:00.760Z"
       }
     },
     "brief": {
@@ -590,7 +590,15 @@
     "settlement": {
       "job": "job_worked-example",
       "status": "done",
+      "phase": "settled",
       "startedAt": "2026-10-08T22:00:00.640Z",
+      "deadline": "2026-10-08T22:40:00.640Z",
+      "reconcileUntil": "2026-10-09T01:00:00.640Z",
+      "settled": [
+        "devnewsletter",
+        "codepodcast",
+        "techblog"
+      ],
       "transfers": [
         {
           "id": "sim_fa964d3e392795135f46fe00d0e82cf9e67403859d3848f3b5a4603c",
@@ -684,7 +692,10 @@
           "verdict": "pass"
         }
       ],
-      "finishedAt": "2026-10-08T22:00:00.740Z"
+      "pending": 0,
+      "ticks": 1,
+      "lastTickAt": "2026-10-08T22:00:00.740Z",
+      "finishedAt": "2026-10-08T22:00:00.750Z"
     },
     "ledger": [
       {
@@ -1921,7 +1932,7 @@
     },
     {
       "seq": 54,
-      "ts": "2026-10-08T22:00:00.760Z",
+      "ts": "2026-10-08T22:00:00.770Z",
       "name": "settlement.completed",
       "data": {
         "job": "job_worked-example",
@@ -1930,7 +1941,7 @@
     },
     {
       "seq": 55,
-      "ts": "2026-10-08T22:00:00.770Z",
+      "ts": "2026-10-08T22:00:00.780Z",
       "name": "step.completed",
       "data": {
         "step": "settlement"
@@ -1938,7 +1949,7 @@
     },
     {
       "seq": 56,
-      "ts": "2026-10-08T22:00:00.780Z",
+      "ts": "2026-10-08T22:00:00.790Z",
       "name": "receipt.ready",
       "data": {
         "receipt": {
@@ -2056,7 +2067,7 @@
     },
     {
       "seq": 57,
-      "ts": "2026-10-08T22:00:00.790Z",
+      "ts": "2026-10-08T22:00:00.800Z",
       "name": "round2.decided",
       "data": {
         "allocations": [
@@ -2077,7 +2088,7 @@
     },
     {
       "seq": 58,
-      "ts": "2026-10-08T22:00:00.800Z",
+      "ts": "2026-10-08T22:00:00.810Z",
       "name": "run.completed",
       "data": {
         "runId": "run_worked-example",

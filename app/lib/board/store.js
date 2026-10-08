@@ -21,6 +21,9 @@ const PREFIX = "bidroyale";
  * @property {(job: {agent: string, id: string}) => Promise<void>} setJob
  * @property {(key: string, ttlSeconds: number) => Promise<boolean>} claim  true if this caller got the lock
  * @property {(key: string) => Promise<void>} release
+ * @property {(runId: string) => Promise<void>} markSettling    run has settlement work left (Railway trigger)
+ * @property {(runId: string) => Promise<void>} unmarkSettling
+ * @property {() => Promise<string[]>} listSettling
  */
 
 /** @returns {BoardStore} */
@@ -30,9 +33,13 @@ export function createMemoryStore() {
   const claims = new Map();
   const jobs = new Map();
   const transfers = new Map();
+  const settling = new Set();
 
   return {
     kind: "memory",
+    async markSettling(runId) { settling.add(runId); },
+    async unmarkSettling(runId) { settling.delete(runId); },
+    async listSettling() { return [...settling]; },
     async getTransfer(id) { return structuredClone(transfers.get(id) ?? null); },
     async reserveTransfer(id, record) {
       if (transfers.has(id)) return false;
@@ -112,9 +119,19 @@ export function createUpstashStore({ url, token, fetchImpl = fetch, timeoutMs = 
   const eventsKey = (id) => `${PREFIX}:run:${id}:events`;
   const claimKey = (key) => `${PREFIX}:claim:${key}`;
   const jobKey = (agent, id) => `${PREFIX}:masumi:job:${agent}:${id}`;
+  const settlingKey = `${PREFIX}:settling`;
 
   return {
     kind: "upstash",
+    async markSettling(runId) {
+      await command("SADD", settlingKey, runId);
+    },
+    async unmarkSettling(runId) {
+      await command("SREM", settlingKey, runId);
+    },
+    async listSettling() {
+      return (await command("SMEMBERS", settlingKey)) ?? [];
+    },
     async getTransfer(id) {
       const raw = await command("GET", transferKey(id));
       return raw ? JSON.parse(raw) : null;

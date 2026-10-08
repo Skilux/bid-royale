@@ -24,6 +24,7 @@ export const EVENTS = {
   verdictSigned: "verdict.signed",
   settlementStarted: "settlement.started",
   settlementTransfer: "settlement.transfer",
+  settlementProgress: "settlement.progress",
   settlementCompleted: "settlement.completed",
   receiptReady: "receipt.ready",
   roundTwoDecided: "round2.decided",

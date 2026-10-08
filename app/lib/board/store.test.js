@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createMemoryStore, createStoreFromEnv, createUpstashStore } from "./store.js";
 
-/** Minimal Upstash REST fake: GET, SET (NX, EX), DEL, RPUSH, EXPIRE, LRANGE, plus /pipeline. */
+/** Minimal Upstash REST fake: GET, SET (NX, EX), DEL, RPUSH, EXPIRE, LRANGE, SADD, SREM, SMEMBERS, plus /pipeline. */
 function fakeUpstash() {
   const data = new Map();
   const seen = { auth: new Set(), signals: 0 };
@@ -21,6 +21,15 @@ function fakeUpstash() {
       return { result: list.length };
     }
     if (cmd === "EXPIRE") return { result: 1 };
+    if (cmd === "SADD" || cmd === "SREM") {
+      const set = data.get(key) ?? new Set();
+      const had = set.has(args[0]);
+      if (cmd === "SADD") set.add(args[0]);
+      else set.delete(args[0]);
+      data.set(key, set);
+      return { result: Number(cmd === "SADD" ? !had : had) };
+    }
+    if (cmd === "SMEMBERS") return { result: [...(data.get(key) ?? [])] };
     if (cmd === "LRANGE") return { result: (data.get(key) ?? []).slice(Number(args[0])) };
     return { error: `unknown command ${cmd}` };
   };
@@ -54,6 +63,18 @@ for (const [label, make] of [
     assert.deepEqual((await store.getEvents("r1", 2)).map((e) => e.seq), [3]);
     assert.deepEqual(await store.getEvents("r1", 3), []);
     assert.deepEqual(await store.getEvents("other"), []);
+  });
+
+  test(`${label} store: the settling set adds, lists and removes run ids once each`, async () => {
+    const store = make();
+    assert.deepEqual(await store.listSettling(), []);
+    await store.markSettling("r1");
+    await store.markSettling("r1");
+    await store.markSettling("r2");
+    assert.deepEqual((await store.listSettling()).sort(), ["r1", "r2"]);
+    await store.unmarkSettling("r1");
+    await store.unmarkSettling("missing");
+    assert.deepEqual(await store.listSettling(), ["r2"]);
   });
 
   test(`${label} store: Masumi jobs are keyed by agent and id`, async () => {

@@ -16,9 +16,12 @@ export async function POST(_request, { params }) {
   );
 }
 
-/** Poll the job: /api/run/:id/settlement?job=<token>. Status is running, done or failed. */
+/**
+ * Poll the job: /api/run/:id/settlement?job=<token>. Each poll runs one bounded reconcile tick (under 60 s), then
+ * returns the job. Status is running, done or failed; phase is waiting_for_lock, settling, timer_fallback or settled.
+ */
 export async function GET(request, { params }) {
   const { id } = await params;
   const job = new URL(request.url).searchParams.get("job") ?? "";
-  return respond(async () => getBoard().getSettlementJob(id, job));
+  return respond(async () => getBoard().pollSettlement(id, job));
 }

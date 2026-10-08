@@ -5,13 +5,14 @@ import { generateFeed } from "../outcome-feed/index.js";
 import { publicKeyFromSecret, publicKeyHex } from "../signing/index.js";
 import { buildVerdict, verify, verifyVerdict } from "../verifier/index.js";
 import { BoardError, EVENTS, STEPS } from "./events.js";
-import { buildReceipt } from "./receipt.js";
+import { SETTLEMENT, assertBadged, createReconciler } from "./reconcile.js";
 import { BRIEF, SUPPLIERS, pinnedBids, scriptedDelivery } from "./scenario.js";
 
 export { BoardError, EVENTS, EVENT_NAMES, STEPS, TERMINAL_EVENTS } from "./events.js";
 export { createMemoryStore, createStoreFromEnv, createUpstashStore } from "./store.js";
 export { SSE_HEADERS, formatSse, isStreamDone, streamEvents } from "./sse.js";
 export { buildReceipt } from "./receipt.js";
+export { SETTLEMENT, isTerminal } from "./reconcile.js";
 export { SUPPLIERS, pinnedBids } from "./scenario.js";
 
 const BID_WINDOW_MS = 55_000;
@@ -20,15 +21,6 @@ const STEP_LOCK_SECONDS = 120;
 
 const iso = (ms) => new Date(ms).toISOString();
 const round = (n) => Math.round(n * 1e6) / 1e6;
-
-/** PENDING: a real Masumi operation was submitted, no transaction yet. It never counts as money moved. */
-const BADGES = ["REAL", "SIMULATED", "PRE-RECORDED", "PENDING"];
-
-function assertBadged(receipt) {
-  if (!BADGES.includes(receipt?.badge)) {
-    throw new Error(`money receipt without a badge: ${JSON.stringify(receipt)}`);
-  }
-}
 
 /**
  * Tender Board orchestration. Pure: all I/O goes through the injected store and adapter.
@@ -43,6 +35,9 @@ function assertBadged(receipt) {
  * @param {() => string} [deps.newJobId]
  * @param {(args: {tender: object, suppliers: object[], run: object}) => Promise<object[]>} [deps.bidSource]
  * @param {((args: {runId: string}) => Promise<{run: object, events: object[]}> | null) | null} [deps.canned]
+ * @param {Partial<typeof import("./reconcile.js").SETTLEMENT>} [deps.settlement]   timing overrides (tests)
+ * @param {() => number} [deps.clock]   wall clock for the per-tick budget; `now` may be a fixture clock
+ * @param {(ms: number) => Promise<void>} [deps.sleep]   runAll's wait between settlement ticks
  */
 export function createBoard({
   store,
@@ -54,10 +49,15 @@ export function createBoard({
   newJobId = () => `job_${randomUUID().slice(0, 12)}`,
   bidSource = pinnedBids,
   canned = null,
+  settlement = {},
+  clock = Date.now,
+  sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
 }) {
   const readFlags = () => (typeof flags === "function" ? flags() : flags);
 
   const emit = (runId, name, data = {}) => store.appendEvent(runId, { ts: iso(now()), name, data });
+  const timing = { ...SETTLEMENT, ...settlement };
+  const reconciler = createReconciler({ adapter, now, emit, clock, options: timing });
 
   async function need(runId) {
     const run = await store.getRun(runId);
@@ -70,13 +70,6 @@ export function createBoard({
       assertBadged(receipt);
       run.ledger.push({ ...receipt, phase, supplier });
     }
-  }
-
-  /** The lock receipt ids let the adapter find the escrows in a later serverless invocation. */
-  function withEscrowIds(run, verdict) {
-    const lockId = (action) =>
-      run.ledger.find((l) => l.phase === "lock" && l.supplier === verdict.supplier && l.action === action)?.id;
-    return { ...verdict, awardEscrowId: lockId("award"), bondEscrowId: lockId("bond") };
   }
 
   function pendingStep(run) {
@@ -329,8 +322,9 @@ export function createBoard({
   }
 
   /**
-   * Starts the settlement job and returns its token. The work runs through `schedule`
-   * (Next `after()` in the route) so the HTTP call returns inside the function limit.
+   * Starts the settlement job and returns its token. The first reconcile tick runs through `schedule`
+   * (Next `after()` in the route) so the HTTP call returns inside the function limit. Later ticks come from
+   * settlement polls and the Railway trigger (`reconcileActive`) until every escrow is final.
    */
   async function startSettlement(runId, { schedule = (fn) => void fn() } = {}) {
     const run = await need(runId);
@@ -350,64 +344,77 @@ export function createBoard({
 
     const job = newJobId();
     run.steps.settlement = { status: "running", startedAt: iso(now()) };
-    run.settlement = { job, status: "running", startedAt: iso(now()), transfers: [] };
+    run.settlement = reconciler.start(job);
     await store.setRun(run);
+    await store.markSettling(runId);
     await emit(runId, EVENTS.stepStarted, { step: "settlement" });
     await emit(runId, EVENTS.settlementStarted, { job });
-    schedule(() => executeSettlement(runId, job));
+    schedule(async () => {
+      try {
+        await reconcile(runId);
+      } finally {
+        await store.release(`${runId}:settlement`);
+      }
+    });
     return { run, job, repeated: false };
   }
 
-  async function executeSettlement(runId, job) {
+  /**
+   * One reconcile tick for a run: bounded, idempotent, safe to call from any poll. A tick already in progress
+   * makes this a no-op. Returns the run as stored afterwards.
+   */
+  async function reconcile(runId) {
     const run = await need(runId);
-    try {
-      const results = await Promise.all(run.verdicts.map((v) => adapter.settle(withEscrowIds(run, v))));
-      for (const [i, receipts] of results.entries()) {
-        const v = run.verdicts[i];
-        addToLedger(run, receipts, "settlement", v.supplier);
-        for (const receipt of receipts) {
-          run.settlement.transfers.push({ ...receipt, supplier: v.supplier, verdict: v.kind });
-          await emit(runId, EVENTS.settlementTransfer, { supplier: v.supplier, verdict: v.kind, receipt });
-        }
-      }
-
-      run.receipt = buildReceipt({
-        suppliers: run.suppliers,
-        bids: run.bids,
-        accepted: run.auction.accepted,
-        verdicts: run.verdicts,
-        verified: run.verification.verified,
-        ledger: run.ledger,
-      });
-      run.roundTwo = run.receipt.roundTwo;
-      run.settlement = { ...run.settlement, status: "done", finishedAt: iso(now()) };
-      run.steps.settlement = { ...run.steps.settlement, status: "done", finishedAt: iso(now()) };
-      run.status = "completed";
-      run.nextStep = null;
-      await store.setRun(run);
-      await emit(runId, EVENTS.settlementCompleted, { job, transfers: run.settlement.transfers.length });
-      await emit(runId, EVENTS.stepCompleted, { step: "settlement" });
-      await emit(runId, EVENTS.receiptReady, { receipt: run.receipt });
-      await emit(runId, EVENTS.roundTwoDecided, { allocations: run.roundTwo });
-      await emit(runId, EVENTS.runCompleted, {
-        runId,
-        net: run.receipt.consumer.net,
-        signups: run.receipt.consumer.signups,
-        badges: run.receipt.badges,
-      });
-    } catch (err) {
-      run.settlement = { ...run.settlement, status: "failed", error: err.message };
-      run.steps.settlement = { ...run.steps.settlement, status: "failed", error: err.message };
-      await failStep(run, "settlement", err).catch(() => {});
-    } finally {
-      await store.release(`${runId}:settlement`);
+    if (!reconciler.isActive(run)) {
+      await store.unmarkSettling(runId);
+      return run;
     }
+    const key = `${runId}:reconcile`;
+    if (!(await store.claim(key, timing.claimSeconds))) return run;
+    try {
+      await reconciler.tick(run);
+      await store.setRun(run);
+      if (!reconciler.isActive(run)) await store.unmarkSettling(runId);
+      return run;
+    } catch (err) {
+      // Only `settle` throwing lands here: a bug or broken config, not a slow chain. Close it like any step.
+      run.settlement = { ...run.settlement, status: "failed", error: err.message };
+      await store.unmarkSettling(runId);
+      await failStep(run, "settlement", err).catch(() => {});
+      return need(runId);
+    } finally {
+      await store.release(key);
+    }
+  }
+
+  /** Ticks every run with settlement work left, at most `limit`. For the Railway trigger. */
+  async function reconcileActive({ limit = 3 } = {}) {
+    const ids = (await store.listSettling()).slice(0, limit);
+    return Promise.all(
+      ids.map(async (runId) => {
+        try {
+          const run = await reconcile(runId);
+          const s = run.settlement ?? {};
+          return { runId, status: s.status, phase: s.phase, pending: s.pending };
+        } catch (err) {
+          if (err instanceof BoardError && err.code === "run_not_found") await store.unmarkSettling(runId);
+          return { runId, error: err.message };
+        }
+      }),
+    );
   }
 
   async function getSettlementJob(runId, job) {
     const run = await need(runId);
     if (!run.settlement || run.settlement.job !== job) throw new BoardError(404, "job_not_found", `no settlement job ${job}`);
     return { ...run.settlement, receipt: run.receipt };
+  }
+
+  /** The settlement poll: checks the job token, runs one tick, returns the job. */
+  async function pollSettlement(runId, job) {
+    await getSettlementJob(runId, job);
+    await reconcile(runId);
+    return getSettlementJob(runId, job);
   }
 
   /** Runs one named step. `settlement` returns a job token and finishes in the background. */
@@ -426,14 +433,23 @@ export function createBoard({
     return runStep(runId, step, opts);
   }
 
-  /** Runs every remaining step, settlement included, and returns the finished run. For scripts, tests and the canned recorder. */
-  async function runAll(runId) {
+  /**
+   * Runs every remaining step, settlement included, and returns the finished run. For scripts, tests and the canned
+   * recorder. `waitForSettlement: false` returns after the first settlement tick (HTTP routes: polls finish the rest).
+   */
+  async function runAll(runId, { waitForSettlement = true } = {}) {
     let jobs = [];
     for (;;) {
       const run = await need(runId);
       const step = pendingStep(run);
       if (!step || run.status === "completed" || run.mode === "canned") return run;
       if (run.status === "failed") throw new BoardError(409, "run_closed", "run failed");
+      if (step === "settlement" && run.steps.settlement.status === "running") {
+        if (!waitForSettlement) return run;
+        await sleep(timing.pollMs);
+        await reconcile(runId);
+        continue;
+      }
       const out = await runStep(runId, step, { schedule: (fn) => jobs.push(fn()) });
       if (out.degraded) return out.run;
       await Promise.all(jobs);
@@ -451,5 +467,8 @@ export function createBoard({
     runAll,
     startSettlement,
     getSettlementJob,
+    pollSettlement,
+    reconcile,
+    reconcileActive,
   };
 }

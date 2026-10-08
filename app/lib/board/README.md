@@ -44,9 +44,10 @@ All JSON. Errors are `{ error, message, ... }` with the status below.
 | `POST /api/run/:id/verification` | Deterministic verifier: signature, attribution, window | same |
 | `POST /api/run/:id/verdicts` | Board signs one verdict per winner | same |
 | `POST /api/run/:id/settlement` | Start the settlement job | 202 `{ step, job, repeated, run }` |
-| `GET /api/run/:id/settlement?job=<token>` | Poll the job | 200 `{ job, status, transfers, receipt }` |
+| `GET /api/run/:id/settlement?job=<token>` | Poll the job: runs one reconcile tick, then returns it | 200 `{ job, status, phase, pending, deadline, transfers, receipt }` |
+| `GET\|POST /api/settlement/tick` | One reconcile tick for every run with settlement work left (max 3). Railway calls it every ~30 s | 200 `{ runs: [{ runId, status, phase, pending }] }` |
 | `POST /api/run/:id/next` | Run whichever step is next | as that step |
-| `POST /api/run/:id/all` | Run every remaining step, settlement included (scripts, recorder) | 200 `{ run }` |
+| `POST /api/run/:id/all` | Run every remaining step and start settlement (done at once when simulated; real: poll) | 200 `{ run }` |
 | `GET /api/events?run=<id>[&after=<seq>]` | SSE stream, see below | `text/event-stream` |
 | `GET /api/events?run=<id>&format=json[&after=<seq>]` | Same events as JSON | `{ events, next, done }` |
 | `GET /api/health` | Flags, adapter badge, `boardStore`, which env vars are set | 200 |
@@ -60,8 +61,9 @@ Rules:
 - A failed step closes the run (`status: "failed"`, events `step.failed`, `run.failed`) and answers
   500 `step_failed`. Upstash down gives 503 `store_unavailable`. If a canned replay is installed
   (see below) the run degrades to it instead and the answer is 200 with `degraded: true`.
-- Every route stays under 60 s (`maxDuration = 60`). Settlement returns at once and finishes
-  after the response through Next `after()`. The UI polls the job, or just follows SSE.
+- Every route stays under 60 s (`maxDuration = 60`). Settlement returns at once; its first tick runs
+  after the response through Next `after()`. Simulated, that tick finishes it. Real, see "Settlement
+  reconciliation" below. The UI polls the job, or just follows SSE.
 
 ## Run state (`GET /api/run/:id` → `run`)
 
@@ -83,7 +85,12 @@ Rules:
   verification: { verified: { [supplier]: n }, rejections: [{ eventId, supplier, reason }],
                   perSupplier: [{ supplier, received, verified, rejected: { [reason]: n } }] },
   verdicts: [{ supplier, kind, delivered, promised, gate, award, bond, hash, signature }],
-  settlement: { job, status: "running"|"done"|"failed", startedAt, finishedAt?, transfers: [...] } | null,
+  settlement: { job, status: "running"|"done"|"failed",
+                phase: "waiting_for_lock"|"settling"|"timer_fallback"|"settled",
+                startedAt, deadline, reconcileUntil, finishedAt?, settledAt?, lastTickAt, ticks,
+                pending,                       // rows not yet final + suppliers not yet settled
+                settled: [supplier],           // suppliers whose settle() has run
+                transfers: [Receipt & { supplier, verdict }] } | null,
   ledger: [Receipt & { phase: "bid_fee" | "lock" | "settlement", supplier }],   // every money movement
   receipt: { consumer: { awardsLocked, returned, net, signups, costPerSignup },
              board: { bidFees }, badges: ["SIMULATED"],
@@ -97,8 +104,9 @@ Rules:
 
 Notes for UI:
 
-- `Receipt` = `{ id, badge, action, amount, from, to, txHash, explorerUrl, state }` (see `lib/masumi/README.md`).
-  Render `badge` next to every amount. `explorerUrl` is null while SIMULATED.
+- `Receipt` = `{ id, badge, action, amount, from, to, txHash, explorerUrl, state, escrow? }` (see
+  `lib/masumi/README.md`). Render `badge` next to every amount. `explorerUrl` is null while SIMULATED or
+  PENDING. PENDING = real operation submitted, no transaction yet: never show it as money moved.
 - `auction.accepted`, `verdicts` and `leaderboard` are in ranking order (cheapest per signup first), not
   supplier order. Sort by `suppliers` if you want TechBlog, CodePodcast, DevNewsletter.
 - `leaderboard` ranks by `costPerSignup`, Under gate rows with no signups after that, `lost_bid` rows last.
@@ -145,8 +153,9 @@ data: {"seq":12,"runId":"run_ab12cd34","name":"bid.committed","ts":"2026-10-08T2
 | `verification.completed` | `{ verified, rejections, perSupplier }` |
 | `verdict.signed` | `{ supplier, kind, delivered, promised, gate, award, bond, hash, signature }` |
 | `settlement.started` | `{ job }` |
-| `settlement.transfer` | `{ supplier, verdict, receipt }` |
-| `settlement.completed` | `{ job, transfers }` |
+| `settlement.transfer` | `{ supplier, verdict, receipt }`, when a row is created and again when it turns REAL |
+| `settlement.progress` | `{ supplier, verdict, phase: "lock" \| "settlement", action, receiptId, state, badge, txHash, explorerUrl, error? }`, on every state change of a lock or settlement row |
+| `settlement.completed` | `{ job, transfers }`; on timeout `{ job, transfers, fallback: "timer", pending }`; when a timed-out run's last row turns REAL later `{ job, transfers, late: true }` (after `run.completed`) |
 | `receipt.ready` | `{ receipt }` |
 | `round2.decided` | `{ allocations }` |
 | `run.completed` | `{ runId, net, signups, badges }` |
@@ -155,12 +164,33 @@ data: {"seq":12,"runId":"run_ab12cd34","name":"bid.committed","ts":"2026-10-08T2
 
 Names are exported as `EVENTS` and `EVENT_NAMES` from `app/lib/board`.
 
+## Settlement reconciliation (validator service, #49)
+
+`reconcile.js`. A real settlement needs 2–4 escrow steps per row over ~15–20 min
+(`docs/research/masumi-settlement-timing.md`). Nothing waits inside a request: every settlement poll and every
+`/api/settlement/tick` runs one **tick** per run, claimed for 55 s so concurrent polls are no-ops:
+
+1. Advance unconfirmed locks (`adapter.advance(lockId)`). Phase `waiting_for_lock` until both a supplier's
+   award and bond are `FundsLocked` (REAL).
+2. `settle()` each supplier once its locks are confirmed, with `awardEscrowId` / `bondEscrowId` from the ledger.
+3. `advance()` one PENDING row per escrow (Short of promise has two transfers on one bond; they take turns).
+4. Rows are updated in place in `ledger` and `settlement.transfers`; each change emits `settlement.progress`.
+5. All rows final: receipt, `run.completed`. At `deadline` (40 min): the run completes anyway with phase
+   `timer_fallback` and its PENDING rows labelled; it stays in `bidroyale:settling` and ticks keep advancing
+   it until `reconcileUntil` (3 h). The escrows finish on chain by timer, but treasury transfers need a tick.
+
+Each tick has a 45 s budget (locks and settle a third each); an unfinished call is retried next tick, which is
+safe because `advance` re-reads both sides first. The simulated adapter has no `advance`, so its first tick
+settles and finishes, as before. Railway: the treasury worker calls the tick route every 30 s when
+`SETTLEMENT_TICK_URL` is set, so a run finishes with no browser open.
+
 ## State store
 
 `createStoreFromEnv()`: Upstash Redis over REST when `UPSTASH_REDIS_REST_URL` and
 `UPSTASH_REDIS_REST_TOKEN` are set (`KV_REST_API_URL` / `KV_REST_API_TOKEN` also work), otherwise one
 in-memory store per server process. Every Upstash call has a 5 s AbortController timeout. Keys
-`bidroyale:run:<id>` (JSON, 24 h TTL), `bidroyale:run:<id>:events` (list), `bidroyale:claim:*` (step locks).
+`bidroyale:run:<id>` (JSON, 24 h TTL), `bidroyale:run:<id>:events` (list), `bidroyale:claim:*` (step locks),
+`bidroyale:settling` (set of run ids with settlement work left, read by the tick route).
 `/api/health` reports `boardStore: "upstash" | "memory"`.
 
 ## Hook points
