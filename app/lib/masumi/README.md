@@ -46,6 +46,14 @@ for sellers. Parties are CONSUMER, BOARD, TECHBLOG, CODEPODCAST, DEVNEWSLETTER,
 GAMINGFORUM. Keys must be wallet-scoped ReadAndPay, never Admin. No env files
 are loaded. Missing settings become clear error receipts.
 
+Optional Vercel settings: `TREASURY_URL` (Railway worker base URL) and
+`TREASURY_TOKEN` (worker bearer token). When both are set, `getAdapter()` wires
+`createTreasuryClient()` into the real adapter and reuses that adapter for later
+advances. If either is absent, transfers stay `TransferPending`. The hook sends
+`{ id, verdict, move: { reason, from, to, amount } }`; only a valid 64-hex worker
+tx hash produces REAL with an explorer link. `MASUMI_ADMIN_KEY` belongs only on
+the Railway worker; Vercel neither reads it nor calls Admin endpoints.
+
 A lock creates seller terms with `/payment`, then purchases with `/purchase`
 using the buyer key. Uses V2 source index 0, L1 routing, a fresh 24-character hex
 nonce, integer-string lovelace (`unit: ""`), explicit ISO payment deadlines and
