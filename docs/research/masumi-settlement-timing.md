@@ -224,6 +224,28 @@ the lock request.
   withdrawal. Legitimate V2 flow, but visible on the explorer: say so in the demo.
 - Driver: `bin/fast-paths.mjs` in the orchestration state dir; raw log `logs/fast-paths.jsonl`.
 
+### End to end, production run `run_c1f40522` (9 Oct 2026, #45)
+
+Full run through the deployed Board (real adapter, V2 source), event log timestamps, Prague time. Minutes are from
+settlement start (01:45:54). Times are the first poll that saw the state, up to 30–90 s late.
+
+| Step | Start | Duration |
+|---|---|---|
+| Tender to verdicts signed (7 steps) | 01:45:43 | 10.4 s |
+| 10 locks `FundsLocked` (3 awards, 3 bonds, 4 bid fees) | 01:45:51 | 2.1 min |
+| Under-gate award, cooperative refund | 01:45:54 | 5.7 min |
+| Pass bond return, cooperative | 01:45:54 | 6.8 min |
+| Early release, TechBlog and CodePodcast awards | 01:45:54 | 13.0 min |
+| Bid fees collected | 01:45:54 | 13.0 to 15.1 min |
+| Treasury: CodePodcast bond remainder | 01:45:54 | 16.1 min |
+| Treasury: DevNewsletter bond forfeit | 01:45:54 | 17.0 min |
+| CodePodcast forfeit 1.964286 tADA refused (`BelowMinimum`, #62) | 01:45:54 | 15.4 min, never REAL |
+| Run closed by the 40-min timer fallback | 01:45:54 | 40.1 min |
+
+This matches the isolated 8 Oct numbers above for locks (2.1 vs 1.6–3.2 min), cooperative refund (5.7 vs 5.9) and
+early release (13.0 vs 13.1). The bond return was slower in the full run (6.8 vs 4.7 min). The slow fallbacks
+(A2 27.8 min, release 45.5 min) were not exercised. 20 of 21 ledger rows were REAL.
+
 - Agent registration (`POST /registry` → `RegistrationConfirmed`): **6.5 min**.
 - A2 works: the buyer's money came back with no seller signature and no refund
   request, as #20 derived (submit deadline + 10 min). D10 can use A2 as the

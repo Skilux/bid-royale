@@ -77,25 +77,25 @@ until it is terminal, and the Railway treasury worker triggers it every 30 s, so
 
 | Escrow | Calls in order (whose key) | Money moves | States | Measured |
 |---|---|---|---|---|
-| Award 70 (early release) | TechBlog `submit-result` (TechBlog) → Consumer `request-refund` (Consumer) → Consumer `cancel-refund-request` (Consumer) → node pays out | 70 to TechBlog | `FundsLocked` → `ResultSubmitted` → `Disputed` → `WithdrawAuthorized` → `Withdrawn` | 13.1 min |
-| Bond 17.5 (cooperative return) | TechBlog `request-refund` (TechBlog) → Board `authorize-refund` (Board) | 17.5 back to TechBlog | `FundsLocked` → `RefundRequested` → `RefundWithdrawn` | 4.7 min |
+| Award 70 (early release) | TechBlog `submit-result` (TechBlog) → Consumer `request-refund` (Consumer) → Consumer `cancel-refund-request` (Consumer) → node pays out | 70 to TechBlog | `FundsLocked` → `ResultSubmitted` → `Disputed` → `WithdrawAuthorized` → `Withdrawn` | 13.0 min (`run_c1f40522`) |
+| Bond 17.5 (cooperative return) | TechBlog `request-refund` (TechBlog) → Board `authorize-refund` (Board) | 17.5 back to TechBlog | `FundsLocked` → `RefundRequested` → `RefundWithdrawn` | 6.8 min (`run_c1f40522`) |
 
 **Short of promise, CodePodcast (delivered 6 of 8)**
 
 | Escrow | Calls in order (whose key) | Money moves | States | Measured |
 |---|---|---|---|---|
-| Award 60 (early release) | same as Pass: CodePodcast `submit-result` → Consumer `request-refund` → Consumer `cancel-refund-request` | 60 to CodePodcast | as Pass | 13.1 min (as Pass) |
-| Bond 15 (Board collects by early release) | Board `submit-result` (Board) → CodePodcast `request-refund` (CodePodcast) → CodePodcast `cancel-refund-request` (CodePodcast) | 15 to the Board | as Pass | 13.1 min (same path as the award) |
-| Treasury transfers (not escrows) | treasury worker, Admin key, only for a Board-signed verdict, after the bond is `Withdrawn` | 3.75 to the Consumer, 11.25 to CodePodcast | — | not measured yet |
+| Award 60 (early release) | same as Pass: CodePodcast `submit-result` → Consumer `request-refund` → Consumer `cancel-refund-request` | 60 to CodePodcast | as Pass | 13.0 min (as Pass, `run_c1f40522`) |
+| Bond 15 (Board collects by early release) | Board `submit-result` (Board) → CodePodcast `request-refund` (CodePodcast) → CodePodcast `cancel-refund-request` (CodePodcast) | 15 to the Board | as Pass | 13.0 min (inferred from the award release in `run_c1f40522`, same path) |
+| Treasury transfers (not escrows) | treasury worker, Admin key, only for a Board-signed verdict, after the bond is `Withdrawn` | 3.75 to the Consumer, 11.25 to CodePodcast | — | bond remainder 16.1 min; the sub-2-tADA forfeit was refused (`BelowMinimum`, #62), `run_c1f40522` |
 
 **Under gate, DevNewsletter (delivered 0 of 12)**
 
 | Escrow | Calls in order (whose key) | Money moves | States | Measured |
 |---|---|---|---|---|
-| Award 70 (cooperative refund) | Consumer `request-refund` (Consumer) → DevNewsletter `authorize-refund` (DevNewsletter) | 70 back to the Consumer | `FundsLocked` → `RefundRequested` → `RefundWithdrawn` | 5.9 min |
+| Award 70 (cooperative refund) | Consumer `request-refund` (Consumer) → DevNewsletter `authorize-refund` (DevNewsletter) | 70 back to the Consumer | `FundsLocked` → `RefundRequested` → `RefundWithdrawn` | 5.7 min (`run_c1f40522`) |
 | Award fallback (A2) | none: DevNewsletter never submits, the node refunds after the submit-result deadline | 70 back to the Consumer | `FundsLocked` → `RefundWithdrawn` | 27.8 min |
-| Bond 17.5 (Board collects by early release) | as CodePodcast's bond | 17.5 to the Board | as Pass | 13.1 min |
-| Treasury transfer | treasury worker, Board-signed verdict required | 17.5 to the Consumer | — | not measured yet |
+| Bond 17.5 (Board collects by early release) | as CodePodcast's bond | 17.5 to the Board | as Pass | 13.0 min (inferred, as CodePodcast's bond) |
+| Treasury transfer | treasury worker, Board-signed verdict required | 17.5 to the Consumer | — | 17.0 min (`run_c1f40522`) |
 
 **Lost bid, GamingForum (promised 4 per 1,000, below the gate)**: no escrow.
 Only the 2 tADA bid fee, REAL, not returned: the Board collects it like every
@@ -103,16 +103,33 @@ other bid fee.
 
 ## How long a full run takes
 
-About **15 min** end to end, measured per path:
+Measured on the recorded production run `run_c1f40522` (9 Oct 2026, Prague time, event log, #45). Money was REAL
+within **17.0 min** of settlement start for 20 of 21 rows. The run itself ended at **40.1 min**, because the
+CodePodcast forfeit of 1.964286 tADA was refused by the treasury (`BelowMinimum`, bug #62) and the 40-min timer
+fallback closed the run. With the #62 fix on `main` that wait disappears.
 
-- Locks: ~2–3 min, all 6 in parallel.
-- Verdicts: seconds.
-- Settlement: the longest step is the early release, ~13 min. Everything else
-  (bond return 4.7 min, cooperative refund 5.9 min) runs in parallel inside it.
-- Treasury transfers start once a bond is `Withdrawn`; their time is not
-  measured yet (next full run, #31).
-- Slow timer paths stay as automatic fallbacks: release after the unlock time
-  **45.5 min**, refund after the submit-result deadline (A2) **27.8 min**.
+| Step | Start (Prague) | Duration (minutes after settlement start unless noted) |
+|---|---|---|
+| Tender, bids, allocation, locks submitted, feed, verification, verdicts signed | 01:45:43 | 10.4 s in total (bids 7.0 s, locks submitted 1.6 s) |
+| Settlement start (Board begins to poll the node) | 01:45:54 | 0 |
+| All 10 locks (6 awards and bonds, 4 bid fees) `FundsLocked`, REAL | 01:45:51 | 2.1 min (first poll that saw them) |
+| Under-gate award back to the Consumer (cooperative refund), REAL | 01:45:54 | 5.7 min |
+| Pass bond return (cooperative), REAL | 01:45:54 | 6.8 min |
+| Early release of both awards (TechBlog, CodePodcast), REAL | 01:45:54 | 13.0 min |
+| Bid fees collected by the Board, REAL | 01:45:54 | first 13.0 min, last 15.1 min |
+| Treasury: CodePodcast bond remainder 11.785714 to CodePodcast, REAL | 01:45:54 | 16.1 min |
+| Treasury: DevNewsletter bond forfeit 15 to the Consumer, REAL | 01:45:54 | 17.0 min |
+| Treasury: CodePodcast forfeit 1.964286 refused, stays PENDING | 01:45:54 | first refused at 15.4 min, never REAL |
+| Timer-fallback completion (`settlement.completed`, then receipt) | 01:45:54 | 40.1 min |
+
+- Lock, refund and release times are the first poll that saw the final state, so they can be up to one poll
+  interval (30–90 s) late.
+- The longest step is the early release, 13.0 min. The cooperative refund and bond return run in parallel inside it.
+- Treasury transfers start once a bond is `Withdrawn`: 16.1 and 17.0 min in this run (#31 asked for this number).
+- Slow timer paths stay as automatic fallbacks and were **not** exercised in this run. Measured in the 8 Oct
+  isolated test: release after the unlock time **45.5 min**, refund after the submit-result deadline (A2) **27.8 min**.
+- Earlier isolated paths (8 Oct): early release 13.1 min, cooperative refund 5.9 min, bond return 4.7 min.
+  The Pass bond return took longer in the full run (6.8 min); the cause was not investigated.
 
 ## Honest labelling
 
