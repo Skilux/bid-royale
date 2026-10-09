@@ -6,7 +6,7 @@ import { buildDashboardView } from "../dashboard/view.js";
 import { buildReceiptView } from "./index.js";
 
 // The recorded run run_c1f40522 as served: CodePodcast's 1.964286 forfeit is PENDING (BelowMinimum), every other row REAL. #62
-const { run, events } = JSON.parse(readFileSync(new URL("../../data/canned/run.json", import.meta.url), "utf8"));
+const { run, events } = JSON.parse(readFileSync(new URL("../../data/canned/c1f40522-before-62.json", import.meta.url), "utf8"));
 const dash = (list = events) => buildDashboardView(reduceEvents(list, { replay: true }));
 const BELOW = 1.964286;
 

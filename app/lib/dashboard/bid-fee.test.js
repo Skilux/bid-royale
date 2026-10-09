@@ -5,7 +5,7 @@ import { reduceEvents } from "./reduce.js";
 import { buildDashboardView } from "./view.js";
 
 // The recorded run run_c1f40522, as the replay serves it: the bid fee lifecycle arrives in settlement.progress.
-const { events } = JSON.parse(readFileSync(new URL("../../data/canned/run.json", import.meta.url), "utf8"));
+const { events } = JSON.parse(readFileSync(new URL("../../data/canned/c1f40522-before-62.json", import.meta.url), "utf8"));
 const view = (list, opts = { replay: true }) => buildDashboardView(reduceEvents(list, opts));
 
 test("run_c1f40522: the four bid fees are REAL, locked and collected (#43)", () => {

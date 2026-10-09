@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Records a finished run from a deployed (or local) Board as the canned replay.
-// Run from app/:  BOARD_URL=https://<deployment> npm run record:canned -- <runId> [--out data/canned/run.json]
+// Run from app/:  BOARD_URL=https://<deployment> npm run record:canned -- <runId> [--out data/canned/<runId>.json]
+// Then add the file to the registry app/data/canned/index.js (the replay serves what the registry lists).
 // Reads GET /api/run/:id and GET /api/events?run=:id&format=json. Nothing is written unless the recording validates.
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
@@ -11,8 +12,8 @@ const TIMEOUT_MS = 15_000;
 
 const args = process.argv.slice(2);
 const outFlag = args.indexOf("--out");
-const out = resolve(APP_DIR, outFlag >= 0 ? args[outFlag + 1] : "data/canned/run.json");
 const runId = args.find((a, i) => !a.startsWith("--") && i !== (outFlag >= 0 ? outFlag + 1 : -1));
+const out = resolve(APP_DIR, outFlag >= 0 ? args[outFlag + 1] : `data/canned/${runId}.json`);
 const base = (process.env.BOARD_URL ?? "http://localhost:3000").replace(/\/+$/, "");
 
 if (!runId) {
@@ -53,14 +54,15 @@ try {
   evidence = [];
 }
 
-const doc = {
+const recorded = {
   _note: `Recorded from ${base} run ${runId} on ${new Date().toISOString()}. Replayed with DEMO_MODE=canned, badged PRE-RECORDED. REAL tx hashes and explorer links are kept.`,
   run,
   events: events.map(({ ts, name, data }) => ({ ts, name, data })),
   evidence,
 };
 
-const { validateRecording, prepareRecording } = await import("../lib/replay/recording.js");
+const { closeRecording, validateRecording, prepareRecording } = await import("../lib/replay/recording.js");
+const doc = closeRecording(recorded);
 validateRecording(doc);
 const { info } = prepareRecording(doc, out);
 
@@ -69,4 +71,4 @@ writeFileSync(out, `${JSON.stringify(doc, null, 2)}\n`);
 console.log(`wrote ${out}`);
 console.log(`evidence items ${evidence.length}`);
 console.log(`events ${info.events}, REAL transfers ${info.realTransfers}, REAL downgraded to PRE-RECORDED ${info.downgradedToPreRecorded}`);
-console.log("Review the file for secrets, then run: npm run check");
+console.log("Add it to app/data/canned/index.js, review the file for secrets, then run: npm run check");

@@ -46,6 +46,29 @@ export function validateRecording(doc) {
   if (run.status !== "completed") fail(`run status is ${run.status}, expected completed`);
 }
 
+/**
+ * A run that finished late (settlement timer fallback, then a reconcile tick made the last PENDING row final) has its
+ * run.completed in the middle of the stream, before the late settlement events. The replay needs it last.
+ * Moves it to the end at the last event's ts, and takes net, signups and badges from the final receipt (`run.receipt`)
+ * instead of the stale early snapshot. Any other recording comes back unchanged. Pure.
+ */
+export function closeRecording(doc) {
+  const events = doc?.events;
+  if (!Array.isArray(events) || events.length === 0) return doc;
+  const at = events.findIndex((e) => e?.name === EVENTS.runCompleted);
+  if (at < 0 || at === events.length - 1) return doc;
+  const receipt = doc.run?.receipt;
+  const moved = {
+    ...events[at],
+    ts: events.at(-1).ts,
+    data: {
+      ...events[at].data,
+      ...(receipt ? { net: receipt.consumer.net, signups: receipt.consumer.signups, badges: receipt.badges } : {}),
+    },
+  };
+  return { ...doc, events: [...events.slice(0, at), ...events.slice(at + 1), moved] };
+}
+
 function collectProof(run) {
   const rows = [...(run.ledger ?? []), ...(run.settlement?.transfers ?? [])];
   const real = rows.filter((r) => r.badge === "REAL" && isRealHash(r.txHash));

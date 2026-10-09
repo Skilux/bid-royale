@@ -42,7 +42,7 @@ export async function GET() {
     flags: getFlags(),
     paymentAdapter: getAdapter().badge,
     boardStore: createStoreFromEnv().kind,
-    replay: describeReplay(),
+    replay: await describeReplay(),
     treasury,
     env: envPresence(),
     time: new Date().toISOString(),

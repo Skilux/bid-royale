@@ -11,7 +11,9 @@ import { FAST_BUDGET_MS, clearRecordingCache, createReplay, describeReplay, load
 
 installNextResolution();
 const { createFixtureBoard, FIXTURE_RUN_ID } = await import("../board/worked-example.js");
-const bundled = (await import("../../data/canned/run.json", { with: { type: "json" } })).default;
+const bundled = (await import("../../data/canned/c1f40522-final.json", { with: { type: "json" } })).default;
+// The 58-event worked example: short enough that fast pacing keeps the full 0.35 s step pause.
+const small = (await import("../../data/seeds/board-run.worked-example.json", { with: { type: "json" } })).default;
 const fixtureDoc = () => structuredClone(bundled);
 const names = (events) => events.map((e) => e.name);
 
@@ -37,14 +39,18 @@ function realisticDoc() {
   return { doc, lock, bond, pending };
 }
 
-test("bundled recording loads, validates and reports its source", () => {
+test("bundled recording loads, validates and reports its source", async () => {
   clearRecordingCache();
-  const rec = loadRecording({ env: {} });
-  assert.equal(rec.source, "data/canned/run.json");
+  const rec = await loadRecording({ env: {} });
+  assert.equal(rec.source, "data/canned/c1f40522-final.json");
   assert.equal(rec.events.length, bundled.events.length);
   assert.equal(rec.run.mode, "canned");
   assert.equal(rec.run.badge, "PRE-RECORDED");
-  assert.equal(describeReplay({ env: {} }).ok, true);
+  const described = await describeReplay({ env: {} });
+  assert.equal(described.ok, true);
+  assert.equal(described.recordedRunId, "run_c1f40522", "the health block keeps its old fields for the default recording");
+  assert.equal(described.default, "final");
+  assert.deepEqual(described.recordings.map((r) => r.id), ["final", "before-62-fix"]);
 });
 
 test("replay relabels money: SIMULATED to PRE-RECORDED, REAL keeps hash and link, PENDING stays", () => {
@@ -96,7 +102,7 @@ test("validateRecording rejects broken recordings", () => {
   assert.throws(() => validateRecording(null), /not an object/);
 });
 
-test("REPLAY_RECORDING swaps the recording with no code change", () => {
+test("REPLAY_RECORDING swaps the recording with no code change", async () => {
   clearRecordingCache();
   const { doc } = realisticDoc();
   doc.run.id = "run_recorded-on-preprod";
@@ -104,24 +110,27 @@ test("REPLAY_RECORDING swaps the recording with no code change", () => {
   const file = join(dir, "run.json");
   writeFileSync(file, JSON.stringify(doc));
 
-  const rec = loadRecording({ env: { REPLAY_RECORDING: file } });
+  const rec = await loadRecording({ env: { REPLAY_RECORDING: file } });
   assert.equal(rec.info.recordedRunId, "run_recorded-on-preprod");
   assert.equal(rec.info.realTransfers, 1);
-  assert.equal(loadRecording({ env: {} }).info.recordedRunId, bundled.run.id, "the bundled recording is untouched");
+  assert.equal((await loadRecording({ env: {} })).info.recordedRunId, bundled.run.id, "the bundled recording is untouched");
+  assert.equal((await loadRecording({ env: { REPLAY_RECORDING: "before-62-fix" } })).source, "data/canned/c1f40522-before-62.json", "a registry id picks that recording");
 
-  assert.throws(() => loadRecording({ env: { REPLAY_RECORDING: join(dir, "missing.json") } }), /ENOENT/);
-  assert.equal(describeReplay({ env: { REPLAY_RECORDING: join(dir, "missing.json") } }).ok, false);
+  await assert.rejects(loadRecording({ env: { REPLAY_RECORDING: join(dir, "missing.json") } }), /ENOENT/);
+  assert.equal((await describeReplay({ env: { REPLAY_RECORDING: join(dir, "missing.json") } })).ok, false);
   clearRecordingCache();
 });
 
 test("fast pacing fits the budget, never goes backwards, and keeps the 0.35 s step pause", () => {
-  const offsets = paceEvents(bundled.events);
-  assert.equal(offsets.length, bundled.events.length);
+  const offsets = paceEvents(small.events);
+  assert.equal(offsets.length, small.events.length);
   assert.equal(offsets[0], 0);
   assert.ok(offsets.at(-1) <= FAST_BUDGET_MS);
   assert.ok(offsets.at(-1) >= 15_000, `a 58-event run should not rush: ${offsets.at(-1)} ms`);
   offsets.forEach((o, i) => i && assert.ok(o >= offsets[i - 1]));
-  bundled.events.forEach((e, i) => {
+  const final = paceEvents(bundled.events);
+  assert.ok(final.at(-1) <= FAST_BUDGET_MS, "the 139-event final run still fits the budget");
+  small.events.forEach((e, i) => {
     if (e.name === EVENTS.stepStarted && i > 0) assert.ok(offsets[i] - offsets[i - 1] >= 350, `pause before ${e.data.step}`);
   });
 });
