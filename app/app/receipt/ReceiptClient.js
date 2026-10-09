@@ -373,17 +373,35 @@ function ExplorerButton({ s }) {
   );
 }
 
-export function FinalReceipt({ view }) {
+/** The headline of the final receipt. `inline` is the judge page wording, third person, with the cost per signup on the same line. */
+export function ReceiptTitle({ view, inline = false }) {
   const f = view.final;
   const perSignup = f.costPerSignup === null ? null : Number(f.costPerSignup.toFixed(2));
+  if (inline) {
+    return (
+      <div className="font-display text-[26px] font-bold leading-[1.15] tabular-nums" data-testid="receipt-headline">
+        NeoRack paid <Money amount={f.paid} dp={2} fixed badges={f.badges} currency={view.currency} /> for {f.signups} verified signups
+        {perSignup === null ? "" : ` · about ${perSignup} per signup`}
+      </div>
+    );
+  }
   return (
-    <div className="rounded-[6px_18px_18px_18px] border-2 border-ink p-[18px]">
+    <>
       <div className="text-[12.5px] opacity-75">FINAL RECEIPT</div>
       <div className="font-display text-[28px] leading-[1.1] tabular-nums sm:text-4xl">
         I paid <Money amount={f.paid} badges={f.badges} currency={view.currency} />
         <br />
         for {f.signups} verified signups.
       </div>
+    </>
+  );
+}
+
+/** Rows that have not moved and the Board's top-up, as notes. */
+export function ReceiptNotes({ view }) {
+  const f = view.final;
+  return (
+    <>
       {view.pendingRows > 0 ? (
         <div className="mt-2 rounded-md border border-dashed border-ink-3 px-3 py-1.5 text-[13px]" data-testid="pending-note">
           {view.pendingRows} money {view.pendingRows === 1 ? "row is" : "rows are"} <Badge kind="PENDING" />: no transaction yet. {view.pendingRows === 1 ? "It never moved and is" : "They never moved and are"} not counted in the total.
@@ -400,19 +418,73 @@ export function FinalReceipt({ view }) {
           Board topped up <Money amount={f.topUps} badges={f.topUpBadges.length ? f.topUpBadges : [view.tally.fallbackBadge]} currency={view.currency} /> to reach the 2 {view.currency} minimum. It is not in my total.
         </p>
       ) : null}
-      {perSignup === null ? null : <p className="mt-1">About {perSignup} per signup. Ranked by cost per signup:</p>}
+    </>
+  );
+}
+
+export function ReceiptRoi({ view, showPerSignup = true }) {
+  const f = view.final;
+  const perSignup = f.costPerSignup === null ? null : Number(f.costPerSignup.toFixed(2));
+  return (
+    <>
+      {showPerSignup && perSignup !== null ? <p className="mt-1">About {perSignup} per signup. Ranked by cost per signup:</p> : null}
       <p className="mt-1 text-[12.5px] opacity-75" data-testid="roi-formula">
         ROI = cost per verified signup (what I paid that publisher ÷ its verified signups) and verified signups per {view.currency} (the same two numbers the other way round).
         Lower cost ranks first. Under gate has no signups and Lost bid has no award, so they rank last.
       </p>
-      <div className="mt-3.5 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-        {view.leaderboard.map((r) => (
-          <LeaderCard key={r.supplier} r={r} currency={view.currency} />
-        ))}
-      </div>
+    </>
+  );
+}
+
+export function Leaderboard({ view }) {
+  return (
+    <div className="mt-3.5 grid grid-cols-1 gap-2.5 sm:grid-cols-2" data-testid="leaderboard">
+      {view.leaderboard.map((r) => (
+        <LeaderCard key={r.supplier} r={r} currency={view.currency} />
+      ))}
+    </div>
+  );
+}
+
+/** Everything the final receipt says besides the headline and the leaderboard: round two, the ledgers and the tally line. */
+export function ReceiptFooter({ view }) {
+  return (
+    <>
       <RoundTwo roundTwo={view.roundTwo} />
       <AgentLedger ledgers={view.ledgers} currency={view.currency} />
       <div className="mt-3.5 border-t border-dashed border-line pt-2 text-[12.5px]">{tallyLine(view.tally)}</div>
+    </>
+  );
+}
+
+/** The judge page keeps the headline and the leaderboard visible, and puts the rest under "Under the hood" (#66 D7). */
+export function ReceiptHeadline({ view }) {
+  return (
+    <div className="rounded-[10px] border border-line bg-card/80 p-3.5">
+      <ReceiptTitle view={view} inline />
+      <Leaderboard view={view} />
+    </div>
+  );
+}
+
+export function ReceiptDetails({ view }) {
+  return (
+    <div className="text-[13px]">
+      <ReceiptNotes view={view} />
+      <ReceiptRoi view={view} showPerSignup={false} />
+      <ReceiptFooter view={view} />
+    </div>
+  );
+}
+
+export function FinalReceipt({ view }) {
+  return (
+    <div className="rounded-[6px_18px_18px_18px] border-2 border-ink p-[18px]">
+      <ReceiptTitle view={view} />
+      <ReceiptNotes view={view} />
+      <ReceiptRoi view={view} />
+      <Leaderboard view={view} />
+      <ReceiptFooter view={view} />
     </div>
   );
 }

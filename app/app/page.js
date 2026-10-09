@@ -7,8 +7,8 @@ export const dynamic = "force-dynamic";
 const RUN_ID = /^[A-Za-z0-9_-]{1,64}$/;
 
 /**
- * The judge page: brief, recording picker, Run, Run live (asks first), walkthrough with dashboard, receipt.
- * ?run=<id> opens it attached to an existing run. ?replay=<id> opens it playing that recording (see data/canned/index.js).
+ * The judge page: the run view opens paused on the default recording. Play, Run live (asks first), step with the arrow keys.
+ * ?run=<id> opens it attached to an existing run. ?replay=<id> opens it on that recording (see data/canned/index.js).
  */
 export default async function Page({ searchParams }) {
   const { run, replay } = await searchParams;

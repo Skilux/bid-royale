@@ -15,3 +15,10 @@ export function formatClock(iso) {
   if (Number.isNaN(d.getTime())) return "";
   return d.toISOString().slice(11, 19);
 }
+
+/** An amount capped at `dp` decimals. `fixed` keeps the zeros: 63 becomes "63.00", 11.785714 becomes "11.79". */
+export function formatMoney(n, { dp = 4, fixed = false } = {}) {
+  if (typeof n !== "number" || !Number.isFinite(n)) return "·";
+  const v = n.toFixed(dp);
+  return fixed ? v : String(Number(v));
+}

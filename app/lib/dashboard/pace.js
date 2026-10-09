@@ -6,7 +6,7 @@ import { paceEvents } from "../replay/pacing.js";
  * so the server replay and the UI play one run at one speed. The UI adds one hold: the Under-gate refund is the
  * hero beat. Normal speed reaches the receipt in about 25 s, inside the 30 s rule (DESIGN.md section 3).
  */
-export const SPEEDS = { slow: 0.6, normal: 1, fast: 2 };
+export const SPEEDS = { slow: 0.3, normal: 1, fast: 2 };
 
 export const HERO_HOLD_MS = 900;
 const BUDGET_MS = 24_000;

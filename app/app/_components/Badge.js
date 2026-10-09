@@ -1,3 +1,7 @@
+"use client";
+
+import { createContext, useContext } from "react";
+
 const STYLE = {
   REAL: "border border-pass bg-pass-bg text-pass",
   SIMULATED: "border border-dashed border-short text-short",
@@ -5,9 +9,19 @@ const STYLE = {
   PENDING: "border border-dotted border-ink-3 bg-wash text-ink-2",
 };
 
+/**
+ * Which badge kinds the current view draws. The badge is still derived in lib/receipt-view, so this only changes
+ * rendering (#66 D1, D2): a recording hides REAL and PRE-RECORDED, a live real run hides REAL, a simulated run hides nothing.
+ * A hidden REAL amount is drawn as a link pill by Money instead. The default hides nothing, so /receipt is unchanged.
+ */
+export const BadgePolicyContext = createContext({ hide: new Set() });
+export const useBadgePolicy = () => useContext(BadgePolicyContext);
+
 /** Money badge, DESIGN.md section 6. `kind` is the badge derived in lib/receipt-view. PENDING means not moved yet. */
 export function Badge({ kind, className = "" }) {
+  const { hide } = useBadgePolicy();
   const label = STYLE[kind] ? kind : "SIMULATED";
+  if (hide.has(label)) return null;
   return (
     <span
       data-badge={label}

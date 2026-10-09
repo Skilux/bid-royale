@@ -83,6 +83,43 @@ body {
   letter-spacing: 0.05em;
   line-height: 1;
 }
+/* a REAL amount is one link pill, and it glows once when its row turns REAL (#66 D2) */
+.tx-pill {
+  animation: pill-pulse 1s ease-out 1;
+}
+@keyframes pill-pulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--color-cobalt);
+  }
+  60% {
+    box-shadow: 0 0 14px 5px color-mix(in srgb, var(--color-cobalt) 45%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+/* guided demo: the camera dims what it is not looking at (/demo) */
+.flow [data-demo-dim] {
+  opacity: 0.3;
+  transition: opacity 900ms var(--ease-ui), border-color 700ms var(--ease-ui);
+}
+.flow [data-demo-focus] {
+  opacity: 1;
+  transition: opacity 900ms var(--ease-ui), border-color 700ms var(--ease-ui);
+}
+.demo-in {
+  animation: demo-in 700ms var(--ease-ui) 1;
+}
+@keyframes demo-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
 .flow .rail {
   fill: none;
   stroke: rgb(238 230 216 / 0.18);

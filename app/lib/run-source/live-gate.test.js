@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { openRunSource } from "./index.js";
-import { activeRunLine, createLiveGate, liveDialogCopy, liveKind, REAL_TIMINGS } from "./live-gate.js";
+import { activeRunLine, createLiveGate, formatElapsed, liveDialogCopy, liveKind, REAL_TIMINGS, settlingLine } from "./live-gate.js";
 
 function harness() {
   const calls = { start: 0, watch: 0, attach: [] };
@@ -124,4 +124,12 @@ test("dialog copy by mode: real names the 15-20 min, REAL escrows and test ADA; 
 test("activeRunLine", () => {
   assert.equal(activeRunLine({ id: "run_x", ageMinutes: 7 }), "run_x, started 7 min ago");
   assert.equal(activeRunLine({ id: "run_x", ageMinutes: 0 }), "run_x, started just now");
+});
+
+test("settlingLine names the next two measured milestones", () => {
+  assert.equal(formatElapsed(372_000), "6:12");
+  assert.equal(settlingLine(30_000), "settling · 0:30 · locks at ~2 min, refund REAL at ~6 min");
+  assert.equal(settlingLine(372_000), "settling · 6:12 · releases at ~13 min, all rows REAL at ~17 min");
+  assert.equal(settlingLine(14 * 60_000), "settling · 14:00 · all rows REAL at ~17 min");
+  assert.match(settlingLine(18 * 60_000), /past the measured 17 min/);
 });

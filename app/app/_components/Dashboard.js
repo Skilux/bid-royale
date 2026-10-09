@@ -5,8 +5,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { coinFor } from "@/lib/dashboard/coins";
 import { formatConversion } from "@/lib/conversion";
 import { shortHash } from "@/lib/dashboard/reduce";
-import { Badge } from "./Badge";
-import { Chip } from "./Chip";
+import { BalanceWidget } from "./BalanceWidget";
 import { Counter } from "./Counter";
 import { formatAmount } from "./format";
 import { Money } from "./Money";
@@ -16,11 +15,11 @@ import { VerdictChip } from "./VerdictChip";
  * The money flow dashboard, after docs/design/dashboard/money-flow.html. Dark theme tokens live in globals.css under
  * `.flow`, so this file only uses token utilities. Three columns (Consumer agent, escrow on Masumi, suppliers found in
  * the Masumi registry) share four grid rows, so the dashed rails run straight from the Consumer to each escrow row and
- * on to each supplier card. Money tokens fly along the rails when a row moves. Below 1100 px the columns stack and the
+ * on to each supplier card. Money tokens fly along the rails when a row moves. Below 1100 px of Dashboard width (a container query, so the guided demo can force the wide layout) the columns stack and the
  * rails and tokens are off.
  */
 
-const ROW_AT = ["min-[1100px]:row-start-2", "min-[1100px]:row-start-3", "min-[1100px]:row-start-4", "min-[1100px]:row-start-5"];
+const ROW_AT = ["@min-[1100px]:row-start-2", "@min-[1100px]:row-start-3", "@min-[1100px]:row-start-4", "@min-[1100px]:row-start-5"];
 
 const OUTCOME_TONE = {
   award_release: "text-pass",
@@ -67,23 +66,19 @@ function Node({ children, className = "", ...rest }) {
 }
 
 /** The embeddable dashboard. Draws a `buildDashboardView` result. `fresh` ({ key, events }) drives the money tokens. */
-export function Dashboard({ view, fresh = null, onSelectStep = null }) {
+export function Dashboard({ view, fresh = null, onSelectStep = null, runId = null, rationaleBy = {}, delivered = {}, settlementClock = null }) {
   const [flash, setFlash] = useState(false);
   return (
-    <div className="space-y-2.5" data-testid="dashboard">
-      <StepRail view={view} onSelect={onSelectStep} />
+    <div className="@container space-y-2.5" data-testid="dashboard">
+      <StepRail view={view} onSelect={onSelectStep} settlementClock={settlementClock} />
       {view.degraded ? (
         <div className="rounded-lg border border-dashed border-short bg-short-bg px-3 py-2 text-[12px]" data-testid="degraded">
-          The live run failed{view.degraded.step ? ` at ${view.degraded.step}` : ""}. Showing the recorded run instead, badged <Badge kind="PRE-RECORDED" />.
+          The live run failed{view.degraded.step ? ` at ${view.degraded.step}` : ""}. Showing the recorded run instead (PRE-RECORDED).
         </div>
       ) : null}
       {view.failed ? <div className="rounded-lg border border-under bg-under-bg px-3 py-2 text-[12px]">Run failed: {String(view.failed)}</div> : null}
-      <FlowStage view={view} fresh={fresh} onHero={setFlash} flash={flash} />
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-3 min-[1100px]:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)_minmax(0,1fr)]">
-        <BotPanel view={view} />
-        <EventsPanel view={view} />
-        <TrackFit view={view} />
-      </div>
+      <FlowStage view={view} fresh={fresh} onHero={setFlash} flash={flash} runId={runId} rationaleBy={rationaleBy} delivered={delivered} />
+      <BalanceWidget view={view} />
       <div
         aria-hidden="true"
         className={`pointer-events-none fixed inset-0 z-30 transition-opacity duration-500 ${flash ? "opacity-100" : "opacity-0"}`}
@@ -93,8 +88,10 @@ export function Dashboard({ view, fresh = null, onSelectStep = null }) {
   );
 }
 
-function StepRail({ view, onSelect }) {
+function StepRail({ view, onSelect, settlementClock = null }) {
+  const settling = settlementClock && view.steps.find((s) => s.key === "settlement")?.status === "running";
   return (
+    <>
     <ol className="flex items-center overflow-x-auto font-mono text-[10px] font-semibold uppercase tracking-[0.16em]" aria-label="Run steps">
       {view.steps.map((s, i) => {
         const tone = s.status === "pending" ? "text-ink-3" : s.status === "running" ? "text-cobalt" : "text-ink-2";
@@ -123,11 +120,17 @@ function StepRail({ view, onSelect }) {
         );
       })}
     </ol>
+    {settling ? (
+      <p className="font-mono text-[11px] text-cobalt" data-testid="settling-line">
+        {settlementClock}
+      </p>
+    ) : null}
+    </>
   );
 }
 
 /** Rails and tokens. Geometry is measured from the three columns, so the rails follow the real layout. */
-function FlowStage({ view, fresh, onHero, flash }) {
+function FlowStage({ view, fresh, onHero, flash, runId, rationaleBy, delivered }) {
   const reduced = useReducedMotion();
   const stage = useRef(null);
   const cons = useRef(null);
@@ -143,11 +146,13 @@ function FlowStage({ view, fresh, onHero, flash }) {
   useLayoutEffect(() => {
     const measure = () => {
       const root = stage.current;
-      if (!root || !cons.current || window.innerWidth < 1100) return setGeo((g) => (g.ok ? { ok: false, w: 0, h: 0, paths: {} } : g));
+      if (!root || !cons.current || root.offsetWidth < 1100) return setGeo((g) => (g.ok ? { ok: false, w: 0, h: 0, paths: {} } : g));
       const o = root.getBoundingClientRect();
+      // The guided demo scales an ancestor (camera zoom). Rects are measured in screen px, so divide by that scale.
+      const k = o.width / root.offsetWidth || 1;
       const rect = (el) => {
         const r = el.getBoundingClientRect();
-        return { l: r.left - o.left, r: r.right - o.left, t: r.top - o.top, h: r.height };
+        return { l: (r.left - o.left) / k, r: (r.right - o.left) / k, t: (r.top - o.top) / k, h: r.height / k };
       };
       const c = rect(cons.current);
       const curve = (x1, y1, x2, y2) => {
@@ -166,7 +171,7 @@ function FlowStage({ view, fresh, onHero, flash }) {
           payout: curve(e.r, e.t + e.h * 0.3, s.l, s.t + s.h * 0.3),
         };
       }
-      setGeo({ ok: true, w: o.width, h: o.height, paths });
+      setGeo({ ok: true, w: o.width / k, h: o.height / k, paths });
     };
     measure();
     const ro = new ResizeObserver(measure);
@@ -230,24 +235,26 @@ function FlowStage({ view, fresh, onHero, flash }) {
   return (
     <div
       ref={stage}
-      className={`relative grid grid-cols-[minmax(0,1fr)] gap-3 min-[1100px]:grid-cols-[238px_minmax(56px,150px)_340px_minmax(56px,110px)_minmax(0,1fr)] min-[1100px]:grid-rows-[46px_repeat(4,minmax(108px,auto))] min-[1100px]:gap-x-0 min-[1100px]:gap-y-1`}
+      className={`relative grid grid-cols-[minmax(0,1fr)] gap-3 @min-[1100px]:grid-cols-[238px_minmax(56px,150px)_340px_minmax(56px,110px)_minmax(0,1fr)] @min-[1100px]:grid-rows-[46px_repeat(4,minmax(108px,auto))] @min-[1100px]:gap-x-0 @min-[1100px]:gap-y-1`}
       data-testid="flow"
     >
       <ConsumerNode view={view} refEl={cons} stamp={flash || !geo.ok} />
 
-      <div className={`hidden min-[1100px]:col-start-3 min-[1100px]:row-span-5 min-[1100px]:row-start-1 min-[1100px]:block rounded-[14px] border border-line bg-card/80`} aria-hidden="true" />
+      <div className={`hidden @min-[1100px]:col-start-3 @min-[1100px]:row-span-5 @min-[1100px]:row-start-1 @min-[1100px]:block rounded-[14px] border border-line bg-card/80`} aria-hidden="true" />
       <EscrowHead view={view} />
       {view.suppliers.length === 0 ? (
-        <p className={`min-[1100px]:col-start-3 min-[1100px]:row-start-2 relative z-10 px-4 py-3 text-[12px] text-ink-3`}>Nothing locked yet.</p>
+        <p className={`@min-[1100px]:col-start-3 @min-[1100px]:row-start-2 relative z-10 px-4 py-3 text-[12px] text-ink-3`}>Nothing locked yet.</p>
       ) : null}
       {view.suppliers.map((s, i) => (
         <EscrowRow key={s.id} s={s} i={i} refEl={(el) => (lockRowEls.current[s.id] = el)} />
       ))}
 
-      <Label className={`min-[1100px]:col-start-5 min-[1100px]:row-start-1 min-[1100px]:pb-2 min-[1100px]:pt-1`}>Suppliers · found in the Masumi registry</Label>
+      <Label className={`@min-[1100px]:col-start-5 @min-[1100px]:row-start-1 @min-[1100px]:pb-2 @min-[1100px]:pt-1`}>
+        {view.suppliers.length > 0 ? `${view.suppliers.length} suppliers · found in the Masumi registry` : "Suppliers · found in the Masumi registry"}
+      </Label>
       {view.suppliers.length === 0 ? <EmptyNote>Waiting for the tender…</EmptyNote> : null}
       {view.suppliers.map((s, i) => (
-        <SupplierCard key={s.id} s={s} i={i} view={view} refEl={(el) => (supCards.current[s.id] = el)} />
+        <SupplierCard key={s.id} s={s} i={i} view={view} runId={runId} reasoning={rationaleBy[s.id] ?? null} delivered={Boolean(delivered[s.id])} refEl={(el) => (supCards.current[s.id] = el)} />
       ))}
 
       {geo.ok ? (
@@ -329,38 +336,17 @@ function ConsumerNode({ view, refEl, stamp }) {
   const hero = view.hero;
   return (
     <Node
-      className={`relative z-10 p-3.5 min-[1100px]:col-start-1 min-[1100px]:row-span-5 min-[1100px]:row-start-1 ${hero ? "border-under/80 shadow-[0_0_0_1px_var(--color-under-bg),0_0_44px_var(--color-under-bg)]" : ""}`}
+      className={`relative z-10 p-3.5 @min-[1100px]:col-start-1 @min-[1100px]:row-span-5 @min-[1100px]:row-start-1 ${hero ? "border-under/80 shadow-[0_0_0_1px_var(--color-under-bg),0_0_44px_var(--color-under-bg)]" : ""}`}
       data-testid="tender-card"
     >
       <div ref={refEl} className="absolute inset-0" aria-hidden="true" />
       <Label>NeoRack · consumer agent</Label>
-      <p className="mb-2 mt-1.5 font-serif text-[19px] italic leading-[1.15]">
-        {view.started ? (
-          <>
-            Budget <Money amount={tender.budget} badges={view.termBadges.budget} currency={view.currency} />, {view.brief.audience}, {view.brief.goal}.
-          </>
-        ) : (
-          "Waiting for the brief…"
-        )}
+      <p className="mb-1.5 mt-1.5 font-serif text-[19px] italic leading-[1.15]">
+        Budget <Money amount={tender.budget} badges={view.termBadges.budget} currency={view.currency} />, {view.brief.audience}, {view.brief.goal}.
       </p>
-      <div className="flex flex-wrap gap-1 text-[10px]">
-        <Chip tone="neutral">
-          gate <b>{formatConversion(tender.gate)}</b> conversion
-        </Chip>
-        <Chip tone="neutral">
-          bond <b>{Math.round(tender.bondRate * 100)}%</b>
-        </Chip>
-        <Chip tone="neutral">
-          bid fee <Money amount={tender.bidFee} badges={view.termBadges.bidFee} />
-        </Chip>
-        {view.discovery ? (
-          <Chip tone={view.discovery.source === "live" ? "cobalt" : "neutral"}>
-            <span data-testid="discovery-chip" title={view.discovery.agents.map((a) => `${a.name} ${a.apiBaseUrl}`).join("\n")}>
-              {view.discovery.chip}
-            </span>
-          </Chip>
-        ) : null}
-      </div>
+      <p className="text-[10.5px] text-ink-3" data-testid="terms-line">
+        gate {formatConversion(tender.gate)} · bond {Math.round(tender.bondRate * 100)}% · bid fee <Money amount={tender.bidFee} badges={view.termBadges.bidFee} />
+      </p>
 
       <Label className="mt-3">budget allocated</Label>
       <div className="mt-1 text-[12px]" data-testid="budget">
@@ -381,21 +367,20 @@ function ConsumerNode({ view, refEl, stamp }) {
 
       <Label className="mt-3">wallet · net</Label>
       <div className="font-display text-[40px] font-bold leading-[1.05] tabular-nums" data-testid="wallet-net">
-        <Money amount={wallet.net} badges={[...new Set([...wallet.badgesOut, ...wallet.badgesBack])]} currency={view.currency} />
+        <Money amount={wallet.net} dp={2} fixed badges={[...new Set([...wallet.badgesOut, ...wallet.badgesBack])]} currency={view.currency} />
       </div>
       <div className="mt-1">
-        <Line label="escrowed" value={<Money amount={wallet.escrowed} badges={wallet.badgesOut.length ? wallet.badgesOut : [view.fallbackBadge]} />} />
-        <Line label="back" value={<Money amount={wallet.back} badges={wallet.badgesBack.length ? wallet.badgesBack : [view.fallbackBadge]} />} />
+        <Line label="escrowed" value={<Money amount={wallet.escrowed} dp={2} badges={wallet.badgesOut.length ? wallet.badgesOut : [view.fallbackBadge]} />} />
+        <Line label="back" value={<Money amount={wallet.back} dp={2} badges={wallet.badgesBack.length ? wallet.badgesBack : [view.fallbackBadge]} />} />
         {wallet.pendingOut > 0 ? <Line label="locking, not moved yet" value={<Money amount={wallet.pendingOut} badge="PENDING" />} /> : null}
         {wallet.pendingBack > 0 ? <Line label="returning, not moved yet" value={<Money amount={wallet.pendingBack} badge="PENDING" />} /> : null}
-        <Line label="supplier bid fees" value={<Money amount={view.bidFees.total} badges={view.bidFees.badges.length ? view.bidFees.badges : [view.fallbackBadge]} />} />
       </div>
       {hero && stamp ? (
         <Motion.div
           initial={reduced ? false : { opacity: 0, scale: 0.7, rotate: -6 }}
           animate={{ opacity: 1, scale: 1, rotate: -3 }}
           transition={{ type: "spring", stiffness: 260, damping: 14 }}
-          className="z-30 mt-4 rounded-lg bg-under px-3 py-2 text-center text-white shadow-[0_0_30px_var(--color-under)] min-[1100px]:absolute min-[1100px]:left-[calc(100%+8px)] min-[1100px]:top-[48%] min-[1100px]:mt-0 min-[1100px]:w-[134px]"
+          className="z-30 mt-4 rounded-lg bg-under px-3 py-2 text-center text-white shadow-[0_0_30px_var(--color-under)] @min-[1100px]:absolute @min-[1100px]:left-[calc(100%+8px)] @min-[1100px]:top-[48%] @min-[1100px]:mt-0 @min-[1100px]:w-[134px]"
           data-testid="refund-stamp"
         >
           <div className="font-display text-[22px] font-extrabold uppercase leading-[1.1] tracking-[0.06em]">
@@ -412,7 +397,7 @@ function ConsumerNode({ view, refEl, stamp }) {
 function EscrowHead({ view }) {
   const { escrow } = view;
   return (
-    <div className={`relative z-10 px-3.5 pt-3 min-[1100px]:col-start-3 min-[1100px]:row-start-1`} data-testid="escrow-panel">
+    <div className={`relative z-10 px-3.5 pt-3 @min-[1100px]:col-start-3 @min-[1100px]:row-start-1`} data-testid="escrow-panel">
       <Label>escrow · Masumi on Cardano preprod</Label>
       <div className="mt-1 font-mono text-[12px] font-semibold" data-testid="escrow-total">
         locked <Money amount={escrow.locked} badges={escrow.badges.length ? escrow.badges : [view.fallbackBadge]} /> / {formatAmount(escrow.total)} {view.currency}
@@ -431,7 +416,7 @@ function EscrowRow({ s, i, refEl }) {
     <div
       ref={refEl}
       data-escrow={s.id}
-      className={`relative z-10 rounded-lg border border-line bg-card/80 px-3 py-2 min-[1100px]:col-start-3 ${ROW_AT[i]} min-[1100px]:rounded-none min-[1100px]:border-x-0 min-[1100px]:border-b-0 min-[1100px]:bg-transparent ${s.lost ? "opacity-45" : ""}`}
+      className={`relative z-10 rounded-lg border border-line bg-card/80 px-3 py-2 @min-[1100px]:col-start-3 ${ROW_AT[i]} @min-[1100px]:rounded-none @min-[1100px]:border-x-0 @min-[1100px]:border-b-0 @min-[1100px]:bg-transparent ${s.lost ? "opacity-45" : ""}`}
     >
       <div className="font-display text-[14px] font-bold uppercase leading-tight tracking-[0.06em]">{s.name}</div>
       {s.lost ? (
@@ -502,10 +487,10 @@ function Creative({ id, name, lost }) {
 }
 
 function EmptyNote({ children }) {
-  return <p className={`rounded-lg border border-dashed border-line px-3 py-4 text-[12px] text-ink-3 min-[1100px]:col-start-5 min-[1100px]:row-start-2`}>{children}</p>;
+  return <p className={`rounded-lg border border-dashed border-line px-3 py-4 text-[12px] text-ink-3 @min-[1100px]:col-start-5 @min-[1100px]:row-start-2`}>{children}</p>;
 }
 
-function SupplierCard({ s, i, view, refEl }) {
+function SupplierCard({ s, i, view, refEl, runId, reasoning, delivered }) {
   const tone = s.chip ? CARD_TONE[s.chip.kind] : "border-line";
   const gatePct = Math.min(100, (view.gate / view.scaleMax) * 100);
   const promisedPct = s.promised ? Math.min(100, (s.promised / view.scaleMax) * 100) : null;
@@ -513,7 +498,7 @@ function SupplierCard({ s, i, view, refEl }) {
   return (
     <section
       ref={refEl}
-      className={`relative z-10 flex gap-2.5 rounded-[14px] border bg-card/80 p-2.5 transition-colors duration-700 min-[1100px]:col-start-5 ${ROW_AT[i]} ${tone}`}
+      className={`relative z-10 flex gap-2.5 rounded-[14px] border bg-card/80 p-2.5 transition-colors duration-700 @min-[1100px]:col-start-5 ${ROW_AT[i]} ${tone}`}
       data-supplier={s.id}
       data-verdict={s.chip?.kind ?? "none"}
     >
@@ -523,24 +508,24 @@ function SupplierCard({ s, i, view, refEl }) {
           <h3 className={`font-display text-[19px] font-extrabold uppercase leading-none tracking-[0.03em] ${s.lost ? "text-ink-3 line-through" : ""}`}>{s.name}</h3>
           {s.chip ? <VerdictChip kind={s.chip.kind} label={s.chip.label} /> : null}
         </div>
-        <div className="mt-0.5 min-h-[15px] truncate text-[10px] text-ink-2">
+        <div className="mt-0.5 min-h-[15px] text-[11px] leading-[1.5] text-ink-2">
           {s.rejectedNote ? (
             <span>{s.rejectedNote}</span>
           ) : s.bid ? (
             <span title={`commit ${s.commit}`}>
-              <Money amount={s.bid.price} badges={s.quoteBadges} /> · {s.bid.impressions.toLocaleString("en-US")} impr. · <b className="text-ink">{formatConversion(s.bid.promisedPer1000)}</b> conversion
-              {s.pricePerSignup !== null ? (
-                <>
-                  {" "}
-                  · #{s.rank} <b className="text-ink">{s.pricePerSignup.toFixed(2)}</b>/signup
-                </>
-              ) : null}
+              bid <Money amount={s.bid.price} badges={s.quoteBadges} /> · promises <b className="text-ink">{formatConversion(s.bid.promisedPer1000)}</b>
             </span>
           ) : s.commit ? (
             <span title={s.commit}>sealed {shortHash(s.commit)}</span>
           ) : (
             <span className="text-ink-3">invited</span>
           )}
+          {s.fee ? (
+            <span data-testid={`fee-${s.id}`}>
+              {" "}
+              · bid fee <Money amount={s.fee.amount} badge={s.fee.badge} tx={txOf(s.fee)} />
+            </span>
+          ) : null}
         </div>
         {s.lost ? null : (
           <>
@@ -568,19 +553,40 @@ function SupplierCard({ s, i, view, refEl }) {
                 </span>
               ) : null}
             </div>
-            {s.verifiedKnown && s.delivered !== null ? (
-              <div className="mt-0.5 text-[9px] text-ink-3" data-testid={`rejections-${s.id}`}>
-                {Object.keys(s.rejections).length
-                  ? `rejected: ${Object.entries(s.rejections)
-                      .map(([k, n]) => `${n} ${k.replaceAll("_", " ")}`)
-                      .join(", ")}`
-                  : "no rejected signups"}
-              </div>
-            ) : null}
           </>
         )}
+        {s.bid && reasoning ? <Reasoning text={reasoning} runId={runId} /> : null}
+        {delivered && s.verdict && runId ? (
+          <a
+            href={`/api/run/${encodeURIComponent(runId)}/evidence/delivery.${s.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1 inline-block font-mono text-[10.5px] text-cobalt underline decoration-dotted underline-offset-2 hover:text-ink"
+            data-testid={`delivered-${s.id}`}
+          >
+            delivered ↗
+          </a>
+        ) : null}
       </div>
     </section>
+  );
+}
+
+/** The supplier's bid reasoning (#66 D5): one clamped line, click for the rest, `source ↗` opens the run JSON. */
+function Reasoning({ text, runId }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="mt-1.5 flex items-start gap-1.5 text-[11px] leading-[1.35] text-ink-2" data-testid="bid-reasoning">
+      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="min-w-0 flex-1 cursor-pointer text-left" title={open ? "Click to collapse" : "Click to read all"}>
+        <span className="font-mono text-[9.5px] uppercase tracking-[0.1em] text-ink-3">bid reasoning </span>
+        <span className={open ? "" : "line-clamp-1"}>&ldquo;{text}&rdquo;</span>
+      </button>
+      {runId ? (
+        <a href={`/api/run/${encodeURIComponent(runId)}`} target="_blank" rel="noopener noreferrer" className="shrink-0 font-mono text-[10.5px] text-cobalt underline decoration-dotted underline-offset-2 hover:text-ink">
+          source ↗
+        </a>
+      ) : null}
+    </div>
   );
 }
 
@@ -592,7 +598,7 @@ function Panel({ children, className = "", ...rest }) {
   );
 }
 
-function BotPanel({ view }) {
+export function BotPanel({ view }) {
   return (
     <Panel data-testid="bot-panel">
       <Label>bot signals · context only, never the verdict</Label>
@@ -616,7 +622,7 @@ function BotPanel({ view }) {
   );
 }
 
-function EventsPanel({ view }) {
+export function EventsPanel({ view }) {
   return (
     <Panel data-testid="events-panel">
       <Label>board events · SSE</Label>
@@ -630,50 +636,5 @@ function EventsPanel({ view }) {
         ))}
       </ul>
     </Panel>
-  );
-}
-
-function TrackFit({ view }) {
-  const r = view.receipt;
-  return (
-    <Panel data-testid="track-fit">
-      <Label>track fit</Label>
-      <div className="mt-1.5 flex flex-wrap gap-1">
-        <Lit on={view.chips.discovery}>Discovery: Masumi registry</Lit>
-        <Lit on={view.chips.wallet}>Wallet</Lit>
-        <Lit on={view.chips.masumi}>Escrow: Masumi, Cardano preprod</Lit>
-        <Lit on={view.chips.dispute} tone="under">
-          Dispute path: refund
-        </Lit>
-      </div>
-      <div className={`mt-2 transition-opacity duration-500 ${r ? "" : "opacity-25"}`} data-testid="mini-receipt">
-        <div className="font-display text-[30px] font-extrabold leading-none tabular-nums text-cobalt">
-          {r ? <Money amount={r.net} badges={r.badges.length ? r.badges : [view.fallbackBadge]} currency={view.currency} /> : "·"}
-        </div>
-        {r ? (
-          <div className="mt-1 text-[10.5px] leading-[1.5] text-ink-2">
-            <b className="text-ink">{r.signups}</b> verified signups · <b className="text-ink">{r.costPerSignup === null ? "·" : Number(r.costPerSignup).toFixed(2)}</b> each
-            {r.pending ? (
-              <div className="italic text-ink-3" data-testid="mini-pending-note">
-                {r.pendingRows} money {r.pendingRows === 1 ? "row is" : "rows are"} PENDING (<Money amount={r.pendingAmount} badge="PENDING" currency={view.currency} />). {r.pendingRows === 1 ? "It never moved and is" : "They never moved and are"} not in the net.
-              </div>
-            ) : null}
-            {view.roundTwo ? (
-              <div>
-                Round 2, shown not executed: {view.roundTwo.map((x) => `${x.name} ${Math.round(x.share * 100)}`).join(" · ")} <Badge kind="SIMULATED" />
-              </div>
-            ) : null}
-          </div>
-        ) : null}
-      </div>
-    </Panel>
-  );
-}
-
-function Lit({ on, tone = "cobalt", children }) {
-  return (
-    <span className={`transition-opacity duration-500 ${on ? "opacity-100" : "opacity-35"}`}>
-      <Chip tone={on ? tone : "neutral"}>{children}</Chip>
-    </span>
   );
 }

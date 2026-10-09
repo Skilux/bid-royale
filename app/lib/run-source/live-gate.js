@@ -9,11 +9,29 @@ export const liveKind = ({ demoMode, realPayments }) => (demoMode === "canned" ?
 
 /** Measured on run_c1f40522 (#45), minutes after settlement start. */
 export const REAL_TIMINGS = [
-  { at: "about 2 min", what: "all 10 escrow locks are REAL" },
-  { at: "about 6 min", what: "the Under-gate refund is REAL" },
-  { at: "about 13 min", what: "the award releases are REAL" },
-  { at: "about 17 min", what: "every row is REAL" },
+  { at: "about 2 min", min: 2, what: "all 10 escrow locks are REAL", short: "locks" },
+  { at: "about 6 min", min: 6, what: "the Under-gate refund is REAL", short: "refund REAL" },
+  { at: "about 13 min", min: 13, what: "the award releases are REAL", short: "releases" },
+  { at: "about 17 min", min: 17, what: "every row is REAL", short: "all rows REAL" },
 ];
+
+/** m:ss for an elapsed time in ms: 372000 gives "6:12". */
+export function formatElapsed(ms) {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
+}
+
+/**
+ * The settlement line of the step rail in a real run (#66 D1): `settling · 6:12 · refund REAL at ~6 min, releases at ~13 min`.
+ * It names the next two milestones of `REAL_TIMINGS` that the elapsed time has not reached. After the last one it says so.
+ */
+export function settlingLine(elapsedMs) {
+  const minutes = elapsedMs / 60000;
+  const ahead = REAL_TIMINGS.filter((t) => t.min > minutes).slice(0, 2);
+  const clock = `settling · ${formatElapsed(elapsedMs)}`;
+  if (ahead.length === 0) return `${clock} · past the measured 17 min, rows can still confirm`;
+  return `${clock} · ${ahead.map((t) => `${t.short} at ~${t.min} min`).join(", ")}`;
+}
 
 /** Dialog text per kind. Facts only: the numbers come from #45. */
 export function liveDialogCopy(kind) {

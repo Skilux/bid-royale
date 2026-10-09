@@ -14,8 +14,9 @@ const LIVE_STEP_MS = 30;
  * recorded pace (`lib/dashboard/pace`), a live run shows events as they arrive, Back and Next move it by hand.
  * `runKey` restarts the source with the same mode. `replayId` is the recording a canned run plays (lib/replay/catalog).
  * `busy` is the run id the Board named when it refused a second live run: the player follows that run instead.
+ * `transformEvents` reorders a delivered batch (the guided demo tells the verdicts in its own order). A canned run is one batch.
  */
-export function useRunPlayer({ mode = "canned", runId = null, replayId, speed = 1, autoplay = true, runKey = 0, enabled = true }) {
+export function useRunPlayer({ mode = "canned", runId = null, replayId, speed = 1, autoplay = true, runKey = 0, enabled = true, transformEvents = null }) {
   const [meta, setMeta] = useState({ kind: null, replay: false, runId: null });
   const [events, setEvents] = useState([]);
   const [cursor, setCursor] = useState(0);
@@ -24,6 +25,8 @@ export function useRunPlayer({ mode = "canned", runId = null, replayId, speed = 
   const [degraded, setDegraded] = useState(null);
   const [busy, setBusy] = useState(null);
   const [playing, setPlaying] = useState(autoplay);
+  const transform = useRef(transformEvents);
+  transform.current = transformEvents;
 
   useEffect(() => {
     setMeta({ kind: null, replay: false, runId: null });
@@ -46,7 +49,7 @@ export function useRunPlayer({ mode = "canned", runId = null, replayId, speed = 
         setEnded(false);
         setSnapshot(null);
       },
-      onEvents: (batch) => setEvents((prev) => [...prev, ...batch]),
+      onEvents: (batch) => setEvents((prev) => [...prev, ...(transform.current ? transform.current(batch) : batch)]),
       onSnapshot: setSnapshot,
       onEnd: () => setEnded(true),
       onDegrade: (reason) => setDegraded(reason),
