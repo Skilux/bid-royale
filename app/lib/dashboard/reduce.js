@@ -40,6 +40,8 @@ function newSupplier(s) {
 export function initialState({ replay = false } = {}) {
   return {
     runId: null,
+    /** `run.created` badge: PENDING for the real adapter, SIMULATED for the simulated one, PRE-RECORDED in a replay. */
+    runBadge: null,
     mode: replay ? "canned" : "live",
     replay,
     degraded: null,
@@ -111,6 +113,7 @@ function apply(state, e) {
   switch (e.name) {
     case EVENTS.runCreated:
       state.runId = d.runId ?? state.runId;
+      state.runBadge = d.badge ?? state.runBadge;
       if (d.mode === "canned") state.mode = "canned";
       break;
     case EVENTS.tenderPublished:

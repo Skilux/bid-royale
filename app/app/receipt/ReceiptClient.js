@@ -467,7 +467,7 @@ function RoundTwo({ roundTwo }) {
 }
 
 function tallyLine(t) {
-  const fees = t.bidFeeBadges.length ? t.bidFeeBadges.join(" / ") : "SIMULATED";
+  const fees = t.bidFeeBadges.length ? t.bidFeeBadges.join(" / ") : t.fallbackBadge;
   let locks;
   if (t.locksTotal > 0 && t.locksReal === t.locksTotal) {
     locks = `${t.locksReal} escrows REAL on Cardano preprod.`;
@@ -475,8 +475,8 @@ function tallyLine(t) {
     const rest = t.lockBadges.filter((b) => b !== "REAL").join(" / ");
     locks = `${t.locksReal} of ${t.locksTotal} escrows REAL on Cardano preprod, the rest ${rest}.`;
   } else {
-    locks = `No escrow is REAL in this run, all ${t.locksTotal} are ${t.lockBadges.join(" / ") || "SIMULATED"}.`;
+    locks = `No escrow is REAL in this run, all ${t.locksTotal} are ${t.lockBadges.join(" / ") || t.fallbackBadge}.`;
   }
   const pending = t.locksPending > 0 ? ` ${t.locksPending} still PENDING.` : "";
-  return `${locks}${pending} Bid fees ${fees}. Traffic SIMULATED. Suppliers are our own agents.`;
+  return `${locks}${pending} Bid fees ${fees}. Traffic and signups SIMULATED. Suppliers are our own agents.`;
 }

@@ -39,6 +39,30 @@ export function uniqueBadges(badges) {
   return BADGE_ORDER.filter((b) => badges.includes(b));
 }
 
+/**
+ * How a run pays, from data the run already carries. One of:
+ * "canned" (a replay, #13), "real" (the real adapter: run badge PENDING or REAL, or any REAL/PENDING money row),
+ * "simulated" (the simulated adapter). `badges` are derived money row badges, `runBadge` is `run.created` `badge`.
+ */
+export function derivePayMode({ mode, runBadge = null, badges = [] } = {}) {
+  if (mode === "canned") return "canned";
+  if (runBadge === "REAL" || runBadge === "PENDING") return "real";
+  return badges.some((b) => b === "REAL" || b === "PENDING") ? "real" : "simulated";
+}
+
+/** Badge for a figure that has no money rows yet. In a real run nothing has moved, so it is PENDING, never SIMULATED. */
+export const FALLBACK_BADGE = { real: "PENDING", simulated: "SIMULATED", canned: "PRE-RECORDED" };
+
+/**
+ * Badges for a term or a quote (budget, bid fee, a supplier price). A term is not moved money, so it follows the money
+ * rows that carry it. Simulated runs say SIMULATED, replays PRE-RECORDED, real runs the badges of `rows` or PENDING.
+ */
+export function termBadges(payMode, rows = []) {
+  if (payMode !== "real") return [FALLBACK_BADGE[payMode] ?? "SIMULATED"];
+  const found = uniqueBadges(rows.map((r) => r.badge));
+  return found.length ? found : [FALLBACK_BADGE.real];
+}
+
 /** Minutes between two ISO timestamps, or null. */
 function gapMinutes(from, to) {
   const a = Date.parse(from);
@@ -176,6 +200,7 @@ export function buildReceiptView(run) {
     .map((r) => ({ supplier: r.supplier, name: nameOf(r.supplier), share: r.share }))
     .sort((a, b) => b.share - a.share || rankOf(a.supplier) - rankOf(b.supplier));
 
+  const payMode = derivePayMode({ mode, runBadge: run?.badge ?? null, badges: ledger.map((l) => l.badge) });
   const realLocks = locks.filter((l) => l.badge === "REAL").length;
   const pendingRows = ledger.filter((l) => l.badge === "PENDING").length;
   const lockMinutes = gapMinutes(run?.steps?.locks?.finishedAt, run?.steps?.settlement?.startedAt);
@@ -183,6 +208,7 @@ export function buildReceiptView(run) {
   return {
     runId: run?.id ?? null,
     mode,
+    payMode,
     currency,
     settlementDone,
     stepStatus: run?.steps ?? {},
@@ -210,6 +236,7 @@ export function buildReceiptView(run) {
       locksPending: locks.filter((l) => l.badge === "PENDING").length,
       lockBadges: uniqueBadges(locks.map((l) => l.badge)),
       bidFeeBadges: uniqueBadges(bidFees.map((l) => l.badge)),
+      fallbackBadge: FALLBACK_BADGE[payMode],
     },
     pendingRows,
     ledgers: buildLedgers({ ledger, suppliers: run?.suppliers ?? [], nameOf }),

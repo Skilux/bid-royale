@@ -1,4 +1,4 @@
-import { getFlags } from "@/lib/config";
+import { getFlags, realPayments } from "@/lib/config";
 import { JudgeClient } from "./JudgeClient";
 
 export const dynamic = "force-dynamic";
@@ -9,5 +9,5 @@ const RUN_ID = /^[A-Za-z0-9_-]{1,64}$/;
 export default async function Page({ searchParams }) {
   const { run } = await searchParams;
   const attachId = typeof run === "string" && RUN_ID.test(run) ? run : null;
-  return <JudgeClient demoMode={getFlags().demoMode} attachId={attachId} />;
+  return <JudgeClient demoMode={getFlags().demoMode} realPayments={realPayments()} attachId={attachId} />;
 }

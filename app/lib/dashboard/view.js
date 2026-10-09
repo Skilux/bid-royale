@@ -1,4 +1,4 @@
-import { deriveBadge, explorerFor, uniqueBadges, KIND_LABEL } from "../receipt-view/index.js";
+import { deriveBadge, derivePayMode, explorerFor, termBadges, uniqueBadges, FALLBACK_BADGE, KIND_LABEL } from "../receipt-view/index.js";
 import { SEED_TENDER } from "./reduce.js";
 
 const round = (n) => Math.round(n * 1e6) / 1e6;
@@ -22,6 +22,13 @@ const OUTCOME_LABEL = {
   bond_return: "bond back to supplier",
   bond_forfeit: "bond forfeited to NeoRack",
 };
+
+/** Footer honesty line. The shop and its traffic are simulated in every mode, money rows carry their own badges. */
+export function honestyLine(payMode) {
+  if (payMode === "real") return "Traffic and signups are SIMULATED. Suppliers are our own agents.";
+  if (payMode === "canned") return "Recorded run. Rows with a tx link are REAL, the rest PRE-RECORDED. Traffic and signups were SIMULATED. Suppliers are our own agents.";
+  return "Bid fees and traffic are SIMULATED. Suppliers are our own agents.";
+}
 
 /** One money row for the UI: its badge is derived here, so no component decides what counts as REAL. */
 function moneyRow(m, mode) {
@@ -81,6 +88,8 @@ export function buildDashboardView(state, { signals = null } = {}) {
   const tender = state.tender ?? SEED_TENDER;
   const money = state.money.map((m) => ({ ...moneyRow(m, mode), phase: m.phase, supplier: m.supplier }));
   const gate = tender.gate;
+  const payMode = derivePayMode({ mode, runBadge: state.runBadge, badges: money.map((m) => m.badge) });
+  const rowsOf = (phase, action = null) => money.filter((m) => m.phase === phase && (action === null || m.action === action));
 
   const maxPromised = Math.max(14, ...state.order.map((id) => state.suppliers[id].bid?.promisedPer1000 ?? 0));
   const scaleMax = Math.ceil(maxPromised * 1.15);
@@ -92,6 +101,7 @@ export function buildDashboardView(state, { signals = null } = {}) {
     const outcomes = mine.filter((m) => m.phase === "settlement");
     const locks = { award: lockOf("award"), bond: lockOf("bond") };
     const fee = mine.find((m) => m.phase === "bid_fee") ?? null;
+    const quoteRows = locks.award ? [locks.award] : mine.filter((m) => m.phase === "bid_fee");
     const lost = Boolean(s.rejected);
     const verifiedKnown = s.verified !== null;
     const count = verifiedKnown ? s.verified : (s.received ?? 0);
@@ -104,6 +114,7 @@ export function buildDashboardView(state, { signals = null } = {}) {
       chip: verdictChip(s, locks),
       commit: s.commit,
       bid: s.bid,
+      quoteBadges: termBadges(payMode, quoteRows),
       rank: s.rank,
       pricePerSignup: s.pricePerSignup,
       rejectedNote:
@@ -129,7 +140,7 @@ export function buildDashboardView(state, { signals = null } = {}) {
     };
   });
 
-  const awardLocks = money.filter((m) => m.phase === "lock" && m.action === "award");
+  const awardLocks = rowsOf("lock", "award");
   const bondLocks = money.filter((m) => m.phase === "lock" && m.action === "bond");
   const locks = [...awardLocks, ...bondLocks];
   const toConsumer = money.filter((m) => m.phase === "settlement" && m.to === "consumer");
@@ -146,7 +157,13 @@ export function buildDashboardView(state, { signals = null } = {}) {
     runId: state.runId,
     mode,
     replay: state.replay,
-    runBadge: mode === "canned" ? "PRE-RECORDED" : money.some((m) => m.badge === "REAL") ? "REAL" : "SIMULATED",
+    payMode,
+    /** Badge for a figure with no money rows of its own. PENDING in a real run, never SIMULATED. */
+    fallbackBadge: FALLBACK_BADGE[payMode],
+    runBadge: payMode === "canned" ? "PRE-RECORDED" : money.some((m) => m.badge === "REAL") ? "REAL" : FALLBACK_BADGE[payMode],
+    /** Terms are not moved money: budget and allocation follow the award locks, the bid fee the bid fee rows. */
+    termBadges: { budget: termBadges(payMode, awardLocks), bidFee: termBadges(payMode, rowsOf("bid_fee")) },
+    honesty: honestyLine(payMode),
     degraded: state.degraded,
     failed: state.failed,
     done: state.done,

@@ -48,6 +48,7 @@ test("worked example: net -108.75 for 14 verified signups, every badge SIMULATED
     locksPending: 0,
     lockBadges: ["SIMULATED"],
     bidFeeBadges: ["SIMULATED"],
+    fallbackBadge: "SIMULATED",
   });
   for (const s of view.settled) for (const t of s.transfers) assert.equal(t.badge, "SIMULATED");
 });

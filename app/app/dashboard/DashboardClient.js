@@ -66,7 +66,7 @@ export function DashboardClient({ initialMode, runId }) {
       </header>
       <Dashboard view={p.view} fresh={p.fresh} onSelectStep={(key) => (p.setPlaying(false), p.goToStep(key))} />
       <footer className="mt-3 text-[12px] text-ink-3">
-        Event {p.cursor} of {p.total}. Bid fees and traffic are SIMULATED. Suppliers are our own agents.
+        Event {p.cursor} of {p.total}. {p.view.honesty}
       </footer>
       </div>
     </main>

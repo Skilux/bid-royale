@@ -67,7 +67,6 @@ function Node({ children, className = "", ...rest }) {
 
 /** The embeddable dashboard. Draws a `buildDashboardView` result. `fresh` ({ key, events }) drives the money tokens. */
 export function Dashboard({ view, fresh = null, onSelectStep = null }) {
-  const quoteBadge = view.mode === "canned" ? "PRE-RECORDED" : "SIMULATED";
   const [flash, setFlash] = useState(false);
   return (
     <div className="space-y-2.5" data-testid="dashboard">
@@ -78,11 +77,11 @@ export function Dashboard({ view, fresh = null, onSelectStep = null }) {
         </div>
       ) : null}
       {view.failed ? <div className="rounded-lg border border-under bg-under-bg px-3 py-2 text-[12px]">Run failed: {String(view.failed)}</div> : null}
-      <FlowStage view={view} fresh={fresh} quoteBadge={quoteBadge} onHero={setFlash} flash={flash} />
+      <FlowStage view={view} fresh={fresh} onHero={setFlash} flash={flash} />
       <div className="grid grid-cols-[minmax(0,1fr)] gap-3 min-[1100px]:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)_minmax(0,1fr)]">
         <BotPanel view={view} />
         <EventsPanel view={view} />
-        <TrackFit view={view} quoteBadge={quoteBadge} />
+        <TrackFit view={view} />
       </div>
       <div
         aria-hidden="true"
@@ -127,11 +126,11 @@ function StepRail({ view, onSelect }) {
 }
 
 /** Rails and tokens. Geometry is measured from the three columns, so the rails follow the real layout. */
-function FlowStage({ view, fresh, quoteBadge, onHero, flash }) {
+function FlowStage({ view, fresh, onHero, flash }) {
   const reduced = useReducedMotion();
   const stage = useRef(null);
   const cons = useRef(null);
-  const escRows = useRef({});
+  const lockRowEls = useRef({});
   const supCards = useRef({});
   const pathEls = useRef({});
   const seen = useRef(new Set());
@@ -156,7 +155,7 @@ function FlowStage({ view, fresh, quoteBadge, onHero, flash }) {
       };
       const paths = {};
       for (const id of ids.split(",").filter(Boolean)) {
-        const e = escRows.current[id] && rect(escRows.current[id]);
+        const e = lockRowEls.current[id] && rect(lockRowEls.current[id]);
         const s = supCards.current[id] && rect(supCards.current[id]);
         if (!e || !s) continue;
         paths[id] = {
@@ -233,7 +232,7 @@ function FlowStage({ view, fresh, quoteBadge, onHero, flash }) {
       className={`relative grid grid-cols-[minmax(0,1fr)] gap-3 min-[1100px]:grid-cols-[238px_minmax(56px,150px)_340px_minmax(56px,110px)_minmax(0,1fr)] min-[1100px]:grid-rows-[46px_repeat(4,minmax(108px,auto))] min-[1100px]:gap-x-0 min-[1100px]:gap-y-1`}
       data-testid="flow"
     >
-      <ConsumerNode view={view} quoteBadge={quoteBadge} refEl={cons} stamp={flash || !geo.ok} />
+      <ConsumerNode view={view} refEl={cons} stamp={flash || !geo.ok} />
 
       <div className={`hidden min-[1100px]:col-start-3 min-[1100px]:row-span-5 min-[1100px]:row-start-1 min-[1100px]:block rounded-[14px] border border-line bg-card/80`} aria-hidden="true" />
       <EscrowHead view={view} />
@@ -241,13 +240,13 @@ function FlowStage({ view, fresh, quoteBadge, onHero, flash }) {
         <p className={`min-[1100px]:col-start-3 min-[1100px]:row-start-2 relative z-10 px-4 py-3 text-[12px] text-ink-3`}>Nothing locked yet.</p>
       ) : null}
       {view.suppliers.map((s, i) => (
-        <EscrowRow key={s.id} s={s} i={i} refEl={(el) => (escRows.current[s.id] = el)} />
+        <EscrowRow key={s.id} s={s} i={i} refEl={(el) => (lockRowEls.current[s.id] = el)} />
       ))}
 
       <Label className={`min-[1100px]:col-start-5 min-[1100px]:row-start-1 min-[1100px]:pb-2 min-[1100px]:pt-1`}>Suppliers · found in the Masumi registry</Label>
       {view.suppliers.length === 0 ? <EmptyNote>Waiting for the tender…</EmptyNote> : null}
       {view.suppliers.map((s, i) => (
-        <SupplierCard key={s.id} s={s} i={i} view={view} quoteBadge={quoteBadge} refEl={(el) => (supCards.current[s.id] = el)} />
+        <SupplierCard key={s.id} s={s} i={i} view={view} refEl={(el) => (supCards.current[s.id] = el)} />
       ))}
 
       {geo.ok ? (
@@ -323,7 +322,7 @@ function Line({ label, value }) {
   );
 }
 
-function ConsumerNode({ view, quoteBadge, refEl, stamp }) {
+function ConsumerNode({ view, refEl, stamp }) {
   const { tender, wallet, budget } = view;
   const reduced = useReducedMotion();
   const hero = view.hero;
@@ -337,7 +336,7 @@ function ConsumerNode({ view, quoteBadge, refEl, stamp }) {
       <p className="mb-2 mt-1.5 font-serif text-[19px] italic leading-[1.15]">
         {view.started ? (
           <>
-            Budget <Money amount={tender.budget} badge={quoteBadge} currency={view.currency} />, {view.brief.audience}, {view.brief.goal}.
+            Budget <Money amount={tender.budget} badges={view.termBadges.budget} currency={view.currency} />, {view.brief.audience}, {view.brief.goal}.
           </>
         ) : (
           "Waiting for the brief…"
@@ -351,7 +350,7 @@ function ConsumerNode({ view, quoteBadge, refEl, stamp }) {
           bond <b>{Math.round(tender.bondRate * 100)}%</b>
         </Chip>
         <Chip tone="neutral">
-          bid fee <Money amount={tender.bidFee} badge={quoteBadge} />
+          bid fee <Money amount={tender.bidFee} badges={view.termBadges.bidFee} />
         </Chip>
         {view.discovery ? (
           <Chip tone={view.discovery.source === "live" ? "cobalt" : "neutral"}>
@@ -364,7 +363,7 @@ function ConsumerNode({ view, quoteBadge, refEl, stamp }) {
 
       <Label className="mt-3">budget allocated</Label>
       <div className="mt-1 text-[12px]" data-testid="budget">
-        <Money amount={budget.allocated} badge={quoteBadge} /> / <Money amount={budget.total} badge={quoteBadge} currency={view.currency} />
+        <Money amount={budget.allocated} badges={view.termBadges.budget} /> / <Money amount={budget.total} badges={view.termBadges.budget} currency={view.currency} />
       </div>
       <div className="mt-1.5 flex h-3 overflow-hidden rounded-full bg-wash" role="img" aria-label="Budget allocated per supplier">
         {budget.segments.map((seg, i) => (
@@ -384,11 +383,11 @@ function ConsumerNode({ view, quoteBadge, refEl, stamp }) {
         <Money amount={wallet.net} badges={[...new Set([...wallet.badgesOut, ...wallet.badgesBack])]} currency={view.currency} />
       </div>
       <div className="mt-1">
-        <Line label="escrowed" value={<Money amount={wallet.escrowed} badges={wallet.badgesOut.length ? wallet.badgesOut : [quoteBadge]} />} />
-        <Line label="back" value={<Money amount={wallet.back} badges={wallet.badgesBack.length ? wallet.badgesBack : [quoteBadge]} />} />
+        <Line label="escrowed" value={<Money amount={wallet.escrowed} badges={wallet.badgesOut.length ? wallet.badgesOut : [view.fallbackBadge]} />} />
+        <Line label="back" value={<Money amount={wallet.back} badges={wallet.badgesBack.length ? wallet.badgesBack : [view.fallbackBadge]} />} />
         {wallet.pendingOut > 0 ? <Line label="locking, not moved yet" value={<Money amount={wallet.pendingOut} badge="PENDING" />} /> : null}
         {wallet.pendingBack > 0 ? <Line label="returning, not moved yet" value={<Money amount={wallet.pendingBack} badge="PENDING" />} /> : null}
-        <Line label="supplier bid fees" value={<Money amount={view.bidFees.total} badges={view.bidFees.badges.length ? view.bidFees.badges : [quoteBadge]} />} />
+        <Line label="supplier bid fees" value={<Money amount={view.bidFees.total} badges={view.bidFees.badges.length ? view.bidFees.badges : [view.fallbackBadge]} />} />
       </div>
       {hero && stamp ? (
         <Motion.div
@@ -415,7 +414,7 @@ function EscrowHead({ view }) {
     <div className={`relative z-10 px-3.5 pt-3 min-[1100px]:col-start-3 min-[1100px]:row-start-1`} data-testid="escrow-panel">
       <Label>escrow · Masumi on Cardano preprod</Label>
       <div className="mt-1 font-mono text-[12px] font-semibold" data-testid="escrow-total">
-        locked <Money amount={escrow.locked} badges={escrow.badges.length ? escrow.badges : [view.mode === "canned" ? "PRE-RECORDED" : "SIMULATED"]} /> / {formatAmount(escrow.total)} {view.currency}
+        locked <Money amount={escrow.locked} badges={escrow.badges.length ? escrow.badges : [view.fallbackBadge]} /> / {formatAmount(escrow.total)} {view.currency}
         {escrow.pending > 0 ? (
           <span className="ml-2 text-ink-3">
             <Money amount={escrow.pending} badge="PENDING" /> waiting for lock
@@ -504,7 +503,7 @@ function EmptyNote({ children }) {
   return <p className={`rounded-lg border border-dashed border-line px-3 py-4 text-[12px] text-ink-3 min-[1100px]:col-start-5 min-[1100px]:row-start-2`}>{children}</p>;
 }
 
-function SupplierCard({ s, i, view, quoteBadge, refEl }) {
+function SupplierCard({ s, i, view, refEl }) {
   const tone = s.chip ? CARD_TONE[s.chip.kind] : "border-line";
   const gatePct = Math.min(100, (view.gate / view.scaleMax) * 100);
   const promisedPct = s.promised ? Math.min(100, (s.promised / view.scaleMax) * 100) : null;
@@ -527,7 +526,7 @@ function SupplierCard({ s, i, view, quoteBadge, refEl }) {
             <span>{s.rejectedNote}</span>
           ) : s.bid ? (
             <span title={`commit ${s.commit}`}>
-              <Money amount={s.bid.price} badge={quoteBadge} /> · {s.bid.impressions.toLocaleString("en-US")} impr. · <b className="text-ink">{s.bid.promisedPer1000}</b>/1,000
+              <Money amount={s.bid.price} badges={s.quoteBadges} /> · {s.bid.impressions.toLocaleString("en-US")} impr. · <b className="text-ink">{s.bid.promisedPer1000}</b>/1,000
               {s.pricePerSignup !== null ? (
                 <>
                   {" "}
@@ -632,7 +631,7 @@ function EventsPanel({ view }) {
   );
 }
 
-function TrackFit({ view, quoteBadge }) {
+function TrackFit({ view }) {
   const r = view.receipt;
   return (
     <Panel data-testid="track-fit">
@@ -647,7 +646,7 @@ function TrackFit({ view, quoteBadge }) {
       </div>
       <div className={`mt-2 transition-opacity duration-500 ${r ? "" : "opacity-25"}`} data-testid="mini-receipt">
         <div className="font-display text-[30px] font-extrabold leading-none tabular-nums text-cobalt">
-          {r ? <Money amount={r.net} badges={r.badges.length ? r.badges : [quoteBadge]} currency={view.currency} /> : "·"}
+          {r ? <Money amount={r.net} badges={r.badges.length ? r.badges : [view.fallbackBadge]} currency={view.currency} /> : "·"}
         </div>
         {r ? (
           <div className="mt-1 text-[10.5px] leading-[1.5] text-ink-2">

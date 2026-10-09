@@ -5,6 +5,9 @@ export function getFlags() {
   };
 }
 
+/** True when the Board runs the real Masumi adapter. Mirrors getAdapter in lib/masumi: real only for SIMULATE_PAYMENTS=false. */
+export const realPayments = () => process.env.SIMULATE_PAYMENTS === "false";
+
 export const TENDER = {
   budget: 200,
   gate: 5,

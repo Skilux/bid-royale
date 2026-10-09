@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { SPEEDS } from "@/lib/dashboard/pace";
-import { buildReceiptView } from "@/lib/receipt-view";
+import { buildReceiptView, FALLBACK_BADGE } from "@/lib/receipt-view";
 import { FinalReceipt } from "./receipt/ReceiptClient";
 import { Badge } from "./_components/Badge";
 import { Brief } from "./_components/Brief";
@@ -15,7 +15,7 @@ import { useRunPlayer } from "./_components/useRunPlayer";
 const btn = "cursor-pointer rounded-full border border-line bg-card px-3.5 py-[6px] font-mono text-[11px] uppercase tracking-[0.08em] hover:border-ink disabled:cursor-default disabled:opacity-40";
 const primary = "cursor-pointer rounded-[9px] bg-cobalt px-6 py-3 text-[16px] font-semibold text-paper hover:opacity-90";
 
-export function JudgeClient({ demoMode, attachId }) {
+export function JudgeClient({ demoMode, attachId, realPayments = false }) {
   const [phase, setPhase] = useState(attachId ? "run" : "brief");
   const [mode, setMode] = useState(attachId ? "attach" : "canned");
   const [attach, setAttach] = useState(attachId);
@@ -54,7 +54,7 @@ export function JudgeClient({ demoMode, attachId }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [phase, next, back, setPlaying]);
 
-  const quoteBadge = mode === "live" ? "SIMULATED" : "PRE-RECORDED";
+  const quoteBadge = mode === "live" ? FALLBACK_BADGE[realPayments ? "real" : "simulated"] : FALLBACK_BADGE.canned;
   const receiptView = useMemo(
     () => (p.view.receipt && p.snapshot?.receipt ? buildReceiptView({ ...p.snapshot, events: p.events }) : null),
     [p.view.receipt, p.snapshot, p.events],
@@ -214,7 +214,7 @@ function Honesty() {
   return (
     <footer className="mt-6 rounded-lg border border-dashed border-line px-3 py-2 text-[12.5px] text-ink-2" data-testid="honesty">
       <b>Honest limits.</b> Suppliers and the Board are our own demo agents on one Masumi node. The Board runs the auction and the check, so it is a trust
-      assumption. Bid fees and traffic are <Badge kind="SIMULATED" />. A recorded run is <Badge kind="PRE-RECORDED" />. Only rows with a tx link are <Badge kind="REAL" />, on
+      assumption. Traffic and signups are <Badge kind="SIMULATED" />. In a simulated run, bid fees are <Badge kind="SIMULATED" /> too. A recorded run is <Badge kind="PRE-RECORDED" />. Only rows with a tx link are <Badge kind="REAL" />, on
       Cardano preprod with tADA that has no value.{" "}
       <a className="text-cobalt underline" href="https://github.com/Skilux/bid-royale/blob/main/docs/honest-limitations.md" target="_blank" rel="noopener noreferrer">
         Read the honest limitations
