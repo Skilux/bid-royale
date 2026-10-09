@@ -15,11 +15,15 @@ import { EVENT_NAMES, EVENTS, TERMINAL_EVENTS } from "../board/events.js";
  *   onSnapshot(run)                    GET /api/run/:id body, for context the SSE events do not carry (feed signals)
  *   onEnd()                            no more events
  *   onDegrade(reason)                  the live run failed, canned follows
+ *   onBusy(runId)                      the Board refused a second live run (409): this follows the run in flight instead
  */
 
 export const FETCH_TIMEOUT_MS = 8000;
 export const STEPS_TIMEOUT_MS = 65000;
 export const FIRST_EVENT_MS = 12000;
+
+/** The live run still settling on the Board, for the confirm dialog: `{ guarded, active }`. Rejects on any failure. */
+export const fetchActiveRun = ({ fetchImpl = fetch, signal } = {}) => fetchJson(fetchImpl, "/api/run", { signal });
 
 async function fetchJson(fetchImpl, url, { method = "GET", timeoutMs = FETCH_TIMEOUT_MS, signal } = {}) {
   const ctrl = new AbortController();
@@ -29,10 +33,11 @@ async function fetchJson(fetchImpl, url, { method = "GET", timeoutMs = FETCH_TIM
   try {
     const res = await fetchImpl(url, { method, signal: ctrl.signal, cache: "no-store" });
     const body = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(body?.error ?? `http_${res.status}`);
+    if (!res.ok) throw Object.assign(new Error(body?.error ?? `http_${res.status}`), { status: res.status, body });
     return body;
   } catch (err) {
-    throw new Error(err?.name === "AbortError" ? "timeout" : (err?.message ?? "fetch_failed"));
+    if (err?.name === "AbortError") throw new Error("timeout");
+    throw err instanceof Error ? err : new Error("fetch_failed");
   } finally {
     clearTimeout(timer);
     signal?.removeEventListener("abort", onAbort);
@@ -48,6 +53,7 @@ export function openRunSource({
   onSnapshot = () => {},
   onEnd = () => {},
   onDegrade = () => {},
+  onBusy = () => {},
   fetchImpl = typeof fetch === "function" ? fetch : undefined,
   EventSourceImpl = typeof EventSource === "function" ? EventSource : undefined,
   firstEventMs = FIRST_EVENT_MS,
@@ -156,18 +162,24 @@ export function openRunSource({
       onSource({ kind: "live", replay: false, runId: id });
       follow(id, { runSteps: true });
     } catch (err) {
-      await degrade(`start_failed: ${err.message}`);
+      const busyId = err.body?.error === "live_run_in_progress" ? err.body.activeRunId : null;
+      if (busyId && live()) {
+        onBusy(busyId);
+        await startAttach(busyId);
+      } else {
+        await degrade(`start_failed: ${err.message}`);
+      }
     }
   }
 
-  async function startAttach() {
+  async function startAttach(id = runId) {
     try {
-      const body = await fetchJson(fetchImpl, `/api/run/${encodeURIComponent(runId)}`, { signal: stop.signal });
+      const body = await fetchJson(fetchImpl, `/api/run/${encodeURIComponent(id)}`, { signal: stop.signal });
       if (!body?.run) throw new Error("bad_response");
       if (!live()) return;
-      onSource({ kind: "live", replay: false, runId });
+      onSource({ kind: "live", replay: false, runId: id });
       onSnapshot(body.run);
-      follow(runId, { runSteps: false });
+      follow(id, { runSteps: false });
     } catch (err) {
       await degrade(`attach_failed: ${err.message}`);
     }

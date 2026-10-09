@@ -2,41 +2,62 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { SPEEDS } from "@/lib/dashboard/pace";
+import { DEFAULT_RECORDING_ID, listRecordings } from "@/lib/replay/catalog";
 import { buildReceiptView, FALLBACK_BADGE } from "@/lib/receipt-view";
+import { liveKind } from "@/lib/run-source/live-gate";
 import { FinalReceipt } from "./receipt/ReceiptClient";
 import { Badge } from "./_components/Badge";
 import { Brief } from "./_components/Brief";
 import { Chip } from "./_components/Chip";
+import { ConfirmLiveDialog } from "./_components/ConfirmLiveDialog";
 import { Dashboard } from "./_components/Dashboard";
 import { flowFontClass } from "./_components/flowFonts";
+import { RecordingPicker, setReplayInUrl } from "./_components/RecordingPicker";
 import { loadCanned } from "./_components/runSource";
+import { useLiveGate } from "./_components/useLiveGate";
 import { useRunPlayer } from "./_components/useRunPlayer";
+
+const RECORDINGS = listRecordings();
 
 const btn = "cursor-pointer rounded-full border border-line bg-card px-3.5 py-[6px] font-mono text-[11px] uppercase tracking-[0.08em] hover:border-ink disabled:cursor-default disabled:opacity-40";
 const primary = "cursor-pointer rounded-[9px] bg-cobalt px-6 py-3 text-[16px] font-semibold text-paper hover:opacity-90";
 
-export function JudgeClient({ demoMode, attachId, realPayments = false }) {
-  const [phase, setPhase] = useState(attachId ? "run" : "brief");
+export function JudgeClient({ demoMode, attachId, replayId: linkedReplay = null, realPayments = false }) {
+  const [phase, setPhase] = useState(attachId || linkedReplay ? "run" : "brief");
+  const [replayId, setReplayId] = useState(linkedReplay ?? DEFAULT_RECORDING_ID);
   const [mode, setMode] = useState(attachId ? "attach" : "canned");
   const [attach, setAttach] = useState(attachId);
   const [attachInput, setAttachInput] = useState(attachId ?? "");
   const [autoplay, setAutoplay] = useState(true);
   const [speed, setSpeed] = useState("normal");
   const [runKey, setRunKey] = useState(0);
-  const p = useRunPlayer({ mode, runId: attach, speed: SPEEDS[speed], autoplay, runKey, enabled: phase === "run" });
+  const p = useRunPlayer({ mode, runId: attach, replayId, speed: SPEEDS[speed], autoplay, runKey, enabled: phase === "run" });
   const { next, back, goToStep, setPlaying } = p;
 
-  const start = (m, { auto = true, id = null } = {}) => {
+  const start = (m, { auto = true, id = null, replay = replayId } = {}) => {
     setMode(m);
     setAttach(id);
     setAutoplay(auto);
     setRunKey((k) => k + 1);
     setPhase("run");
+    if (m === "canned") {
+      setReplayId(replay);
+      setReplayInUrl(replay);
+    }
   };
+  const pickRecording = (id) => {
+    setReplayId(id);
+    if (phase === "run" && mode === "canned") start("canned", { replay: id });
+  };
+  const gate = useLiveGate({
+    start: () => start("live"),
+    watchRecording: () => start("canned", { replay: DEFAULT_RECORDING_ID }),
+    attach: (id) => start("attach", { id }),
+  });
 
   useEffect(() => {
-    loadCanned().catch(() => {});
-  }, []);
+    loadCanned(replayId).catch(() => {});
+  }, [replayId]);
 
   useEffect(() => {
     if (phase !== "run") return undefined;
@@ -68,19 +89,22 @@ export function JudgeClient({ demoMode, attachId, realPayments = false }) {
         <div className="mt-5">
           <Brief quoteBadge={quoteBadge} />
         </div>
-        <div className="mt-6 flex flex-wrap items-center gap-3">
+        <div className="mt-6">
+          <RecordingPicker value={replayId} onChange={pickRecording} />
+        </div>
+        <div className="mt-4 flex flex-wrap items-center gap-3">
           <button type="button" className={primary} onClick={() => start("canned")} data-testid="run">
             Run
           </button>
-          <button type="button" className={btn} onClick={() => start("live")} data-testid="run-live">
+          <button type="button" className={btn} onClick={gate.request} data-testid="run-live">
             Run live
           </button>
           <button type="button" className={btn} onClick={() => start("canned", { auto: false })} data-testid="walk">
             Walk through
           </button>
           <span className="text-[12.5px] text-ink-2">
-            Run plays the recorded run in about 25 s, badged <Badge kind="PRE-RECORDED" />. Run live starts a fresh run on the Board
-            {demoMode === "canned" ? " (this server has DEMO_MODE=canned, so it replays the recording)" : ""}.
+            Run plays the picked recording in about 25 s, badged <Badge kind="PRE-RECORDED" />. Run live asks first, then starts a fresh run on the Board
+            {demoMode === "canned" ? " (this server has DEMO_MODE=canned, so it replays the recording)" : realPayments ? " (a real run takes about 15–20 minutes to settle)" : ""}.
           </span>
         </div>
         <details className="mt-4 text-[13px] text-ink-2">
@@ -107,15 +131,21 @@ export function JudgeClient({ demoMode, attachId, realPayments = false }) {
         </details>
         <Honesty />
         </div>
+        <ConfirmLiveDialog gate={gate} kind={liveKind({ demoMode, realPayments })} />
       </main>
     );
   }
 
+  const picked = RECORDINGS.find((r) => r.id === replayId) ?? RECORDINGS[0];
   const source = !p.meta.kind
     ? "Loading…"
     : p.meta.kind === "canned"
-      ? `Recorded run${p.degraded ? `, the live run failed (${p.degraded})` : ""}.`
-      : `Run ${p.meta.runId}.`;
+      ? p.degraded
+        ? `The live run failed (${p.degraded}). Showing the recording ${RECORDINGS[0].title}, ${RECORDINGS[0].runId}.`
+        : `Recording: ${picked.title}, ${picked.runId}.`
+      : p.busy
+        ? `A live run was already in flight. Following ${p.meta.runId}.`
+        : `Run ${p.meta.runId}.`;
 
   return (
     <main className={`flow ${flowFontClass} min-h-screen`}>
@@ -143,6 +173,7 @@ export function JudgeClient({ demoMode, attachId, realPayments = false }) {
             <option value="normal">Normal</option>
             <option value="fast">Fast</option>
           </select>
+          {mode === "canned" ? <RecordingPicker variant="select" value={replayId} onChange={pickRecording} /> : null}
           <button type="button" className={btn} onClick={() => start(mode, { id: attach })}>
             Restart
           </button>

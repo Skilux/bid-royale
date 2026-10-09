@@ -12,15 +12,17 @@ const LIVE_STEP_MS = 30;
  * Plays one run into a dashboard view. `events` is everything the source delivered, `cursor` how many are shown,
  * and the view is `buildDashboardView(reduceEvents(events[0..cursor]))`. Autoplay walks the cursor with the
  * recorded pace (`lib/dashboard/pace`), a live run shows events as they arrive, Back and Next move it by hand.
- * `runKey` restarts the source with the same mode.
+ * `runKey` restarts the source with the same mode. `replayId` is the recording a canned run plays (lib/replay/catalog).
+ * `busy` is the run id the Board named when it refused a second live run: the player follows that run instead.
  */
-export function useRunPlayer({ mode = "canned", runId = null, speed = 1, autoplay = true, runKey = 0, enabled = true }) {
+export function useRunPlayer({ mode = "canned", runId = null, replayId, speed = 1, autoplay = true, runKey = 0, enabled = true }) {
   const [meta, setMeta] = useState({ kind: null, replay: false, runId: null });
   const [events, setEvents] = useState([]);
   const [cursor, setCursor] = useState(0);
   const [ended, setEnded] = useState(false);
   const [snapshot, setSnapshot] = useState(null);
   const [degraded, setDegraded] = useState(null);
+  const [busy, setBusy] = useState(null);
   const [playing, setPlaying] = useState(autoplay);
 
   useEffect(() => {
@@ -30,11 +32,13 @@ export function useRunPlayer({ mode = "canned", runId = null, speed = 1, autopla
     setEnded(false);
     setSnapshot(null);
     setDegraded(null);
+    setBusy(null);
     setPlaying(autoplay);
     if (!enabled) return undefined;
     const src = openJudgeRunSource({
       mode,
       runId,
+      replayId,
       onSource: (s) => {
         setMeta(s);
         setEvents([]);
@@ -46,9 +50,10 @@ export function useRunPlayer({ mode = "canned", runId = null, speed = 1, autopla
       onSnapshot: setSnapshot,
       onEnd: () => setEnded(true),
       onDegrade: (reason) => setDegraded(reason),
+      onBusy: setBusy,
     });
     return () => src.close();
-  }, [mode, runId, runKey, autoplay, enabled]);
+  }, [mode, runId, replayId, runKey, autoplay, enabled]);
 
   const gaps = useMemo(() => gapsFor(events), [events]);
 
@@ -102,5 +107,5 @@ export function useRunPlayer({ mode = "canned", runId = null, speed = 1, autopla
   );
   const finished = ended && cursor >= events.length && events.length > 0;
 
-  return { view, meta, degraded, playing, setPlaying, cursor, setCursor, total: events.length, ended, finished, next, back, goToStep, events, snapshot, fresh };
+  return { view, meta, degraded, busy, playing, setPlaying, cursor, setCursor, total: events.length, ended, finished, next, back, goToStep, events, snapshot, fresh };
 }
