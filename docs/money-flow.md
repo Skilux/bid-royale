@@ -13,7 +13,7 @@ projection unless it says so.
 | Platform | Role |
 |---|---|
 | Vercel (`https://ad-slot-auction.vercel.app`) | UI, Tender Board (auction, verifier, settlement), the 4 supplier brains, MIP-003 agent routes `/api/agents/<name>/…` (#37), Masumi REST client with one wallet-scoped ReadAndPay key per party |
-| Railway | Masumi Payment Service 0.29.0 + Postgres: holds all wallets, signs and submits transactions, runs the background loops. Treasury worker (Admin key) for plain transfers (#29), deployed 8 Oct at `https://treasury-worker-production-cce6.up.railway.app` |
+| Railway | Masumi Payment Service 0.29.0 + Postgres: holds all wallets, signs and submits transactions, runs the background loops. Treasury worker (Admin key) for plain transfers (#29), deployed 8 Oct on Railway (URL in the `TREASURY_URL` env var) |
 | Cardano Preprod | V2 escrow contract `addr_test1wzqgalcd93sfjrc5tsc4ycwx80a8lt0s3767a4g8nh45lrg044nd9` holds locked tADA; registry entries for the 5 agents |
 | Upstash Redis | Board state, agent job state, treasury dedupe |
 

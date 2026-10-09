@@ -27,7 +27,7 @@ Status as of 2026-10-08 ~23:30. V2 source created (#21); all ten party wallets f
 
 | Checkpoint 1 item | Status |
 |---|---|
-| Payment service deployed on Railway and reachable | Done. Upgraded to 0.29.0, `/api/v1/health` ok. `https://masumi-payment-service-production-5263.up.railway.app` (`/api/v1`, `/admin`, `/docs`), project `bid-royale-masumi` |
+| Payment service deployed on Railway and reachable | Done. Upgraded to 0.29.0, `/api/v1/health` ok. URL in the `MASUMI_PAYMENT_BASE_URL` env var (`/api/v1`, `/admin`, `/docs`), project `bid-royale-masumi` |
 | Base URL and key work | Admin key works on 0.29.0 (`MASUMI_ADMIN_API_KEY` in gitignored `app/.env.local`, local scripts only). Six new Preprod wallet-scoped `ReadAndPay` party keys created and tested (#26), including `key-techblog`; details below |
 | Wallets exist and are funded | Done (#21, #26). Ten V2 party wallets: Consumer purchasing 400 tADA, Board selling 150 tADA, four Suppliers each purchasing 60 and selling 20 tADA; admin 20 tADA separately. REAL balances checked on chain; tx links below. Mnemonics backed up off-repo. Seeded V1 wallets used only for funding |
 | Contract version (D9) | Done (#21). New Preprod `Web3CardanoV2` source `cmuzylds0000347p4qfsw0ed3`, contract `addr_test1wzqgalcd93sfjrc5tsc4ycwx80a8lt0s3767a4g8nh45lrg044nd9`, fee 0 permille; `cooldownTime: 60000` (60 s) accepted. Status `custom_address` accepted by operator on 8 Oct: current V2 policy with our fresh admin wallet. Seeded V1 remains unchanged as fallback |

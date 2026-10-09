@@ -428,3 +428,7 @@ bid-royale/
 
 Next.js 16 and Tailwind on Vercel · Masumi Payment Service on Railway ·
 Cardano preprod · Upstash Redis · OpenRouter for the supplier agents.
+
+## License
+
+[MIT](LICENSE)
