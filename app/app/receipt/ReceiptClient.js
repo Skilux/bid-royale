@@ -385,7 +385,7 @@ export function FinalReceipt({ view }) {
       </div>
       {view.pendingRows > 0 ? (
         <div className="mt-2 rounded-md border border-dashed border-ink-3 px-3 py-1.5 text-[13px]" data-testid="pending-note">
-          {view.pendingRows} money {view.pendingRows === 1 ? "row is" : "rows are"} <Badge kind="PENDING" />: no transaction yet. The total counts only money that moved.
+          {view.pendingRows} money {view.pendingRows === 1 ? "row is" : "rows are"} <Badge kind="PENDING" />: no transaction yet. {view.pendingRows === 1 ? "It never moved and is" : "They never moved and are"} not counted in the total.
           {view.pending.rows.map((r) => (
             <div key={r.id} data-testid="pending-row" className="mt-0.5">
               Pending, not moved: {r.label} · {r.name} <Money amount={r.amount} badge="PENDING" currency={view.currency} />

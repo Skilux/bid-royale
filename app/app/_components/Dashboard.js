@@ -652,7 +652,11 @@ function TrackFit({ view }) {
         {r ? (
           <div className="mt-1 text-[10.5px] leading-[1.5] text-ink-2">
             <b className="text-ink">{r.signups}</b> verified signups · <b className="text-ink">{r.costPerSignup === null ? "·" : Number(r.costPerSignup).toFixed(2)}</b> each
-            {r.pending ? <div className="italic text-ink-3">Some rows are PENDING and left out of the net: not moved.</div> : null}
+            {r.pending ? (
+              <div className="italic text-ink-3" data-testid="mini-pending-note">
+                {r.pendingRows} money {r.pendingRows === 1 ? "row is" : "rows are"} PENDING (<Money amount={r.pendingAmount} badge="PENDING" currency={view.currency} />). {r.pendingRows === 1 ? "It never moved and is" : "They never moved and are"} not in the net.
+              </div>
+            ) : null}
             {view.roundTwo ? (
               <div>
                 Round 2, shown not executed: {view.roundTwo.map((x) => `${x.name} ${Math.round(x.share * 100)}`).join(" · ")} <Badge kind="SIMULATED" />

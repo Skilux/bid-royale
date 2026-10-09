@@ -172,10 +172,12 @@ export function buildReceiptView(run) {
     costPerSignup: fallback.signups > 0 ? round(-fallbackNet / fallback.signups) : null,
   };
 
-  const netBadges = uniqueBadges([
+  // The total counts moved rows only (#62), so its badge follows them. A PENDING row is listed in the note, not in the badge.
+  const netRows = [
     ...awardLocks.map((l) => l.badge),
     ...(run?.settlement?.transfers ?? []).filter((t) => t.to === "consumer").map((t) => deriveBadge(t, { mode })),
-  ]);
+  ];
+  const netBadges = uniqueBadges(netRows.some((b) => b !== "PENDING") ? netRows.filter((b) => b !== "PENDING") : netRows);
 
   const leaderboard = (receipt?.leaderboard ?? []).map((r) => {
     const returned = round(r.awardReclaimed + r.bondForfeited);

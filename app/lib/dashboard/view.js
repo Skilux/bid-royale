@@ -155,6 +155,8 @@ export function buildDashboardView(state, { signals = null } = {}) {
   const toConsumer = money.filter((m) => m.phase === "settlement" && m.to === "consumer");
   const moved = (rows) => rows.filter((m) => !m.pending);
   const pend = (rows) => rows.filter((m) => m.pending);
+  /** Badges of the rows a figure counts. A PENDING row is not in the sum, so it is not in the badge either, unless no row moved. */
+  const countedBadges = (rows) => uniqueBadges((moved(rows).length ? moved(rows) : rows).map((m) => m.badge));
   const out = sum(moved(awardLocks));
   const back = sum(moved(toConsumer));
   const accepted = state.order.map((id) => state.suppliers[id]).filter((s) => s.accepted).sort((a, b) => (a.rank ?? 9) - (b.rank ?? 9));
@@ -198,8 +200,8 @@ export function buildDashboardView(state, { signals = null } = {}) {
       net: round(back - out),
       pendingOut: sum(pend(awardLocks)),
       pendingBack: sum(pend(toConsumer)),
-      badgesOut: uniqueBadges(awardLocks.map((m) => m.badge)),
-      badgesBack: uniqueBadges(toConsumer.map((m) => m.badge)),
+      badgesOut: countedBadges(awardLocks),
+      badgesBack: countedBadges(toConsumer),
     },
     escrow: {
       locked: sum(moved(locks)),
@@ -230,7 +232,9 @@ export function buildDashboardView(state, { signals = null } = {}) {
           net: receiptFigures(state.receipt, pend(toConsumer)).net,
           signups: state.receipt.consumer?.signups ?? null,
           costPerSignup: receiptFigures(state.receipt, pend(toConsumer)).costPerSignup,
-          badges: uniqueBadges([...awardLocks, ...toConsumer].map((m) => m.badge)),
+          badges: countedBadges([...awardLocks, ...toConsumer]),
+          pendingRows: pend(money).length,
+          pendingAmount: sum(pend(money)),
           pending: money.some((m) => m.pending),
         }
       : null,
