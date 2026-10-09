@@ -1,311 +1,430 @@
-# Ad Slot Auction
+# Bid Royale
 
-**From Dusk Till Dawn #01, Agentic Economy track (8–9 Oct 2026, Prague)**
+**AI agents bid for an ad budget and get paid only for verified signups.**
 
-The NeoRack Consumer agent publishes a tender, Supplier agents bid for the
-budget in a sealed-bid auction, and the Consumer pays only for verified signups.
+An advertiser's agent posts a tender. Publisher agents found in the Masumi
+registry send sealed bids, each promising a conversion rate. Winners lock a
+bond, the money sits in escrow on Cardano, and a deterministic verifier
+decides who gets paid. Deliver and you are paid. Fall short and you lose part
+of your bond. Deliver nothing and the advertiser gets everything back.
+
 *Don't pay for impressions. Pay for outcomes.*
 
-> Track rule: "An agent completes a transaction scenario with a visible outcome.
-> A sandbox transaction counts; a simulated payment must be labelled."
+**[Open the live app](https://ad-slot-auction.vercel.app)** ·
+[Guided demo](https://ad-slot-auction.vercel.app/demo) ·
+[Dashboard](https://ad-slot-auction.vercel.app/dashboard) ·
+[Receipt](https://ad-slot-auction.vercel.app/receipt) ·
+[Health](https://ad-slot-auction.vercel.app/api/health) ·
+[Honest limitations](docs/honest-limitations.md)
 
-Status as of 9 Oct 2026, read from `main` at `05bf1d1`. Nothing below claims a
-deployed state: the judge URL and its `/api/health` response were not checked
-when this page was written.
+No signup, no wallet. Press **Play recording** to replay a real run settled on
+Cardano preprod, or **Guided demo** for the 90-second walkthrough.
 
-- Scenario spec: Notion (Ad Slot Auction PRD v3.1, "Ad Slot Auction: Money Flow, Step by Step", "Ad Auction — Diagrams"). `docs/` is the technical subset, not a mirror.
-- Terms: [`GLOSSARY.md`](GLOSSARY.md). Build rules: [`AGENTS.md`](AGENTS.md).
-- Money flow per run, every call, amount and measured time: [`docs/money-flow.md`](docs/money-flow.md)
+Built for **From Dusk Till Dawn #01**, Agentic Economy track, Prague, 8–9 Oct 2026.
 
-## What is REAL, SIMULATED, PRE-RECORDED
+![The judge page after settlement: escrows per supplier, verdicts and the NeoRack wallet](docs/readme/judge-page-settled.png)
 
-Every money element in the UI carries one of these badges. A payment without a
-badge is a bug. Source: [`docs/honest-limitations.md`](docs/honest-limitations.md).
+---
 
-| Part of a run | Label | Notes |
+## Contents
+
+- [Three ideas](#three-ideas)
+- [How a run works](#how-a-run-works)
+- [Who gets paid: the verdict rule](#who-gets-paid-the-verdict-rule)
+- [Architecture](#architecture)
+- [Screens](#screens)
+- [Proof: a real run on Cardano preprod](#proof-a-real-run-on-cardano-preprod)
+- [What is real and what is simulated](#what-is-real-and-what-is-simulated)
+- [Honest limitations](#honest-limitations)
+- [Run it locally](#run-it-locally)
+- [Repo map](#repo-map)
+
+---
+
+## Three ideas
+
+| | Idea | How Bid Royale does it |
 |---|---|---|
-| 3 award escrows (65 / 55 / 60 tADA in the recorded run) | **REAL**, tx hashes in the recorded run | Masumi preprod (Cardano testnet). **PENDING** until a hash exists. Hashes: [proof table](#real-transaction-proof) |
-| 3 bond escrows (16.25 / 13.75 / 15 tADA in the recorded run) | **REAL**, tx hashes in the recorded run | Same rail, same rule |
-| Settlement per verdict (release, refund, bond return) | **REAL**, tx hashes in the recorded run | All three verdict branches settled on preprod. [`docs/money-flow.md`](docs/money-flow.md), step 7 |
-| Forfeit and bond-remainder transfers | **REAL**, tx hashes in the recorded run | Plain transfers from the Board treasury, not escrow outputs. Recorded run: all 3 REAL. The 1.964286 tADA forfeit was first refused (under the 2 tADA minimum) and sent as 2.00 tADA after the #62 fix, the Board paying the 0.035714 difference |
-| 4 bid fees (2 tADA each) | **REAL**, tx hashes in the recorded run | Escrow input hash = the sealed bid's commit; the Board collected all 4. Fallback flag: SIMULATED, not used in the recorded run |
-| NeoRack shop, signups, traffic and impressions | **SIMULATED** | Signed signup events from a simulated shop, "no funds moved" |
-| DevNewsletter's zero signups | **SIMULATED** | Scripted. The verdict mechanism is what is on show |
-| Round 2 reallocation | **SIMULATED** | Shown on the receipt, no chain operations |
-| Supplier registration, agent identifiers | **REAL** | 5 agents registered on Preprod, see [`docs/plan/lane-masumi.md`](docs/plan/lane-masumi.md). Discovery in the recorded run was `live` from the registry, all four suppliers `RegistrationConfirmed` |
-| Run totals, recorded run | **REAL** | 10 escrows per run (3 awards, 3 bonds, 4 bid fees), all locked REAL 2.1 min after settlement start. All 21 ledger rows REAL: 20 within 17 min, the last after the #62 treasury fix (53 min) |
-| `DEMO_MODE=canned` replay | **PRE-RECORDED** | Judge URL and lifeline. Replays a recorded real run picked from `app/data/canned/index.js` (`app/lib/replay`), default the final `run_c1f40522` with all 21 rows REAL, with its time cut labelled; REAL tx links from the recording stay REAL. There is no separate warm run (#30) |
+| 1 | **Competitive** | Publisher agents are found in the Masumi registry and each decides its own price and promised conversion. Bids are sealed (commit, then reveal), and every bid costs a 2 tADA fee, so flooding the board is not free. Cheapest price per promised signup wins. |
+| 2 | **Guaranteed and fair** | Every winner locks a bond worth 25% of its award. It gets the bond back only as far as it delivers. Promising 100% and delivering nothing is expensive. |
+| 3 | **Traceable** | Every award, bond and fee is a Masumi escrow on Cardano with an explorer link. The verifier is deterministic, its inputs are on screen, and every run keeps a hashed evidence bundle. |
 
-## Honest limitations
+## How a run works
 
-Honest labelling is 10% of the score. These are the limits of the demo, stated
-here and in the UI. Full text with sources: [`docs/honest-limitations.md`](docs/honest-limitations.md).
+NeoRack, a GPU cloud, wants technical users. Its Consumer agent has a budget
+of 200 tADA (test ADA) and pays only for verified signups.
 
-**Who runs what**
+```mermaid
+sequenceDiagram
+    autonumber
+    participant C as NeoRack<br/>Consumer agent
+    participant B as Tender Board
+    participant R as Masumi registry
+    participant S as 4 Supplier agents
+    participant E as Masumi escrow<br/>(Cardano preprod)
+    participant F as NeoRack shop<br/>(signed signup feed)
 
-- The four suppliers and the Tender Board are team-operated demonstration agents. They run in one Vercel project, and all wallets sit on our own Masumi node, whose operator can move every wallet (operator-managed custody, [ADR 0002](docs/adr/0002-seller-agents-on-vercel.md)). Third-party settlement would use the Disputed path.
-- The Board is a trust assumption. Escrows cannot split, so the Board returns bond remainders and forwards forfeits to the Consumer as plain transfers from its treasury. It also holds bonds and collects bid fees.
-- The Board both runs the auction and verifies delivery. The Board verifier is a deterministic module inside the Board, not a separate Validator agent (PRD D7, [`GLOSSARY.md`](GLOSSARY.md)). An independent, paid validator agent is the production path. Here the check is deterministic and its inputs are on the dashboard.
-- Supplier quotes come from LLM agents bounded by their persona's price and promise range; the recorded run used them (`PERSONA_MODE` unset). `PERSONA_MODE=pinned` replays the worked example's fixed quotes for rehearsals. The commit-reveal sealed-bid mechanism is what is demonstrated.
-- Delivery reports were all `scripted_demo` in the recorded run: the suppliers run in-process, so the Board recorded each report from the simulated feed. The on-chain result hash therefore anchors a Board-scripted report, not a claim posted by the supplier. The verdict never reads the report (#51).
-- Proactive supplier discovery (GamingForum finds the Board itself) is pitch only. In the build, GamingForum is invited like the other three.
+    C->>B: Tender: budget 200, gate 0.5% conversion, bond 25%
+    B->>R: Discover publisher agents
+    R-->>B: TechBlog, CodePodcast, DevNewsletter, GamingForum
+    B->>S: Invite to the tender
+    S->>E: Lock 2 tADA bid fee, tagged with the commit hash
+    S->>B: Sealed bid: commit = sha256(price, impressions, promised rate, salt)
+    S->>B: Reveal after close
+    B->>B: Recompute hashes, drop bids below the gate,<br/>rank by price per promised signup, fill the budget
+    C->>E: Lock 3 awards (Consumer to Supplier)
+    S->>E: Winners lock 3 bonds (Supplier to Board)
+    F->>B: Signed signup events, attributed per supplier
+    B->>B: Verifier counts valid signups,<br/>Board signs one verdict per supplier
+    B->>E: Settle each escrow by verdict
+    B-->>C: Receipt: net cost, cost per signup, evidence
+```
 
-**What the verifier does and does not check**
+1. **Tender.** The Consumer agent publishes the brief to the Tender Board: budget
+   200, gate 0.5% conversion, bond 25% of the award.
+2. **Discovery.** The Board reads the Masumi registry and invites the 4 publisher
+   agents it finds.
+3. **Sealed bids.** Each Supplier agent chooses its own quote with an LLM, bounded
+   by its persona. It pays a 2 tADA bid fee into escrow and submits a commit
+   hash. After close it reveals the bid and salt, and the Board rejects any
+   mismatch.
+4. **Allocation.** Bids promising less than 0.5% conversion are out. The rest
+   are ranked by price per promised signup and accepted while they fit the
+   budget.
+5. **Escrow.** The Consumer locks each award, each winner locks its bond. All
+   escrows are locked in parallel, early, because chain transitions take minutes.
+6. **Delivery and verification.** The shop emits signed signup events. The
+   verifier counts a signup only if the shop signature is valid, it is
+   attributed to that supplier and it falls in the campaign window.
+7. **Settlement.** The Board signs one verdict per supplier and settles every
+   escrow on chain. The Consumer gets a receipt with the cost per verified signup.
 
-- The verifier checks signature, attribution and time window. It is not a human check: it does not tell whether a signup is a real person. Bot signals are dashboard context only, never the verdict.
-- Attribution is first-touch. Production needs multi-touch.
-- Signed signups assume the shop key is safe. A compromised shop key mints signups.
-- The 3 verdicts, the pro-rata forfeit (bond × (promised − delivered) ÷ promised) and the gate (0.5% verified conversion) are policy choices, crude next to real media-mix modeling.
-- The supplier win-chance rule is a proposal. The budget fill rule for a bid that does not fit is not defined.
+### The recorded run
 
-**Money**
-
-- Amounts are tADA, the spec ×10 (#24), not a USD stablecoin. Masumi transfers have a 2 ADA minimum and small escrows risk min-UTxO errors. A forfeit or remainder under 2 tADA is rounded up to 2 tADA and the Board pays the difference, shown as a top-up (#62). tADA has no value.
-- The fast release of an award passes through `Disputed` on-chain before the buyer authorizes the payout. It is the V2 contract's buyer-approved release, not a real dispute, but the explorer shows it.
-- The Under-gate award comes back by cooperative refund (5.7 min in the recorded run, 5.9 min in the 8 Oct dry run). The automatic refund after the submit-result deadline (27.8 min) is the fallback. Award releases took 13.0 min (early release); the timer release after the unlock time (45.5 min) is the fallback. Source: [`docs/money-flow.md`](docs/money-flow.md), [`docs/runs/2026-10-09/`](docs/runs/2026-10-09/README.md).
-- On-chain data is hashes and references only. Raw reports and evidence stay off-chain.
-- Each treasury transfer needs a Board-signed verdict. Treasury transfers start once the Board has collected the bond; in the recorded run they were REAL 17.0 min after settlement start.
-
-**Rails we run ourselves**
-
-- The Masumi node is self-hosted on Railway (payment service + Postgres): the organisers had no hosted node. It uses the V2 contract with our own admin wallet (`custom_address`), so the contract's admin role is ours, not a neutral party's.
-- The node reads the chain through Blockfrost's free tier, 50,000 requests a day. We hit the limit on 8 Oct and moved to a fresh project; the number of full runs is kept small for that reason.
-- Party API keys are wallet-scoped and Preprod-only; registry discovery uses a separate read-only key.
-
-**State of the build on `main`**
-
-- The Board run API, auction, verifier, settlement plan, supplier brains, Masumi adapter, treasury client and receipt page exist and are tested. The judge page `/` (brief, Run, walkthrough, dashboard, receipt), `/dashboard` and `/receipt` are on `main` (#43, #9). Discovery reads the Masumi registry with a seeded fallback (#44), bid fees are REAL escrows (#50), the delivery report and result hash are wired (#51), the reconciler advances settlement escrows (#49) and the evidence bundle exists (#47). The dashboard design is the dark money-flow concept `docs/design/dashboard/money-flow.html`, picked 9 Oct 2026.
-- A complete simulated run (`SIMULATE_PAYMENTS=true`) finishes through the API on a local machine. Checked on 9 Oct 2026 by calling `POST /api/run` and `POST /api/run/:id/all`. The one real run, `run_c1f40522`, is recorded under #45 and its tx hashes are in the proof table. It is replayed on the judge URL, there is no separate warm run (#30). Not checked here: that the deployed app still matches `main`.
-- Production is set to real payments (`SIMULATE_PAYMENTS=false`) and live registry discovery (`MASUMI_REGISTRY_API_KEY` set), per Danila on 9 Oct 2026. These env values were not read from Vercel when this page was written.
-
-## REAL transaction proof
-
-Source: the one recorded run, `run_c1f40522` (9 Oct 2026, 01:45 to 02:05 Prague),
-driven through the deployed app on Masumi preprod with live registry discovery
-and LLM supplier quotes (#45, results comment). Every hash below is copied from
-that run's ledger. The links open Cardanoscan preprod. Amounts are tADA.
-
-Result: all three verdict branches settled on chain and **all 21 ledger rows are
-REAL** with a tx hash. All 10 escrows were locked REAL 2.1 min after settlement
-start. The Under-gate refund took 5.7 min, the award releases 13.0 min and the
-treasury transfers 17.0 min. One forfeit of 1.964286 tADA was first refused for
-being under the 2 tADA minimum and sent later, after the #62 fix (last table).
-
-**One lock tx can carry several escrows.** The Masumi node batches purchases.
-The three award locks share one tx (`3bd1ae093a…`). Each supplier's bond and bid
-fee share one tx. Every escrow is still distinct. Bid-fee collections are
-batched the same way (`2790c21d53…` collects three fees).
-
-Escrows (run amounts, not the worked example):
-
-| Escrow | Party → party | tADA | Verdict | Lock tx | Settlement tx | State |
-|---|---|---|---|---|---|---|
-| Award, TechBlog | Consumer → TechBlog | 65 | Pass | [3bd1ae093a…](https://preprod.cardanoscan.io/transaction/3bd1ae093a8ee9970e31fbcf130588001188842fbe25885dcb4623c74eee8bae) | [6a8c5cab80…](https://preprod.cardanoscan.io/transaction/6a8c5cab80e4d583dbd6e654816b1ea6945fc4b9a4f1db81db6c4cf2dec383b6) (release to TechBlog) | Withdrawn |
-| Bond, TechBlog | TechBlog → Board | 16.25 | Pass | [9ec76e214c…](https://preprod.cardanoscan.io/transaction/9ec76e214c4293c04bb5252cf30700906c6dd0fa6cb5338aca37b9fb8b8c0a97) | [f04d859e67…](https://preprod.cardanoscan.io/transaction/f04d859e67abc497d7f95aa60e463ea61ec9efed744c69fe64a2716aa7043e5f) (bond returned to TechBlog) | RefundWithdrawn |
-| Award, CodePodcast | Consumer → CodePodcast | 55 | Short of promise | [3bd1ae093a…](https://preprod.cardanoscan.io/transaction/3bd1ae093a8ee9970e31fbcf130588001188842fbe25885dcb4623c74eee8bae) | [64383b40d3…](https://preprod.cardanoscan.io/transaction/64383b40d355a3f40e9d5895400e8cc5395ad8aa31eb3335286c2b0bc8d4b7a4) (release to CodePodcast) | Withdrawn |
-| Bond, CodePodcast | CodePodcast → Board | 13.75 | Short of promise | [b2ebaefb69…](https://preprod.cardanoscan.io/transaction/b2ebaefb698c233cf0caf454342ebd0f4fe61023e2b942a847296cbb51184f0d) | [2790c21d53…](https://preprod.cardanoscan.io/transaction/2790c21d53a4a1933767ee1a06fc004c17188cd9f5c8ae2f13392243c11bf384) (Board collects, then the treasury splits it below) | Withdrawn (read from the node) |
-| Award, DevNewsletter | Consumer → DevNewsletter | 60 | Under gate | [3bd1ae093a…](https://preprod.cardanoscan.io/transaction/3bd1ae093a8ee9970e31fbcf130588001188842fbe25885dcb4623c74eee8bae) | [b4854bc3d6…](https://preprod.cardanoscan.io/transaction/b4854bc3d603c1ceec700ea7ac5ccdb674c3c74a962459cdf2caf935f71a84da) (refund to Consumer) | RefundWithdrawn |
-| Bond, DevNewsletter | DevNewsletter → Board | 15 | Under gate | [14f5ceb13a…](https://preprod.cardanoscan.io/transaction/14f5ceb13a6d55c9d8dc3283fcffe753c09ceed67c3b184002e158dda00e5953) | [2790c21d53…](https://preprod.cardanoscan.io/transaction/2790c21d53a4a1933767ee1a06fc004c17188cd9f5c8ae2f13392243c11bf384) (Board collects, then forwards it below) | Withdrawn (read from the node) |
-
-Bid fees (2 tADA each, REAL escrow, input hash = the sealed bid's commit hash, checked on the node):
-
-| Bidder | Fee lock tx | Board collection tx | State |
-|---|---|---|---|
-| TechBlog | [9ec76e214c…](https://preprod.cardanoscan.io/transaction/9ec76e214c4293c04bb5252cf30700906c6dd0fa6cb5338aca37b9fb8b8c0a97) | [2790c21d53…](https://preprod.cardanoscan.io/transaction/2790c21d53a4a1933767ee1a06fc004c17188cd9f5c8ae2f13392243c11bf384) | Withdrawn |
-| CodePodcast | [b2ebaefb69…](https://preprod.cardanoscan.io/transaction/b2ebaefb698c233cf0caf454342ebd0f4fe61023e2b942a847296cbb51184f0d) | [2790c21d53…](https://preprod.cardanoscan.io/transaction/2790c21d53a4a1933767ee1a06fc004c17188cd9f5c8ae2f13392243c11bf384) | Withdrawn |
-| DevNewsletter | [14f5ceb13a…](https://preprod.cardanoscan.io/transaction/14f5ceb13a6d55c9d8dc3283fcffe753c09ceed67c3b184002e158dda00e5953) | [b527828a66…](https://preprod.cardanoscan.io/transaction/b527828a6615a256e7ed3222791d8ed291324780e9cedf061d3a7c5630000bfb) | Withdrawn |
-| GamingForum (rejected below gate) | [9d5c245b89…](https://preprod.cardanoscan.io/transaction/9d5c245b89a4deacee45fa74e3b9b4ee03f9226b1e85813a335c91c8498df0e9) | [2790c21d53…](https://preprod.cardanoscan.io/transaction/2790c21d53a4a1933767ee1a06fc004c17188cd9f5c8ae2f13392243c11bf384) | Withdrawn |
-
-Treasury transfers (plain transfers from the Board treasury, not escrow outputs):
-
-| Transfer | Party → party | tADA | Verdict | Tx | State |
+| Supplier | Bid | Promised | Price per promised signup | Delivered | Verdict |
 |---|---|---|---|---|---|
-| Forfeit | Board → Consumer | 15 | Under gate | [83c3fa9dcb…](https://preprod.cardanoscan.io/transaction/83c3fa9dcbefcf88bddca80eeca15890cf7e7af261758e8fe4e96534c755f370) | Pending at the last poll |
-| Bond remainder | Board → CodePodcast | 11.785714 | Short of promise | [6862bb4516…](https://preprod.cardanoscan.io/transaction/6862bb451697b72dfa4037481079f32bd17aae451fe7c2e1dd107ce77761c733) | Pending at the last poll |
-| Forfeit | Board → Consumer | 1.964286 owed, 2.00 sent | Short of promise | [9b5053b741…](https://preprod.cardanoscan.io/transaction/9b5053b741c94501926ce9037a3ec2a9a1a3faededad27c6fbaebbb61670cc90) | Confirmed, sent after the [#62](https://github.com/Skilux/bid-royale/issues/62) fix |
+| DevNewsletter | 60 | 1.0% | 6.00 | 0 signups (0%) | **Under gate** |
+| CodePodcast | 55 | 0.7% | 7.86 | 6 signups (0.6%) | **Short of promise** |
+| TechBlog | 65 | 0.5% | 13.00 | 8 signups (0.8%) | **Pass** |
+| GamingForum | 20 | 0.4% | below the gate | – | **Lost bid** |
 
-Two honest notes on these rows:
+Each winner served 1,000 impressions. Budget allocated: 180 of 200 tADA.
+**NeoRack paid 103.04 tADA for 14 verified signups, about 7.36 per signup.**
 
-- **Pending with a hash.** For the two REAL treasury transfers the node still
-  reported transfer status `Pending` when settlement was collected. The tx hash
-  exists and the explorer link is the proof. Whether each has confirmed on chain
-  was not re-checked when this page was written.
-- **The late forfeit.** CodePodcast was Short of promise (0.6% delivered vs
-  0.7% promised), so its forfeit is 13.75 × (0.7 − 0.6) ÷ 0.7 = 1.964286 tADA. The treasury
-  first refused it for being under its 2 tADA minimum, so the run reached the
-  40-min timer fallback with that row PENDING. Issue [#62](https://github.com/Skilux/bid-royale/issues/62) fixed it (`76610cb`): a
-  sub-minimum transfer is rounded up to 2 tADA and the Board pays the difference.
-  After the fix reached the Railway treasury, the next reconcile tick sent 2.00
-  tADA and the run finished at 00:39 UTC with every row REAL. The ledger row keeps
-  the amount owed (1.964286); the transaction shows 2.00.
-- **Batched collections.** The Board's early release of both forfeited bonds and
-  three bid fees landed in one tx (`2790c21d53…`).
+## Who gets paid: the verdict rule
 
-Other preprod proofs that already exist are wallet funding and agent
-registration transactions, listed with explorer links in
-[`docs/plan/lane-masumi.md`](docs/plan/lane-masumi.md). They show the setup, not an
-auction run, so they are not in the tables above.
+The verdict compares the delivered conversion with the supplier's own promise
+and with the 0.5% gate. The verifier is deterministic. Bot signals are shown
+on the dashboard as context and never decide a verdict.
 
-## Evidence and on-chain hashes
+```mermaid
+flowchart TD
+    A["Verified signups ÷ impressions<br/>= delivered conversion"] --> Q1{"delivered ≥ promised?"}
+    Q1 -- yes --> P["<b>Pass</b><br/>Full award released to the supplier<br/>Bond returned in full"]
+    Q1 -- no --> Q2{"delivered ≥ 0.5% gate?"}
+    Q2 -- yes --> S["<b>Short of promise</b><br/>Full award released to the supplier<br/>Bond forfeited pro rata:<br/>bond × (promised − delivered) ÷ promised"]
+    Q2 -- no --> U["<b>Under gate</b><br/>Award refunded to the Consumer<br/>Full bond forfeited to the Consumer"]
 
-Each run keeps an evidence bundle in the Board store: tender terms, brief, every sealed bid
-(commit hash, reveal, receive time), the ranking and budget fill, the signed signup events,
-one verification report and one signed verdict per supplier, the money ledger, settlement
-decisions and receipt. Every item is stored as canonical JSON (sorted keys, no whitespace, UTF-8)
-next to its SHA-256, so a reader can recompute the hash from the exact bytes.
-`GET /api/run/<id>/evidence` lists the items with hashes and sizes,
-`GET /api/run/<id>/evidence/<name>` returns one. The receipt page has an Evidence panel: Verify
-recomputes the hash in the browser. Details: [`app/lib/evidence/README.md`](app/lib/evidence/README.md).
+    style P fill:#163d2b,stroke:#5fd39a,color:#e8fff3
+    style S fill:#3d3116,stroke:#e8b14a,color:#fff6e0
+    style U fill:#3d1616,stroke:#ef5350,color:#ffe8e8
+```
 
-| Goes on chain (Masumi escrow) | Stays off chain (evidence store) |
-|---|---|
-| `inputHash` on each award and bond lock: SHA-256 of the action, supplier, amount and a nonce. On each bid-fee lock it is the sealed bid's commit hash (#50) | Tender and brief, sealed bids and salts, rejected bids |
-| `submitResultHash` on the award and bond settlement: `sha256(canonical delivery report + verdict hash)` (#51), the verdict hash alone when a run has no delivery report | Signed signup events, verification reports, bot signals |
-| Escrow ids, amounts, tx hashes (Cardano itself) | Signed verdicts, delivery reports, ledger, receipt |
+Where the money goes in each branch. Escrows cannot split, so the Board
+collects a forfeited bond and its treasury sends the forfeit and the remainder
+as plain transfers, each one bound to a Board-signed verdict.
 
-Not on chain today: the tender (spec) hash, the verification report
-hash and the bundle hash. Raw reports, signup events and secrets never go on chain or into the repo.
-In a canned replay the bundle is restored from the recording and shown PRE-RECORDED.
+```mermaid
+flowchart LR
+    subgraph Locks["Locked in Masumi escrow"]
+        AW["Award escrow<br/>Consumer → Supplier"]
+        BO["Bond escrow<br/>Supplier → Board"]
+        FE["Bid fee escrow<br/>Supplier → Board"]
+    end
 
-## Run it
+    AW -- "Pass, Short of promise:<br/>release" --> SUP["Supplier"]
+    AW -- "Under gate:<br/>refund" --> CON["NeoRack<br/>Consumer"]
+    BO -- "Pass:<br/>bond returned" --> SUP
+    BO -- "Short of promise, Under gate:<br/>Board collects" --> TR["Board treasury"]
+    TR -- "remainder" --> SUP
+    TR -- "forfeit" --> CON
+    FE -- "always collected" --> BRD["Tender Board"]
+```
 
-1. **Judge URL:** `https://ad-slot-auction.vercel.app` (public, no signup, no wallet). Deploys are manual, so the URL can lag `main`. `GET /api/health` reports flags, payment adapter and which env vars are set.
-2. **Local, simulated, no keys needed for payments:**
-
-   ```bash
-   cd app
-   npm ci
-   SHOP_SIGNING_KEY=$(openssl rand -hex 32) BOARD_SIGNING_KEY=$(openssl rand -hex 32) \
-   SIMULATE_PAYMENTS=true PERSONA_MODE=pinned npm run dev
-   ```
-
-   Then `curl -X POST localhost:3000/api/run` returns a run ID, and
-   `curl -X POST localhost:3000/api/run/<id>/all` runs every step. Open
-   `localhost:3000/receipt?run=<id>`. For a persistent setup, copy `.env.example`
-   to `app/.env.local` and fill it. Never commit `.env.local`.
-3. **Flags:** `SIMULATE_PAYMENTS=true` uses the labelled simulated ledger, every badge reads SIMULATED. `false` uses real Masumi preprod escrows and needs the Masumi keys. `DEMO_MODE=canned` replays the default recording of `app/data/canned/index.js` (see `docs/demo-runbook.md`, Canned replay), `live` is the default.
-4. **Checks:** `npm run check` in `app/` (tests, secrets scan, layout rule, badge guard, ESLint). `npm run check:full` adds `next build`. `npm run setup:hooks` enables the pre-commit hook.
-
-Deploying is manual from the team MacBook with the Vercel CLI, see
-[`AGENTS.md`](AGENTS.md) and [`docs/hosting.md`](docs/hosting.md). Pushing to `main`
-does not deploy.
-
-## Use the service from an agent
-
-- Customer (consumer) agents: [`docs/api/customer.md`](docs/api/customer.md), the Board API, the definition of done, how to read and verify the receipt.
-- Supplier agents: [`docs/api/supplier.md`](docs/api/supplier.md), the invite and delivery-report routes, the sealed proposal, the offer algorithm, how the verdict is decided.
+In the recorded run CodePodcast promised 0.7% and delivered 0.6%, so it forfeited
+13.75 × (0.7 − 0.6) ÷ 0.7 = 1.96 tADA of its bond. DevNewsletter delivered nothing:
+NeoRack got its 60 tADA award back plus the full 15 tADA bond.
 
 ## Architecture
 
-Diagram and component contracts: [`docs/architecture.md`](docs/architecture.md).
-Hosting split: [ADR 0001](docs/adr/0001-railway-for-masumi-rails-vercel-for-product.md),
-[ADR 0002](docs/adr/0002-seller-agents-on-vercel.md).
+Masumi is the payment rail and we did not rebuild it: no wallet, no payment
+engine, no escrow contract, no DID, no explorer. Bid Royale is the market on
+top: the tender, the auction, the verifier and the settlement logic.
 
-```text
- judges ──▶ Vercel: Wrapper UI + Tender Board (auction, verifier, settlement),
-            4 supplier brains, MIP-003 agent routes, Masumi client
-              ├──▶ Railway: Masumi Payment Service + Postgres (self-hosted, all wallets)
-              ├──▶ Railway: treasury worker (forfeit and remainder transfers)
-              ├──▶ Upstash Redis: Board state, agent job state
-              ├──▶ OpenRouter: supplier LLM brains (model list in llm-config.js)
-              └──▶ Cardano preprod: V2 escrow contract, registry, cardanoscan links
+```mermaid
+flowchart LR
+    U(["Browser<br/>no signup, no wallet"])
+
+    subgraph V["Vercel · Next.js app"]
+        UI["Wrapper UI<br/>judge page, guided demo,<br/>dashboard, receipt"]
+        subgraph TB["Tender Board"]
+            direction TB
+            AU["Auction engine<br/>commit-reveal, gate,<br/>rank, budget fill"]
+            VE["Verifier<br/>signature, attribution,<br/>time window"]
+            SE["Settlement engine<br/>+ reconciler"]
+            EV["Evidence store<br/>canonical JSON + SHA-256"]
+            AU --> VE --> SE --> EV
+        end
+        SA["4 Supplier agents<br/>LLM quotes, MIP-003 routes"]
+        FD["NeoRack signup feed<br/>simulated shop, signed events"]
+        MC["Masumi client"]
+    end
+
+    subgraph RW["Railway · self-hosted rails"]
+        MP["Masumi Payment Service<br/>+ Postgres, all wallets"]
+        TW["Treasury worker<br/>forfeit and remainder"]
+    end
+
+    OR["OpenRouter<br/>LLM models"]
+    RD[("Upstash Redis<br/>run state")]
+    CH[("Cardano preprod<br/>V2 escrow contract,<br/>Masumi registry")]
+
+    U -- "HTTPS + live events" --> UI --> TB
+    TB -- "tender invite" --> SA --> OR
+    FD -- "signed signups" --> TB
+    TB --> RD
+    TB -- "escrow ops" --> MC --> MP
+    TB -- "verdict-bound transfers" --> TW --> MP
+    MP --> CH
 ```
 
-Per-supplier state machine:
-`DRAFT → TENDERED → QUOTED → AUTHORIZED → ESCROWED → IN_PROGRESS → DELIVERED → VALIDATING → SETTLED | REFUNDED`.
-Pass and Short of promise end in SETTLED, Under gate ends in REFUNDED, Lost bid
-never leaves QUOTED. Masumi escrow states underneath:
-`FundsLocked → ResultSubmitted → RefundRequested → Disputed`.
-
-Masumi is the rails and we do not rebuild them: no wallet or payment engine,
-no escrow contracts, no DID, no explorer.
-
-## The demo run (tADA, the spec ×10)
-
-Budget 200. The Board invites 4 suppliers through the Masumi registry, takes 4
-commit-reveal sealed bids (2 bid fee each, in escrow with the commit hash), and picks 3 winners:
-TechBlog 70, CodePodcast 60, DevNewsletter 70. The Consumer locks 3 awards,
-winners lock 3 bonds (25% of award). The NeoRack feed emits signed signups, the
-verifier counts them, the Board signs one verdict per supplier:
-
-- TechBlog **Pass**: 70 paid, 17.5 bond returned.
-- CodePodcast **Short of promise**: 60 paid, 3.75 of bond forfeited to the Consumer.
-- DevNewsletter **Under gate** (0 signups): 70 back to the Consumer, 17.5 bond forfeited to the Consumer.
-- GamingForum promises a 0.4% conversion, below the gate: **Lost bid**.
-
-This section is the pinned worked example. The recorded run used LLM quotes, so its amounts differ (awards 65 / 55 / 60, bonds 16.25 / 13.75 / 15), see the [proof table](#real-transaction-proof).
-
-Worked example receipt: Consumer net −108.75 tADA for 14 verified signups (about 7.77 each),
-plus an illustrative round-2 allocation. 10 escrows: 3 awards and 3 bonds on the
-critical path, 4 bid fees, all REAL. A full run settles in about
-15 min on preprod (measured 8 Oct 2026, [`docs/money-flow.md`](docs/money-flow.md)).
-
-## Judging and schedule
-
-Judging weights, from the Win Plan (Notion): value and track relevance 35%,
-originality 25%, end-to-end 20%, technical 10%, honest limitations 10%.
-An earlier version of this page listed end-to-end 35%, track 25%, technical 20%,
-originality 10%, honesty 10%. The Win Plan wins (issue #48).
-
-- **8 Oct:** doors 16:00, kickoff 17:30, building from 21:00
-- **9 Oct:** code freeze 07:14, jury review 08:00–10:00, presentations 10:00, awards 11:30
-
-## Stack
-
-| Layer | Pick | Status |
+| Component | Input | Output |
 |---|---|---|
-| Frontend and hosting | Next.js 16 (App Router), Tailwind, Vercel | `app/` is the Vercel root directory, plain JS |
-| Payment rail | Masumi preprod (Cardano), tADA, the spec amounts ×10 (#24), Masumi only | Self-hosted official Payment Service 0.29.0 + Postgres on Railway, treasury worker on Railway, seller agents on Vercel ([ADR 0001](docs/adr/0001-railway-for-masumi-rails-vercel-for-product.md), [ADR 0002](docs/adr/0002-seller-agents-on-vercel.md)) |
-| Degrade path | Labelled simulated ledger (`SIMULATE_PAYMENTS`) | The track rule requires labelling |
-| Supplier brains | OpenRouter models, tried in order, caps in `app/lib/supplier-agents/llm-config.js` | `PERSONA_MODE=pinned` skips the LLM |
-| State | Upstash Redis, in-memory store when unset | Vercel instances do not share memory |
-| Voice | ElevenLabs voiceover for the <90 s video, captions always on | Pre-generated, never burn quota live |
+| Auction engine (`app/lib/auction`) | tender, commit hashes, reveals | eligible and ranked bids, winners, budget fill |
+| Verifier (`app/lib/verifier`) | signed signup events, shop public key | verified signups per supplier |
+| Settlement (`app/lib/settlement`) | verified counts, quotes, gate | one verdict per supplier, the pay, refund and forfeit plan |
+| Reconciler (`app/lib/board/reconcile.js`) | settlement plan, escrow states | every escrow advanced to its final state |
+| Supplier agents (`app/lib/supplier-agents`) | tender invite | sealed quote within the persona's range |
+| Signup feed (`app/lib/outcome-feed`) | supplier list, scenario | signed signup events, impressions |
+| Masumi client (`app/lib/masumi`) | escrow ops, registry queries | tx hashes and explorer links |
+| Evidence (`app/lib/evidence`) | every run artefact | hashed bundle, served at `/api/run/<id>/evidence` |
+
+Each supplier moves through one state machine, mapped onto Masumi escrow states
+underneath.
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> TENDERED
+    TENDERED --> QUOTED: sealed bid revealed
+    QUOTED --> LOST: below gate or over budget
+    QUOTED --> ESCROWED: award + bond locked<br/>(FundsLocked)
+    ESCROWED --> DELIVERED: campaign ends<br/>(ResultSubmitted)
+    DELIVERED --> VALIDATING: verifier counts signups
+    VALIDATING --> SETTLED: Pass or Short of promise<br/>(award withdrawn)
+    VALIDATING --> REFUNDED: Under gate<br/>(award refunded)
+    LOST --> [*]
+    SETTLED --> [*]
+    REFUNDED --> [*]
+```
+
+### What goes on chain
+
+| On chain (Masumi escrow) | Off chain (evidence store) |
+|---|---|
+| Award and bond locks with an input hash of the action, supplier, amount and nonce | Tender, brief, sealed bids and salts, rejected bids |
+| Bid-fee locks with the sealed bid's commit hash as input hash | Signed signup events, verification reports, bot signals |
+| Settlement result hash: `sha256(delivery report + verdict hash)` | Signed verdicts, delivery reports, ledger, receipt |
+| Escrow ids, amounts, tx hashes | |
+
+Every evidence item is stored as canonical JSON (sorted keys, no whitespace,
+UTF-8) next to its SHA-256. The receipt's Evidence panel recomputes each hash in
+the browser.
+
+## Screens
+
+**Guided demo.** A 90-second walkthrough of the recorded run in six phases. Each
+agent explains its own step in the side panel.
+
+![Guided demo, phase 3: sealed bids revealed and ranked by value per signup](docs/readme/guided-demo.png)
+
+**Escrow locking.** Awards and bonds are submitted to Masumi and turn REAL once
+the chain confirms them. GamingForum promised 0.4% and has no escrow.
+
+![Escrows locking mid-run, with PENDING badges until each tx confirms](docs/readme/escrow-locking.png)
+
+**Outcome.** What each party ended up with, every amount linked to its
+transaction, and the receipt ranking suppliers by cost per verified signup.
+
+![Who ended up with what, and the final receipt](docs/readme/outcome-and-receipt.png)
+
+## Proof: a real run on Cardano preprod
+
+Run `run_c1f40522`, 9 Oct 2026, 01:45 Prague, on Masumi preprod with live
+registry discovery and LLM supplier quotes. This is the run the live app replays.
+
+- **10 escrows, all REAL:** 3 awards, 3 bonds, 4 bid fees, all locked within 2.1 min.
+- **21 of 21 ledger rows REAL**, each with a tx hash.
+- **All three verdict branches settled on chain.** The Under-gate refund took
+  5.7 min, the award releases 13.0 min and the treasury transfers 17.0 min.
+
+The Masumi node batches transactions, so one tx can carry several escrows. The
+three award locks share one tx, and each supplier's bond and bid fee share one.
+Amounts are tADA. Links open Cardanoscan preprod.
+
+**Escrows**
+
+| Escrow | From → to | tADA | Verdict | Lock tx | Settlement tx |
+|---|---|---|---|---|---|
+| Award, TechBlog | Consumer → TechBlog | 65 | Pass | [3bd1ae093a…](https://preprod.cardanoscan.io/transaction/3bd1ae093a8ee9970e31fbcf130588001188842fbe25885dcb4623c74eee8bae) | [6a8c5cab80…](https://preprod.cardanoscan.io/transaction/6a8c5cab80e4d583dbd6e654816b1ea6945fc4b9a4f1db81db6c4cf2dec383b6) released to TechBlog |
+| Bond, TechBlog | TechBlog → Board | 16.25 | Pass | [9ec76e214c…](https://preprod.cardanoscan.io/transaction/9ec76e214c4293c04bb5252cf30700906c6dd0fa6cb5338aca37b9fb8b8c0a97) | [f04d859e67…](https://preprod.cardanoscan.io/transaction/f04d859e67abc497d7f95aa60e463ea61ec9efed744c69fe64a2716aa7043e5f) returned to TechBlog |
+| Award, CodePodcast | Consumer → CodePodcast | 55 | Short of promise | [3bd1ae093a…](https://preprod.cardanoscan.io/transaction/3bd1ae093a8ee9970e31fbcf130588001188842fbe25885dcb4623c74eee8bae) | [64383b40d3…](https://preprod.cardanoscan.io/transaction/64383b40d355a3f40e9d5895400e8cc5395ad8aa31eb3335286c2b0bc8d4b7a4) released to CodePodcast |
+| Bond, CodePodcast | CodePodcast → Board | 13.75 | Short of promise | [b2ebaefb69…](https://preprod.cardanoscan.io/transaction/b2ebaefb698c233cf0caf454342ebd0f4fe61023e2b942a847296cbb51184f0d) | [2790c21d53…](https://preprod.cardanoscan.io/transaction/2790c21d53a4a1933767ee1a06fc004c17188cd9f5c8ae2f13392243c11bf384) collected by the Board |
+| Award, DevNewsletter | Consumer → DevNewsletter | 60 | Under gate | [3bd1ae093a…](https://preprod.cardanoscan.io/transaction/3bd1ae093a8ee9970e31fbcf130588001188842fbe25885dcb4623c74eee8bae) | [b4854bc3d6…](https://preprod.cardanoscan.io/transaction/b4854bc3d603c1ceec700ea7ac5ccdb674c3c74a962459cdf2caf935f71a84da) **refunded to NeoRack** |
+| Bond, DevNewsletter | DevNewsletter → Board | 15 | Under gate | [14f5ceb13a…](https://preprod.cardanoscan.io/transaction/14f5ceb13a6d55c9d8dc3283fcffe753c09ceed67c3b184002e158dda00e5953) | [2790c21d53…](https://preprod.cardanoscan.io/transaction/2790c21d53a4a1933767ee1a06fc004c17188cd9f5c8ae2f13392243c11bf384) collected by the Board |
+
+**Treasury transfers** (plain transfers from the Board treasury)
+
+| Transfer | From → to | tADA | Verdict | Tx |
+|---|---|---|---|---|
+| Forfeit | Board → NeoRack | 15 | Under gate | [83c3fa9dcb…](https://preprod.cardanoscan.io/transaction/83c3fa9dcbefcf88bddca80eeca15890cf7e7af261758e8fe4e96534c755f370) |
+| Bond remainder | Board → CodePodcast | 11.79 | Short of promise | [6862bb4516…](https://preprod.cardanoscan.io/transaction/6862bb451697b72dfa4037481079f32bd17aae451fe7c2e1dd107ce77761c733) |
+| Forfeit | Board → NeoRack | 1.96 owed, 2.00 sent | Short of promise | [9b5053b741…](https://preprod.cardanoscan.io/transaction/9b5053b741c94501926ce9037a3ec2a9a1a3faededad27c6fbaebbb61670cc90) |
+
+Masumi transfers have a 2 tADA minimum, so the 1.96 forfeit was rounded up to
+2.00 and the Board paid the 0.04 difference.
+
+**Bid fees** (2 tADA each, escrow input hash = the sealed bid's commit hash)
+
+| Bidder | Fee lock tx | Board collection tx |
+|---|---|---|
+| TechBlog | [9ec76e214c…](https://preprod.cardanoscan.io/transaction/9ec76e214c4293c04bb5252cf30700906c6dd0fa6cb5338aca37b9fb8b8c0a97) | [2790c21d53…](https://preprod.cardanoscan.io/transaction/2790c21d53a4a1933767ee1a06fc004c17188cd9f5c8ae2f13392243c11bf384) |
+| CodePodcast | [b2ebaefb69…](https://preprod.cardanoscan.io/transaction/b2ebaefb698c233cf0caf454342ebd0f4fe61023e2b942a847296cbb51184f0d) | [2790c21d53…](https://preprod.cardanoscan.io/transaction/2790c21d53a4a1933767ee1a06fc004c17188cd9f5c8ae2f13392243c11bf384) |
+| DevNewsletter | [14f5ceb13a…](https://preprod.cardanoscan.io/transaction/14f5ceb13a6d55c9d8dc3283fcffe753c09ceed67c3b184002e158dda00e5953) | [b527828a66…](https://preprod.cardanoscan.io/transaction/b527828a6615a256e7ed3222791d8ed291324780e9cedf061d3a7c5630000bfb) |
+| GamingForum (lost bid) | [9d5c245b89…](https://preprod.cardanoscan.io/transaction/9d5c245b89a4deacee45fa74e3b9b4ee03f9226b1e85813a335c91c8498df0e9) | [2790c21d53…](https://preprod.cardanoscan.io/transaction/2790c21d53a4a1933767ee1a06fc004c17188cd9f5c8ae2f13392243c11bf384) |
+
+The raw run log, every API response and the settlement polls are in
+[`docs/runs/2026-10-09/`](docs/runs/2026-10-09/README.md). Agent registration
+and wallet funding transactions are in [`docs/plan/lane-masumi.md`](docs/plan/lane-masumi.md).
+
+## What is real and what is simulated
+
+Every money element in the UI carries one of three badges. A payment without a
+badge is a bug.
+
+| Part of a run | Badge |
+|---|---|
+| Award, bond and bid-fee escrows, their settlement, treasury transfers | **REAL**, Masumi on Cardano preprod, with a tx link |
+| Supplier agents registered and discovered in the Masumi registry | **REAL** |
+| NeoRack shop, traffic, impressions and signups | **SIMULATED**, signed events from a simulated shop |
+| DevNewsletter's zero signups | **SIMULATED**, scripted to show the Under-gate branch |
+| Round-2 reallocation on the receipt | **SIMULATED**, no chain operations |
+| Replay of the recorded run on the live app | **PRE-RECORDED**, its tx links stay REAL |
+
+## Honest limitations
+
+Full text: [`docs/honest-limitations.md`](docs/honest-limitations.md).
+
+**Who runs what**
+
+- The four suppliers and the Tender Board are our own demonstration agents in
+  one Vercel project. All wallets sit on our own Masumi node, so its operator
+  can move every wallet.
+- The Board is a trust assumption. It runs the auction, verifies delivery,
+  holds bonds, collects bid fees and sends forfeits and remainders from its
+  treasury. An independent, paid validator agent is the production path.
+- In the recorded run the Board recorded each supplier's delivery report from
+  the simulated feed. The verdict never reads that report.
+- GamingForum is invited like the other suppliers. Agents finding the Board on
+  their own is not built.
+
+**What the verifier checks**
+
+- Signature, attribution and time window. It does not tell whether a signup is
+  a real person. Bot signals are context only.
+- Attribution is first-touch. Production needs multi-touch.
+- A compromised shop signing key could mint signups.
+- The three verdicts, the pro-rata forfeit and the 0.5% gate are policy
+  choices, crude next to real media-mix modelling.
+
+**Money and rails**
+
+- Amounts are tADA (test ADA, no value), 10 times the spec amounts, not a
+  stablecoin.
+- A fast award release passes through `Disputed` on chain before the buyer
+  approves the payout. That is the V2 contract's buyer-approved release, not a
+  real dispute, but the explorer shows it.
+- Fallbacks are slower: the automatic refund after the deadline takes about
+  28 min, the timer release about 46 min.
+- The Masumi node is self-hosted on Railway with the V2 contract and our own
+  admin wallet, so the contract's admin role is ours, not a neutral party's.
+- The node reads the chain through Blockfrost's free tier (50,000 requests a
+  day), so the number of full live runs is small.
+
+## Run it locally
+
+Payments are simulated, so no keys are needed for Masumi.
+
+```bash
+cd app
+npm ci
+SHOP_SIGNING_KEY=$(openssl rand -hex 32) \
+BOARD_SIGNING_KEY=$(openssl rand -hex 32) \
+SIMULATE_PAYMENTS=true PERSONA_MODE=pinned npm run dev
+```
+
+Then start a run and step it through:
+
+```bash
+curl -X POST localhost:3000/api/run                # returns a run id
+curl -X POST localhost:3000/api/run/<id>/all       # runs every step
+open "http://localhost:3000/receipt?run=<id>"
+```
+
+| Flag | Values |
+|---|---|
+| `SIMULATE_PAYMENTS` | `true` uses the labelled simulated ledger. `false` uses real Masumi preprod escrows and needs the Masumi keys. |
+| `DEMO_MODE` | `live` (default) or `canned`, which replays the recorded run. |
+| `PERSONA_MODE` | `pinned` uses fixed supplier quotes. Unset, suppliers quote with an LLM. |
+
+All variables are listed in [`.env.example`](.env.example). Copy it to
+`app/.env.local` for a persistent setup. `npm run check` in `app/` runs the
+tests, a secrets scan and lint.
+
+**Use it from an agent:** [customer agent guide](docs/api/customer.md) and
+[supplier agent guide](docs/api/supplier.md).
 
 ## Repo map
 
 ```text
 bid-royale/
-├── README.md            ← you are here
-├── AGENTS.md            ← repo rules
-├── GLOSSARY.md          ← canonical terms
-├── DESIGN.md            ← visual system
-├── .env.example         ← every env var the app needs, placeholders only
+├── app/                     Next.js app, the Vercel root directory
+│   ├── app/                 pages (/, /demo, /dashboard, /receipt) and the /api routes
+│   ├── lib/
+│   │   ├── board/           Tender Board run API, store, live events, reconciler
+│   │   ├── auction/         sealed-bid engine
+│   │   ├── verifier/        deterministic signup verification
+│   │   ├── settlement/      verdict → pay, refund, forfeit plan
+│   │   ├── supplier-agents/ the 4 supplier brains
+│   │   ├── outcome-feed/    simulated NeoRack shop, signed signups
+│   │   ├── discovery/       Masumi registry discovery
+│   │   ├── masumi/          Masumi client, real and simulated adapters
+│   │   ├── treasury/        verdict-bound transfers
+│   │   ├── evidence/        per-run evidence bundle and hashes
+│   │   └── replay/          replay of recorded runs
+│   └── data/                seeds and recorded runs
 ├── docs/
-│   ├── README.md        ← which doc wins, conflict register
-│   ├── architecture.md  ← components, contracts, data flow
-│   ├── money-flow.md    ← one run, every call, amount, measured time
-│   ├── honest-limitations.md ← real vs simulated, labelling rules
-│   ├── masumi.md        ← Masumi integration notes
-│   ├── hosting.md       ← Vercel and Railway setup, env vars, deploy
-│   ├── services.md      ← external services: purpose, access, status
-│   ├── demo-runbook.md  ← demo script, cut order, checklists
-│   ├── api/             ← customer and supplier agent guides (docs only)
-│   ├── adr/             ← accepted decisions (0001, 0002)
-│   ├── plan/            ← lanes and live status (Masumi, Product)
-│   └── research/        ← dated reference, never authoritative
-└── app/                 ← Next.js project root = Vercel root directory
-    ├── app/             ← routes: /, /dashboard, /receipt, /api/run, /api/events, /api/agents, /api/settlement/tick, /api/health
-    ├── scripts/         ← check.mjs, treasury-server.mjs, poc-masumi.mjs
-    ├── data/seeds/      ← worked-example run fixture, with its evidence bundle
-    └── lib/
-        ├── board/           ← Tender Board run API, store, SSE, receipt, reconciler
-        ├── discovery/       ← registry discovery with seeded fallback
-        ├── delivery-report/ ← supplier delivery report, result hash
-        ├── evidence/        ← per-run evidence bundle, canonical hashes
-        ├── replay/          ← canned replay loader and pacing
-        ├── auction/         ← sealed-bid engine (pure functions)
-        ├── verifier/        ← Board verifier: deterministic signup verification
-        ├── settlement/      ← verdict → pay, forfeit, refund plan
-        ├── outcome-feed/    ← NeoRack signup feed, signed events
-        ├── signing/         ← signing helpers
-        ├── supplier-agents/ ← the 4 supplier brains
-        ├── agents/          ← contract README only
-        ├── masumi/          ← Masumi client, real and simulated adapters
-        ├── treasury/        ← verdict-bound plain transfers
-        └── receipt-view/    ← receipt view model
+│   ├── architecture.md      components and contracts
+│   ├── money-flow.md        one run, every call, amount and measured time
+│   ├── honest-limitations.md
+│   ├── masumi.md            Masumi integration notes
+│   ├── api/                 customer and supplier agent guides
+│   ├── adr/                 architecture decisions
+│   └── runs/                raw log of the recorded run
+└── GLOSSARY.md              terms used across the code and docs
 ```
 
-**All code lives under `app/`.** Vercel builds with `app/` as the root
-directory. Import with the alias `@/`: `import { verify } from "@/lib/verifier"`.
-In the docs, `lib/x` means `app/lib/x`. Most `app/lib/*` directories have a
-README with the contract (inputs → outputs, done when).
+## Built with
+
+Next.js 16 and Tailwind on Vercel · Masumi Payment Service on Railway ·
+Cardano preprod · Upstash Redis · OpenRouter for the supplier agents.
