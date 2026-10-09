@@ -12,7 +12,7 @@ const TIMEOUT_MS = 15_000;
 const args = process.argv.slice(2);
 const outFlag = args.indexOf("--out");
 const out = resolve(APP_DIR, outFlag >= 0 ? args[outFlag + 1] : "data/canned/run.json");
-const runId = args.find((a, i) => !a.startsWith("--") && i !== outFlag + 1);
+const runId = args.find((a, i) => !a.startsWith("--") && i !== (outFlag >= 0 ? outFlag + 1 : -1));
 const base = (process.env.BOARD_URL ?? "http://localhost:3000").replace(/\/+$/, "");
 
 if (!runId) {

@@ -21,6 +21,7 @@ const explorer = `https://preprod.cardanoscan.io/transaction/${REAL_HASH}`;
 /** A recording shaped like the real #45 run: some REAL rows with hashes, some PENDING, some SIMULATED. */
 function realisticDoc() {
   const doc = fixtureDoc();
+  for (const row of [...doc.run.ledger, ...doc.run.settlement.transfers]) Object.assign(row, { badge: "PENDING", txHash: null, explorerUrl: null });
   const lock = doc.run.ledger.find((l) => l.phase === "lock" && l.action === "award");
   Object.assign(lock, { badge: "REAL", txHash: REAL_HASH, explorerUrl: explorer });
   const bond = doc.run.ledger.find((l) => l.phase === "lock" && l.action === "bond");
@@ -217,7 +218,8 @@ test("canned run state fills in step by step and completes with the receipt", as
   assert.equal(done.badge, "PRE-RECORDED");
   assert.equal(done.receipt.consumer.net, bundled.run.receipt.consumer.net);
   assert.equal(done.settlement.transfers.length, bundled.run.settlement.transfers.length);
-  assert.ok(done.ledger.every((l) => ["PRE-RECORDED", "REAL"].includes(l.badge)));
+  assert.ok(done.ledger.every((l) => ["PRE-RECORDED", "REAL", "PENDING"].includes(l.badge)));
+  assert.equal(done.ledger.filter((l) => l.badge === "PENDING").length, bundled.run.ledger.filter((l) => l.badge === "PENDING").length, "a PENDING row stays PENDING");
   assert.equal(done.replay.speed, "fast");
 });
 
