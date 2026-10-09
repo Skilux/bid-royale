@@ -22,8 +22,18 @@ export function assertBadged(receipt) {
   }
 }
 
-/** A row is final once money moved (REAL) or never will on chain (SIMULATED, PRE-RECORDED). PENDING is not. */
-export const isTerminal = (receipt) => TERMINAL.has(receipt?.badge);
+/**
+ * Treasury refusals that no retry can change (#62). The row stays PENDING (no money moved) but is final, so a run never
+ * waits for it until the timer fallback.
+ */
+export const REFUSED = new Set(["BelowMinimum", "MoveNotInPlan", "InvalidVerdict", "InvalidId", "InvalidAmount", "IdConflict"]);
+
+/**
+ * A row is final once money moved (REAL), never will on chain (SIMULATED, PRE-RECORDED), or the treasury refused it
+ * for good (PENDING with a REFUSED state). Any other PENDING row is not.
+ */
+export const isTerminal = (receipt) =>
+  TERMINAL.has(receipt?.badge) || (receipt?.badge === "PENDING" && REFUSED.has(receipt?.state));
 
 const iso = (ms) => new Date(ms).toISOString();
 
@@ -81,7 +91,8 @@ export function createReconciler({ adapter, now, emit, clock = Date.now, options
   const canAdvance = typeof adapter.advance === "function";
   const canCollect = canAdvance && typeof adapter.collectBidFee === "function";
 
-  const pick = ({ badge, state, txHash, explorerUrl, error }) => ({ badge, state, txHash, explorerUrl, ...(error ? { error } : {}) });
+  const pick = ({ badge, state, txHash, explorerUrl, error, topUp }) =>
+    ({ badge, state, txHash, explorerUrl, ...(error ? { error } : {}), ...(topUp ? { topUp } : {}) });
   const omit = (obj, keys) => Object.fromEntries(Object.entries(obj).filter(([k]) => !keys.includes(k)));
 
   /** Copies the adapter's view onto a stored row. Identity, amount and parties stay as stored. */
@@ -89,7 +100,8 @@ export function createReconciler({ adapter, now, emit, clock = Date.now, options
     const next = { ...row, badge: receipt.badge, state: receipt.state, txHash: receipt.txHash, explorerUrl: receipt.explorerUrl };
     delete next.error;
     if (receipt.error) next.error = receipt.error;
-    const changed = ["badge", "state", "txHash", "error"].some((k) => row[k] !== next[k]);
+    if (receipt.topUp) next.topUp = receipt.topUp;
+    const changed = ["badge", "state", "txHash", "error", "topUp"].some((k) => row[k] !== next[k]);
     return { next, changed };
   }
 

@@ -968,12 +968,14 @@
       "consumer": {
         "awardsLocked": 200,
         "returned": 91.25,
+        "notMoved": 0,
         "net": -108.75,
         "signups": 14,
         "costPerSignup": 7.767857
       },
       "board": {
-        "bidFees": 8
+        "bidFees": 8,
+        "topUps": 0
       },
       "leaderboard": [
         {
@@ -2064,12 +2066,14 @@
           "consumer": {
             "awardsLocked": 200,
             "returned": 91.25,
+            "notMoved": 0,
             "net": -108.75,
             "signups": 14,
             "costPerSignup": 7.767857
           },
           "board": {
-            "bidFees": 8
+            "bidFees": 8,
+            "topUps": 0
           },
           "leaderboard": [
             {
@@ -2335,9 +2339,9 @@
       "group": "money",
       "mutable": true,
       "step": "settlement",
-      "hash": "ae8609dba2373f75bb7c8f06e6b314fbfcbc64d8f8f821a63e39f3bbefa0910c",
-      "size": 1758,
-      "bytes": "{\"badges\":[\"SIMULATED\"],\"board\":{\"bidFees\":8},\"consumer\":{\"awardsLocked\":200,\"costPerSignup\":7.767857,\"net\":-108.75,\"returned\":91.25,\"signups\":14},\"leaderboard\":[{\"award\":70,\"awardReclaimed\":0,\"bond\":17.5,\"bondForfeited\":0,\"bondReturned\":17.5,\"consumerSpend\":70,\"costPerSignup\":8.75,\"countedSignups\":8,\"delivered\":8,\"kind\":\"pass\",\"name\":\"TechBlog\",\"paidToSupplier\":70,\"promised\":7,\"rank\":1,\"supplier\":\"techblog\",\"supplierNet\":68,\"verdictHash\":\"1d923c7372999044ea43075bc4611b20570e982340c0f337d301df4c216c03df\",\"verifiedSignups\":8},{\"award\":60,\"awardReclaimed\":0,\"bond\":15,\"bondForfeited\":3.75,\"bondReturned\":11.25,\"consumerSpend\":56.25,\"costPerSignup\":9.375,\"countedSignups\":6,\"delivered\":6,\"kind\":\"short_of_promise\",\"name\":\"CodePodcast\",\"paidToSupplier\":60,\"promised\":8,\"rank\":2,\"supplier\":\"codepodcast\",\"supplierNet\":54.25,\"verdictHash\":\"ad70c18058dd3e10e6625381aa79ce448d50fc19ecf982e8ea985f871e8056fd\",\"verifiedSignups\":6},{\"award\":70,\"awardReclaimed\":70,\"bond\":17.5,\"bondForfeited\":17.5,\"bondReturned\":0,\"consumerSpend\":-17.5,\"costPerSignup\":null,\"countedSignups\":0,\"delivered\":0,\"kind\":\"under_gate\",\"name\":\"DevNewsletter\",\"paidToSupplier\":0,\"promised\":12,\"rank\":3,\"supplier\":\"devnewsletter\",\"supplierNet\":-19.5,\"verdictHash\":\"3297b1857ce7a267a3e5576ce8af2a69f6f28c8e912218e6aabd6a3d65cef855\",\"verifiedSignups\":0},{\"award\":0,\"awardReclaimed\":0,\"bond\":0,\"bondForfeited\":0,\"bondReturned\":0,\"consumerSpend\":0,\"costPerSignup\":null,\"countedSignups\":0,\"delivered\":null,\"kind\":\"lost_bid\",\"name\":\"GamingForum\",\"paidToSupplier\":0,\"promised\":4,\"rank\":4,\"supplier\":\"gamingforum\",\"supplierNet\":-2,\"verdictHash\":null,\"verifiedSignups\":0}],\"roundTwo\":[{\"share\":0,\"supplier\":\"devnewsletter\"},{\"share\":0.5,\"supplier\":\"codepodcast\"},{\"share\":0.5,\"supplier\":\"techblog\"}]}",
+      "hash": "8067c1b37237fbb18801030e18635ce5dc9b027b9f0838a32f507c3ba1f4d55b",
+      "size": 1782,
+      "bytes": "{\"badges\":[\"SIMULATED\"],\"board\":{\"bidFees\":8,\"topUps\":0},\"consumer\":{\"awardsLocked\":200,\"costPerSignup\":7.767857,\"net\":-108.75,\"notMoved\":0,\"returned\":91.25,\"signups\":14},\"leaderboard\":[{\"award\":70,\"awardReclaimed\":0,\"bond\":17.5,\"bondForfeited\":0,\"bondReturned\":17.5,\"consumerSpend\":70,\"costPerSignup\":8.75,\"countedSignups\":8,\"delivered\":8,\"kind\":\"pass\",\"name\":\"TechBlog\",\"paidToSupplier\":70,\"promised\":7,\"rank\":1,\"supplier\":\"techblog\",\"supplierNet\":68,\"verdictHash\":\"1d923c7372999044ea43075bc4611b20570e982340c0f337d301df4c216c03df\",\"verifiedSignups\":8},{\"award\":60,\"awardReclaimed\":0,\"bond\":15,\"bondForfeited\":3.75,\"bondReturned\":11.25,\"consumerSpend\":56.25,\"costPerSignup\":9.375,\"countedSignups\":6,\"delivered\":6,\"kind\":\"short_of_promise\",\"name\":\"CodePodcast\",\"paidToSupplier\":60,\"promised\":8,\"rank\":2,\"supplier\":\"codepodcast\",\"supplierNet\":54.25,\"verdictHash\":\"ad70c18058dd3e10e6625381aa79ce448d50fc19ecf982e8ea985f871e8056fd\",\"verifiedSignups\":6},{\"award\":70,\"awardReclaimed\":70,\"bond\":17.5,\"bondForfeited\":17.5,\"bondReturned\":0,\"consumerSpend\":-17.5,\"costPerSignup\":null,\"countedSignups\":0,\"delivered\":0,\"kind\":\"under_gate\",\"name\":\"DevNewsletter\",\"paidToSupplier\":0,\"promised\":12,\"rank\":3,\"supplier\":\"devnewsletter\",\"supplierNet\":-19.5,\"verdictHash\":\"3297b1857ce7a267a3e5576ce8af2a69f6f28c8e912218e6aabd6a3d65cef855\",\"verifiedSignups\":0},{\"award\":0,\"awardReclaimed\":0,\"bond\":0,\"bondForfeited\":0,\"bondReturned\":0,\"consumerSpend\":0,\"costPerSignup\":null,\"countedSignups\":0,\"delivered\":null,\"kind\":\"lost_bid\",\"name\":\"GamingForum\",\"paidToSupplier\":0,\"promised\":4,\"rank\":4,\"supplier\":\"gamingforum\",\"supplierNet\":-2,\"verdictHash\":null,\"verifiedSignups\":0}],\"roundTwo\":[{\"share\":0,\"supplier\":\"devnewsletter\"},{\"share\":0.5,\"supplier\":\"codepodcast\"},{\"share\":0.5,\"supplier\":\"techblog\"}]}",
       "revision": 1
     },
     {

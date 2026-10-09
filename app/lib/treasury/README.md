@@ -2,7 +2,11 @@
 
 Railway holds the Admin credential and executes only Masumi plain transfers
 required by a valid Board-signed verdict. Amounts are ADA, converted to integer
-lovelace; less than 2 ADA returns `BelowMinimum` with PENDING and no node call.
+lovelace. An amount owed below 2 ADA (`MIN_TRANSFER_LOVELACE`) is rounded up to
+2 ADA and the Board pays the difference; the result and the stored record carry
+`topUpLovelace`, and the receipt shows it as `board.topUps` (#62). Refusals
+(`MoveNotInPlan`, `InvalidVerdict`, ...) are final on the Vercel side: the row
+stays PENDING, the run does not wait for it, and the receipt leaves it out.
 The worker never implements chain transactions or escrow logic.
 
 ## Contract

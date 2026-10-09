@@ -13,7 +13,7 @@ const SUPPLIERS = ["techblog", "codepodcast", "devnewsletter"];
  * `rowAfter` advances. Receipt ids in `hang` never answer, ids in `stuck` never finish. Every call is recorded.
  * With `realFees`, bid fees lock PENDING with the commit as inputHash and the Board collects them (`collectBidFee`).
  */
-function scriptedAdapter({ lockAfter = 2, rowAfter = 3, hang = new Set(), stuck = new Set(), realFees = false } = {}) {
+function scriptedAdapter({ lockAfter = 2, rowAfter = 3, hang = new Set(), stuck = new Set(), realFees = false, refuse = new Map() } = {}) {
   const calls = [];
   const rows = new Map();
   const advances = new Map();
@@ -68,6 +68,7 @@ function scriptedAdapter({ lockAfter = 2, rowAfter = 3, hang = new Set(), stuck 
       const r = rows.get(id);
       calls.push({ op: "advance", id, escrow: r.escrow });
       if (hang.has(id)) return new Promise(() => {});
+      if (refuse.has(id)) return receipt(id, false, refuse.get(id));
       const n = (advances.get(id) ?? 0) + 1;
       advances.set(id, n);
       const done = !stuck.has(id) && n >= (r.lock ? lockAfter : rowAfter);
@@ -348,4 +349,22 @@ test("settle gets each supplier's delivery result hash from run.delivery (#51), 
       assert.notEqual(verdict.resultHash, verdict.hash);
     }
   }
+});
+
+test("a transfer the treasury refuses for good is final: the run completes on time and the receipt leaves it out (#62)", async () => {
+  const adapter = scriptedAdapter({ refuse: new Map([["row:bond_forfeit:codepodcast", "BelowMinimum"]]) });
+  const { board, id, job, firstTick } = await atSettlement(adapter, { settlement: { timeoutMs: 60 * 60_000 } });
+  await firstTick();
+  let state = await board.getSettlementJob(id, job);
+  for (let i = 0; i < 20 && state.status === "running"; i++) state = await board.pollSettlement(id, job);
+  assert.equal(state.status, "done");
+  assert.equal(state.phase, "settled", "not the timer fallback");
+  const run = await board.getRun(id);
+  const refused = run.ledger.find((l) => l.id === "row:bond_forfeit:codepodcast");
+  assert.deepEqual([refused.badge, refused.state, refused.txHash], ["PENDING", "BelowMinimum", null]);
+  assert.equal(run.receipt.consumer.notMoved, refused.amount);
+  assert.equal(run.receipt.consumer.net, -108.75 - refused.amount, "money that never moved is not counted as returned");
+  const after = adapter.calls.length;
+  await board.pollSettlement(id, job);
+  assert.equal(adapter.calls.length, after, "a refused row is not advanced again");
 });

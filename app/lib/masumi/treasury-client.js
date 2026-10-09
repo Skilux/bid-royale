@@ -14,7 +14,8 @@ export function createTreasuryClient({ env = process.env, fetch: fetchImpl = glo
       const result = await response.json();
       if (typeof result.state !== "string") throw new Error("Invalid treasury response");
       return { state: result.state, txHash: /^[0-9a-f]{64}$/i.test(result.txHash ?? "") ? result.txHash : null,
-        ...(result.error ? { error: result.error } : {}) };
+        ...(result.error ? { error: result.error } : {}),
+        ...(Number.isSafeInteger(result.topUpLovelace) && result.topUpLovelace > 0 ? { topUpLovelace: result.topUpLovelace } : {}) };
     } catch (error) {
       return { state: "TransferPending", txHash: null, error: controller.signal.aborted ? "Treasury request timed out" : error.message };
     } finally { clearTimeout(timer); }

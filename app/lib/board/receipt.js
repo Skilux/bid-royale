@@ -8,6 +8,8 @@ const sum = (list, pick = (x) => x.amount) => round(list.reduce((t, x) => t + pi
  *
  * Ledger entries are adapter receipts plus `phase` ("bid_fee" | "lock" | "settlement") and `supplier`.
  * Consumer net = settlement transfers to the Consumer minus award locks from the Consumer.
+ * Only money that moved counts: a PENDING row (real operation without a transaction, or refused by the treasury) is
+ * left out of every sum and reported as `notMoved` (#62).
  *
  * @param {{ suppliers: {id: string, name: string}[], bids: object[], accepted: object[], verdicts: object[],
  *           verified: Record<string, number>, ledger: object[] }} input
@@ -15,7 +17,9 @@ const sum = (list, pick = (x) => x.amount) => round(list.reduce((t, x) => t + pi
 export function buildReceipt({ suppliers, bids, accepted, verdicts, verified, ledger }) {
   const nameOf = (id) => suppliers.find((s) => s.id === id)?.name ?? id;
   const winners = new Set(accepted.map((a) => a.supplier));
-  const settlement = ledger.filter((l) => l.phase === "settlement");
+  const moved = (l) => l.badge !== "PENDING";
+  const settlement = ledger.filter((l) => l.phase === "settlement" && moved(l));
+  const owedNotMoved = ledger.filter((l) => l.phase === "settlement" && !moved(l));
 
   const rows = [
     ...verdicts.map((v) => {
@@ -75,7 +79,7 @@ export function buildReceipt({ suppliers, bids, accepted, verdicts, verified, le
     .sort((a, b) => (a.costPerSignup ?? Infinity) - (b.costPerSignup ?? Infinity) || a.supplier.localeCompare(b.supplier));
   const leaderboard = [...ranked, ...rows.filter((r) => r.kind === "lost_bid")].map((r, i) => ({ rank: i + 1, ...r }));
 
-  const spent = sum(ledger.filter((l) => l.phase === "lock" && l.action === "award"));
+  const spent = sum(ledger.filter((l) => l.phase === "lock" && l.action === "award" && moved(l)));
   const returned = sum(settlement.filter((l) => l.to === "consumer"));
   const signups = sum(rows, (r) => r.countedSignups);
   const net = round(returned - spent);
@@ -84,11 +88,16 @@ export function buildReceipt({ suppliers, bids, accepted, verdicts, verified, le
     consumer: {
       awardsLocked: spent,
       returned,
+      notMoved: sum(owedNotMoved.filter((l) => l.to === "consumer")),
       net,
       signups,
       costPerSignup: signups > 0 ? round(-net / signups) : null,
     },
-    board: { bidFees: sum(ledger.filter((l) => l.phase === "bid_fee")) },
+    board: {
+      bidFees: sum(ledger.filter((l) => l.phase === "bid_fee" && moved(l))),
+      // What the Board added to round sub-minimum transfers up to the Cardano minimum (#62).
+      topUps: sum(settlement, (l) => l.topUp ?? 0),
+    },
     leaderboard,
     badges: [...new Set(ledger.map((l) => l.badge))],
     roundTwo: roundTwo(verdicts.map((v) => ({ supplier: v.supplier, kind: v.kind }))),

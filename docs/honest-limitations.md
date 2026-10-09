@@ -64,7 +64,11 @@ and it's the cheapest 10 points available.
   buyer authorizes the payout. It is the V2 contract's buyer-approved release,
   not a real dispute, but the explorer shows it.
 - Amounts are tADA, the spec ×10 (#24), not a USD stablecoin: Masumi transfers
-  have a 2 ADA minimum and small escrows risk min-UTxO errors.
+  have a 2 ADA minimum and small escrows risk min-UTxO errors. A forfeit or
+  remainder below 2 tADA is rounded up to 2 tADA and the Board pays the
+  difference, shown as a top-up on the receipt (#62). In the recorded run
+  (`run_c1f40522`), CodePodcast's 1.964286 tADA forfeit predates that fix: the
+  treasury refused it, so it is labelled PENDING and never moved.
 - Proactive supplier discovery (GamingForum finds the Board itself) is pitch
   only. In the build, GamingForum is invited like the other three.
 - Attribution is first-touch; production needs multi-touch.

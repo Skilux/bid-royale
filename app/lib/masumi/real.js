@@ -45,6 +45,8 @@ function receipt(job, action, amount, from, to, data = {}, error) {
     txHash, explorerUrl: txHash ? `https://preprod.cardanoscan.io/transaction/${txHash}` : null,
     state: error ? "Error" : data.onChainState ?? data.NextAction?.requestedAction ?? "Pending",
     ...(error || data.stepError ? { error: error?.message ?? data.stepError } : {}),
+    // The treasury rounded a sub-minimum transfer up to the Cardano minimum; the Board paid this much extra (#62).
+    ...(data.topUpLovelace > 0 ? { topUp: data.topUpLovelace / 1e6 } : {}),
   };
 }
 
@@ -172,7 +174,8 @@ export function createRealAdapter({ env = process.env, fetch, timeoutMs, now = D
     if (current.onChainState !== "Withdrawn" || !treasury) return { onChainState: "TransferPending", ...(current.stepError ? { stepError: current.stepError } : {}) };
     // The treasury persists/deduplicates this exact receipt id across invocations.
     const transfer = await treasury({ ...move, verdict, bondEscrowId: encode(bond), id });
-    const data = transfer ? { onChainState: transfer.state, CurrentTransaction: { txHash: transfer.txHash } }
+    const data = transfer ? { onChainState: transfer.state, CurrentTransaction: { txHash: transfer.txHash },
+      ...(transfer.topUpLovelace > 0 ? { topUpLovelace: transfer.topUpLovelace } : {}) }
       : { onChainState: "TransferPending" };
     if (/^[0-9a-f]{64}$/i.test(transfer?.txHash ?? "")) transferResults.set(id, data);
     return data;

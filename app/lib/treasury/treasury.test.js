@@ -9,7 +9,7 @@ const { publicKeyHex, publicKeyFromSecret, sha256Hex } = await import("@/lib/sig
 const { planSettlement } = await import("@/lib/settlement/plan");
 const { createMemoryStore, createUpstashStore } = await import("@/lib/board/store");
 const { createClient } = await import("@/lib/masumi/client");
-const { executeTransfer, authorizeTransfer, getTransferStatus } = await import("@/lib/treasury");
+const { executeTransfer, authorizeTransfer, getTransferStatus, MIN_TRANSFER_LOVELACE } = await import("@/lib/treasury");
 const { createTreasuryClient } = await import("@/lib/masumi/treasury-client");
 const { createHandler, loadConfig, startTickLoop } = await import("../../scripts/treasury-server.mjs");
 const secret = "offline treasury fixture";
@@ -94,13 +94,25 @@ test("concurrent reservations pay once; reused id for another move is rejected",
   assert.equal(f.calls.filter((c) => c.method === "POST").length, 1);
   assert.equal((await executeTransfer({ ...f, move: moves[1] })).state, "IdConflict");
 });
-test("below minimum is labelled and never calls node", async () => {
-  const small = buildVerdict({ supplier: "codepodcast", verified: 6, impressions: 1000, promised: 8, award: 6, signingSecret: secret });
-  const f = { ...fixture(), verdict: small, move: planSettlement(small).find((m) => m.via === "plain_transfer") };
+test("a forfeit below the Cardano minimum is rounded up to it; the Board's top-up is recorded and reported (#62)", async () => {
+  // The #45 recorded run: CodePodcast promised 7, delivered 6, award 55, bond 13.75 -> forfeit 1.964286 tADA.
+  const small = buildVerdict({ supplier: "codepodcast", verified: 6, impressions: 1000, promised: 7, award: 55, signingSecret: secret });
+  const move = planSettlement(small).find((m) => m.reason === "bond_forfeit");
+  assert.equal(move.amount, 1.964286);
+  const f = { ...fixture(), verdict: small, move };
+  const first = await executeTransfer(f);
+  assert.deepEqual([first.state, first.badge, first.topUpLovelace], ["Pending", "PENDING", 35714]);
+  assert.equal(JSON.parse(f.calls[0].body).lovelaceAmount, String(MIN_TRANSFER_LOVELACE));
+  assert.equal((await f.store.getTransfer(f.id)).topUpLovelace, 35714);
+  const done = await executeTransfer(f);
+  assert.deepEqual([done.badge, done.txHash, done.topUpLovelace], ["REAL", hash, 35714]);
+  assert.equal(f.calls.filter((c) => c.method === "POST").length, 1, "rounding never sends twice");
+});
+test("an amount at or above the minimum is sent exactly, with no top-up", async () => {
+  const f = fixture();
   const result = await executeTransfer(f);
-  assert.equal(result.state, "BelowMinimum");
-  assert.equal(result.badge, "PENDING");
-  assert.equal(f.calls.length, 0);
+  assert.equal(result.topUpLovelace, undefined);
+  assert.equal(JSON.parse(f.calls[0].body).lovelaceAmount, String(Math.round(f.move.amount * 1e6)));
 });
 test("5xx and timeout stay pending and never retry an ambiguous POST", async () => {
   for (const mode of ["5xx", "timeout"]) {
