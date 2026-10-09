@@ -27,14 +27,14 @@ badge is a bug. Source: [`docs/honest-limitations.md`](docs/honest-limitations.m
 | 3 award escrows (65 / 55 / 60 tADA in the recorded run) | **REAL**, tx hashes in the recorded run | Masumi preprod (Cardano testnet). **PENDING** until a hash exists. Hashes: [proof table](#real-transaction-proof) |
 | 3 bond escrows (16.25 / 13.75 / 15 tADA in the recorded run) | **REAL**, tx hashes in the recorded run | Same rail, same rule |
 | Settlement per verdict (release, refund, bond return) | **REAL**, tx hashes in the recorded run | All three verdict branches settled on preprod. [`docs/money-flow.md`](docs/money-flow.md), step 7 |
-| Forfeit and bond-remainder transfers | **REAL** once a tx hash exists | Plain transfers from the Board treasury, not escrow outputs. Recorded run: 2 REAL with a hash, node status `Pending`; 1 forfeit of 1.964286 tADA not sent, PENDING (#62) |
+| Forfeit and bond-remainder transfers | **REAL**, tx hashes in the recorded run | Plain transfers from the Board treasury, not escrow outputs. Recorded run: all 3 REAL. The 1.964286 tADA forfeit was first refused (under the 2 tADA minimum) and sent as 2.00 tADA after the #62 fix, the Board paying the 0.035714 difference |
 | 4 bid fees (2 tADA each) | **REAL**, tx hashes in the recorded run | Escrow input hash = the sealed bid's commit; the Board collected all 4. Fallback flag: SIMULATED, not used in the recorded run |
 | NeoRack shop, signups, traffic and impressions | **SIMULATED** | Signed signup events from a simulated shop, "no funds moved" |
 | DevNewsletter's zero signups | **SIMULATED** | Scripted. The verdict mechanism is what is on show |
 | Round 2 reallocation | **SIMULATED** | Shown on the receipt, no chain operations |
 | Supplier registration, agent identifiers | **REAL** | 5 agents registered on Preprod, see [`docs/plan/lane-masumi.md`](docs/plan/lane-masumi.md). Discovery in the recorded run was `live` from the registry, all four suppliers `RegistrationConfirmed` |
-| Run totals, recorded run | **REAL** | 10 escrows per run (3 awards, 3 bonds, 4 bid fees), all locked REAL 2.1 min after settlement start. 20 of 21 ledger rows REAL, the last of them 17 min after settlement start |
-| `DEMO_MODE=canned` replay | **PRE-RECORDED** | Judge URL and lifeline. Replays the one real recorded run, `app/data/canned/run.json` (`app/lib/replay`), with its time cut labelled; REAL tx links from the recording stay REAL. There is no separate warm run (#30). Stand-in data until the #45 recording is swapped in |
+| Run totals, recorded run | **REAL** | 10 escrows per run (3 awards, 3 bonds, 4 bid fees), all locked REAL 2.1 min after settlement start. All 21 ledger rows REAL: 20 within 17 min, the last after the #62 treasury fix (53 min) |
+| `DEMO_MODE=canned` replay | **PRE-RECORDED** | Judge URL and lifeline. Replays the one real recorded run, `app/data/canned/run.json` (`app/lib/replay`), with its time cut labelled; REAL tx links from the recording stay REAL. There is no separate warm run (#30). Since `159e8ca` the replay is `run_c1f40522`, recorded before its late forfeit was sent; a re-record shows all 21 rows REAL |
 
 ## Honest limitations
 
@@ -46,7 +46,8 @@ here and in the UI. Full text with sources: [`docs/honest-limitations.md`](docs/
 - The four suppliers and the Tender Board are team-operated demonstration agents. They run in one Vercel project, and all wallets sit on our own Masumi node, whose operator can move every wallet (operator-managed custody, [ADR 0002](docs/adr/0002-seller-agents-on-vercel.md)). Third-party settlement would use the Disputed path.
 - The Board is a trust assumption. Escrows cannot split, so the Board returns bond remainders and forwards forfeits to the Consumer as plain transfers from its treasury. It also holds bonds and collects bid fees.
 - The Board both runs the auction and verifies delivery. The Board verifier is a deterministic module inside the Board, not a separate Validator agent (PRD D7, [`GLOSSARY.md`](GLOSSARY.md)). An independent, paid validator agent is the production path. Here the check is deterministic and its inputs are on the dashboard.
-- Quotes are scripted. The commit-reveal sealed-bid mechanism is what is demonstrated.
+- Supplier quotes come from LLM agents bounded by their persona's price and promise range; the recorded run used them (`PERSONA_MODE` unset). `PERSONA_MODE=pinned` replays the worked example's fixed quotes for rehearsals. The commit-reveal sealed-bid mechanism is what is demonstrated.
+- Delivery reports were all `scripted_demo` in the recorded run: the suppliers run in-process, so the Board recorded each report from the simulated feed. The on-chain result hash therefore anchors a Board-scripted report, not a claim posted by the supplier. The verdict never reads the report (#51).
 - Proactive supplier discovery (GamingForum finds the Board itself) is pitch only. In the build, GamingForum is invited like the other three.
 
 **What the verifier does and does not check**
@@ -59,11 +60,17 @@ here and in the UI. Full text with sources: [`docs/honest-limitations.md`](docs/
 
 **Money**
 
-- Amounts are tADA, the spec ×10 (#24), not a USD stablecoin. Masumi transfers have a 2 ADA minimum and small escrows risk min-UTxO errors. tADA has no value.
+- Amounts are tADA, the spec ×10 (#24), not a USD stablecoin. Masumi transfers have a 2 ADA minimum and small escrows risk min-UTxO errors. A forfeit or remainder under 2 tADA is rounded up to 2 tADA and the Board pays the difference, shown as a top-up (#62). tADA has no value.
 - The fast release of an award passes through `Disputed` on-chain before the buyer authorizes the payout. It is the V2 contract's buyer-approved release, not a real dispute, but the explorer shows it.
-- The Under-gate award comes back by cooperative refund (5.9 min measured on preprod, 8 Oct). The automatic refund after the submit-result deadline (27.8 min) is the fallback. Source: [`docs/money-flow.md`](docs/money-flow.md).
+- The Under-gate award comes back by cooperative refund (5.7 min in the recorded run, 5.9 min in the 8 Oct dry run). The automatic refund after the submit-result deadline (27.8 min) is the fallback. Award releases took 13.0 min (early release); the timer release after the unlock time (45.5 min) is the fallback. Source: [`docs/money-flow.md`](docs/money-flow.md), [`docs/runs/2026-10-09/`](docs/runs/2026-10-09/README.md).
 - On-chain data is hashes and references only. Raw reports and evidence stay off-chain.
-- Each treasury transfer needs a Board-signed verdict. The treasury transfer time is not measured yet ([`docs/money-flow.md`](docs/money-flow.md), "How long a full run takes").
+- Each treasury transfer needs a Board-signed verdict. Treasury transfers start once the Board has collected the bond; in the recorded run they were REAL 17.0 min after settlement start.
+
+**Rails we run ourselves**
+
+- The Masumi node is self-hosted on Railway (payment service + Postgres): the organisers had no hosted node. It uses the V2 contract with our own admin wallet (`custom_address`), so the contract's admin role is ours, not a neutral party's.
+- The node reads the chain through Blockfrost's free tier, 50,000 requests a day. We hit the limit on 8 Oct and moved to a fresh project; the number of full runs is kept small for that reason.
+- Party API keys are wallet-scoped and Preprod-only; registry discovery uses a separate read-only key.
 
 **State of the build on `main`**
 
@@ -78,11 +85,11 @@ driven through the deployed app on Masumi preprod with live registry discovery
 and LLM supplier quotes (#45, results comment). Every hash below is copied from
 that run's ledger. The links open Cardanoscan preprod. Amounts are tADA.
 
-Result: all three verdict branches settled on chain. 20 of 21 ledger rows are
-REAL with a tx hash. The 21st is a 1.964286 tADA forfeit that the treasury
-refused (last table). All 10 escrows were locked REAL 2.1 min after settlement
-start. The Under-gate refund took 5.7 min and the last REAL treasury transfer
-17.0 min.
+Result: all three verdict branches settled on chain and **all 21 ledger rows are
+REAL** with a tx hash. All 10 escrows were locked REAL 2.1 min after settlement
+start. The Under-gate refund took 5.7 min, the award releases 13.0 min and the
+treasury transfers 17.0 min. One forfeit of 1.964286 tADA was first refused for
+being under the 2 tADA minimum and sent later, after the #62 fix (last table).
 
 **One lock tx can carry several escrows.** The Masumi node batches purchases.
 The three award locks share one tx (`3bd1ae093a…`). Each supplier's bond and bid
@@ -96,9 +103,9 @@ Escrows (run amounts, not the worked example):
 | Award, TechBlog | Consumer → TechBlog | 65 | Pass | [3bd1ae093a…](https://preprod.cardanoscan.io/transaction/3bd1ae093a8ee9970e31fbcf130588001188842fbe25885dcb4623c74eee8bae) | [6a8c5cab80…](https://preprod.cardanoscan.io/transaction/6a8c5cab80e4d583dbd6e654816b1ea6945fc4b9a4f1db81db6c4cf2dec383b6) (release to TechBlog) | Withdrawn |
 | Bond, TechBlog | TechBlog → Board | 16.25 | Pass | [9ec76e214c…](https://preprod.cardanoscan.io/transaction/9ec76e214c4293c04bb5252cf30700906c6dd0fa6cb5338aca37b9fb8b8c0a97) | [f04d859e67…](https://preprod.cardanoscan.io/transaction/f04d859e67abc497d7f95aa60e463ea61ec9efed744c69fe64a2716aa7043e5f) (bond returned to TechBlog) | RefundWithdrawn |
 | Award, CodePodcast | Consumer → CodePodcast | 55 | Short of promise | [3bd1ae093a…](https://preprod.cardanoscan.io/transaction/3bd1ae093a8ee9970e31fbcf130588001188842fbe25885dcb4623c74eee8bae) | [64383b40d3…](https://preprod.cardanoscan.io/transaction/64383b40d355a3f40e9d5895400e8cc5395ad8aa31eb3335286c2b0bc8d4b7a4) (release to CodePodcast) | Withdrawn |
-| Bond, CodePodcast | CodePodcast → Board | 13.75 | Short of promise | [b2ebaefb69…](https://preprod.cardanoscan.io/transaction/b2ebaefb698c233cf0caf454342ebd0f4fe61023e2b942a847296cbb51184f0d) | no hash in the ledger, see the treasury transfers below | no row in the #45 ledger |
+| Bond, CodePodcast | CodePodcast → Board | 13.75 | Short of promise | [b2ebaefb69…](https://preprod.cardanoscan.io/transaction/b2ebaefb698c233cf0caf454342ebd0f4fe61023e2b942a847296cbb51184f0d) | [2790c21d53…](https://preprod.cardanoscan.io/transaction/2790c21d53a4a1933767ee1a06fc004c17188cd9f5c8ae2f13392243c11bf384) (Board collects, then the treasury splits it below) | Withdrawn (read from the node) |
 | Award, DevNewsletter | Consumer → DevNewsletter | 60 | Under gate | [3bd1ae093a…](https://preprod.cardanoscan.io/transaction/3bd1ae093a8ee9970e31fbcf130588001188842fbe25885dcb4623c74eee8bae) | [b4854bc3d6…](https://preprod.cardanoscan.io/transaction/b4854bc3d603c1ceec700ea7ac5ccdb674c3c74a962459cdf2caf935f71a84da) (refund to Consumer) | RefundWithdrawn |
-| Bond, DevNewsletter | DevNewsletter → Board | 15 | Under gate | [14f5ceb13a…](https://preprod.cardanoscan.io/transaction/14f5ceb13a6d55c9d8dc3283fcffe753c09ceed67c3b184002e158dda00e5953) | no hash in the ledger, see the treasury transfers below | no row in the #45 ledger |
+| Bond, DevNewsletter | DevNewsletter → Board | 15 | Under gate | [14f5ceb13a…](https://preprod.cardanoscan.io/transaction/14f5ceb13a6d55c9d8dc3283fcffe753c09ceed67c3b184002e158dda00e5953) | [2790c21d53…](https://preprod.cardanoscan.io/transaction/2790c21d53a4a1933767ee1a06fc004c17188cd9f5c8ae2f13392243c11bf384) (Board collects, then forwards it below) | Withdrawn (read from the node) |
 
 Bid fees (2 tADA each, REAL escrow, input hash = the sealed bid's commit hash, checked on the node):
 
@@ -115,7 +122,7 @@ Treasury transfers (plain transfers from the Board treasury, not escrow outputs)
 |---|---|---|---|---|---|
 | Forfeit | Board → Consumer | 15 | Under gate | [83c3fa9dcb…](https://preprod.cardanoscan.io/transaction/83c3fa9dcbefcf88bddca80eeca15890cf7e7af261758e8fe4e96534c755f370) | Pending at the last poll |
 | Bond remainder | Board → CodePodcast | 11.785714 | Short of promise | [6862bb4516…](https://preprod.cardanoscan.io/transaction/6862bb451697b72dfa4037481079f32bd17aae451fe7c2e1dd107ce77761c733) | Pending at the last poll |
-| Forfeit | Board → Consumer | 1.964286 | Short of promise | none | PENDING, BelowMinimum, not moved ([#62](https://github.com/Skilux/bid-royale/issues/62)) |
+| Forfeit | Board → Consumer | 1.964286 owed, 2.00 sent | Short of promise | [9b5053b741…](https://preprod.cardanoscan.io/transaction/9b5053b741c94501926ce9037a3ec2a9a1a3faededad27c6fbaebbb61670cc90) | Confirmed, sent after the [#62](https://github.com/Skilux/bid-royale/issues/62) fix |
 
 Two honest notes on these rows:
 
@@ -123,13 +130,16 @@ Two honest notes on these rows:
   reported transfer status `Pending` when settlement was collected. The tx hash
   exists and the explorer link is the proof. Whether each has confirmed on chain
   was not re-checked when this page was written.
-- **The PENDING row.** CodePodcast was Short of promise (6 delivered vs 7
+- **The late forfeit.** CodePodcast was Short of promise (6 delivered vs 7
   promised), so its forfeit is 13.75 × (7 − 6) ÷ 7 = 1.964286 tADA. The treasury
-  refused it because it is under its 2 tADA minimum. The row has no tx and counts
-  as not moved. Issue [#62](https://github.com/Skilux/bid-royale/issues/62) is fixed on `main` in `76610cb`: a sub-minimum
-  transfer is rounded up to 2 tADA and the Board pays the difference. The recorded
-  run happened before that fix, so its ledger still shows this row PENDING. The
-  fix needs a Vercel deploy and a Railway treasury redeploy, not checked here.
+  first refused it for being under its 2 tADA minimum, so the run reached the
+  40-min timer fallback with that row PENDING. Issue [#62](https://github.com/Skilux/bid-royale/issues/62) fixed it (`76610cb`): a
+  sub-minimum transfer is rounded up to 2 tADA and the Board pays the difference.
+  After the fix reached the Railway treasury, the next reconcile tick sent 2.00
+  tADA and the run finished at 00:39 UTC with every row REAL. The ledger row keeps
+  the amount owed (1.964286); the transaction shows 2.00.
+- **Batched collections.** The Board's early release of both forfeited bonds and
+  three bid fees landed in one tx (`2790c21d53…`).
 
 Other preprod proofs that already exist are wallet funding and agent
 registration transactions, listed with explorer links in

@@ -39,8 +39,17 @@ and it's the cheapest 10 points available.
 
 - Suppliers are our own policy-bound agents; third-party settlement would use
   the Disputed path (stated in UI, not hidden).
-- Quotes are scripted; the commit-reveal sealed-bid *mechanism* is what's
+- Supplier quotes come from LLM agents bounded by their persona's range (the
+  recorded run, `PERSONA_MODE` unset); `PERSONA_MODE=pinned` replays fixed
+  quotes for rehearsals. The commit-reveal sealed-bid *mechanism* is what's
   demonstrated.
+- Delivery reports were all `scripted_demo` in the recorded run: suppliers run
+  in-process, so the Board recorded each report from the simulated feed. The
+  on-chain result hash anchors a Board-scripted report (#51).
+- We run the rails ourselves: a self-hosted Masumi node on Railway (no hosted
+  node was available), the V2 contract with our own admin wallet
+  (`custom_address`), and Blockfrost's free tier (50,000 requests a day; hit on
+  8 Oct, moved to a fresh project), so full runs are kept few.
 - The Tender Board is a trust assumption: escrows cannot split, so the Board
   returns bond remainders and forwards forfeits to the Consumer as plain
   transfers. It also holds bonds and collects bid fees.
