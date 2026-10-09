@@ -1,3 +1,7 @@
+"use client";
+
+import { createContext, useContext } from "react";
+
 const STYLE = {
   REAL: "border border-pass bg-pass-bg text-pass",
   SIMULATED: "border border-dashed border-short text-short",
@@ -5,9 +9,22 @@ const STYLE = {
   PENDING: "border border-dotted border-ink-3 bg-wash text-ink-2",
 };
 
+/**
+ * Which badge kinds a page leaves undrawn (#66 D1). The judge page sets it per run: a recording says PRE-RECORDED once
+ * in a banner, and a REAL amount is its explorer link pill. The badge is still derived in lib/receipt-view, only the
+ * pill is hidden. The default hides nothing, so /receipt and every other page keep every badge.
+ */
+export const BadgePolicyContext = createContext({ hide: new Set() });
+
+export function useBadgeHidden(kind) {
+  return useContext(BadgePolicyContext).hide.has(kind);
+}
+
 /** Money badge, DESIGN.md section 6. `kind` is the badge derived in lib/receipt-view. PENDING means not moved yet. */
 export function Badge({ kind, className = "" }) {
   const label = STYLE[kind] ? kind : "SIMULATED";
+  const hidden = useBadgeHidden(label);
+  if (hidden) return null;
   return (
     <span
       data-badge={label}

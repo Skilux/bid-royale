@@ -5,8 +5,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { coinFor } from "@/lib/dashboard/coins";
 import { formatConversion } from "@/lib/conversion";
 import { shortHash } from "@/lib/dashboard/reduce";
-import { Badge } from "./Badge";
-import { Chip } from "./Chip";
+import { BalanceWidget } from "./BalanceWidget";
 import { Counter } from "./Counter";
 import { formatAmount } from "./format";
 import { Money } from "./Money";
@@ -66,24 +65,24 @@ function Node({ children, className = "", ...rest }) {
   );
 }
 
-/** The embeddable dashboard. Draws a `buildDashboardView` result. `fresh` ({ key, events }) drives the money tokens. */
-export function Dashboard({ view, fresh = null, onSelectStep = null }) {
+/**
+ * The embeddable dashboard. Draws a `buildDashboardView` result. `fresh` ({ key, events }) drives the money tokens.
+ * `snapshot` is the run record (`GET /api/run/:id`) when the player has it: the supplier cards read the bid reasoning
+ * and the delivery evidence from it. `stepNote` is an optional line under the running step (the live settlement timer).
+ */
+export function Dashboard({ view, fresh = null, onSelectStep = null, snapshot = null, stepNote = null }) {
   const [flash, setFlash] = useState(false);
   return (
     <div className="space-y-2.5" data-testid="dashboard">
-      <StepRail view={view} onSelect={onSelectStep} />
+      <StepRail view={view} onSelect={onSelectStep} note={stepNote} />
       {view.degraded ? (
         <div className="rounded-lg border border-dashed border-short bg-short-bg px-3 py-2 text-[12px]" data-testid="degraded">
-          The live run failed{view.degraded.step ? ` at ${view.degraded.step}` : ""}. Showing the recorded run instead, badged <Badge kind="PRE-RECORDED" />.
+          The live run failed{view.degraded.step ? ` at ${view.degraded.step}` : ""}. Showing the recorded run instead: everything below is PRE-RECORDED.
         </div>
       ) : null}
       {view.failed ? <div className="rounded-lg border border-under bg-under-bg px-3 py-2 text-[12px]">Run failed: {String(view.failed)}</div> : null}
-      <FlowStage view={view} fresh={fresh} onHero={setFlash} flash={flash} />
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-3 min-[1100px]:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)_minmax(0,1fr)]">
-        <BotPanel view={view} />
-        <EventsPanel view={view} />
-        <TrackFit view={view} />
-      </div>
+      <FlowStage view={view} fresh={fresh} onHero={setFlash} flash={flash} snapshot={snapshot} />
+      <BalanceWidget view={view} />
       <div
         aria-hidden="true"
         className={`pointer-events-none fixed inset-0 z-30 transition-opacity duration-500 ${flash ? "opacity-100" : "opacity-0"}`}
@@ -93,8 +92,9 @@ export function Dashboard({ view, fresh = null, onSelectStep = null }) {
   );
 }
 
-function StepRail({ view, onSelect }) {
+function StepRail({ view, onSelect, note }) {
   return (
+    <div>
     <ol className="flex items-center overflow-x-auto font-mono text-[10px] font-semibold uppercase tracking-[0.16em]" aria-label="Run steps">
       {view.steps.map((s, i) => {
         const tone = s.status === "pending" ? "text-ink-3" : s.status === "running" ? "text-cobalt" : "text-ink-2";
@@ -123,11 +123,17 @@ function StepRail({ view, onSelect }) {
         );
       })}
     </ol>
+    {note ? (
+      <p className="mt-1 text-right font-mono text-[10.5px] text-cobalt" data-testid="step-note">
+        {note}
+      </p>
+    ) : null}
+    </div>
   );
 }
 
 /** Rails and tokens. Geometry is measured from the three columns, so the rails follow the real layout. */
-function FlowStage({ view, fresh, onHero, flash }) {
+function FlowStage({ view, fresh, onHero, flash, snapshot }) {
   const reduced = useReducedMotion();
   const stage = useRef(null);
   const cons = useRef(null);
@@ -244,10 +250,10 @@ function FlowStage({ view, fresh, onHero, flash }) {
         <EscrowRow key={s.id} s={s} i={i} refEl={(el) => (lockRowEls.current[s.id] = el)} />
       ))}
 
-      <Label className={`min-[1100px]:col-start-5 min-[1100px]:row-start-1 min-[1100px]:pb-2 min-[1100px]:pt-1`}>Suppliers · found in the Masumi registry</Label>
+      <Label className={`min-[1100px]:col-start-5 min-[1100px]:row-start-1 min-[1100px]:pb-2 min-[1100px]:pt-1`}>{view.suppliers.length ? `${view.suppliers.length} suppliers · ` : "Suppliers · "}found in the Masumi registry</Label>
       {view.suppliers.length === 0 ? <EmptyNote>Waiting for the tender…</EmptyNote> : null}
       {view.suppliers.map((s, i) => (
-        <SupplierCard key={s.id} s={s} i={i} view={view} refEl={(el) => (supCards.current[s.id] = el)} />
+        <SupplierCard key={s.id} s={s} i={i} view={view} snapshot={snapshot} refEl={(el) => (supCards.current[s.id] = el)} />
       ))}
 
       {geo.ok ? (
@@ -335,31 +341,10 @@ function ConsumerNode({ view, refEl, stamp }) {
       <div ref={refEl} className="absolute inset-0" aria-hidden="true" />
       <Label>NeoRack · consumer agent</Label>
       <p className="mb-2 mt-1.5 font-serif text-[19px] italic leading-[1.15]">
-        {view.started ? (
-          <>
-            Budget <Money amount={tender.budget} badges={view.termBadges.budget} currency={view.currency} />, {view.brief.audience}, {view.brief.goal}.
-          </>
-        ) : (
-          "Waiting for the brief…"
-        )}
+        Budget <Money amount={tender.budget} badges={view.termBadges.budget} currency={view.currency} />, {view.brief.audience}, {view.brief.goal}.
       </p>
-      <div className="flex flex-wrap gap-1 text-[10px]">
-        <Chip tone="neutral">
-          gate <b>{formatConversion(tender.gate)}</b> conversion
-        </Chip>
-        <Chip tone="neutral">
-          bond <b>{Math.round(tender.bondRate * 100)}%</b>
-        </Chip>
-        <Chip tone="neutral">
-          bid fee <Money amount={tender.bidFee} badges={view.termBadges.bidFee} />
-        </Chip>
-        {view.discovery ? (
-          <Chip tone={view.discovery.source === "live" ? "cobalt" : "neutral"}>
-            <span data-testid="discovery-chip" title={view.discovery.agents.map((a) => `${a.name} ${a.apiBaseUrl}`).join("\n")}>
-              {view.discovery.chip}
-            </span>
-          </Chip>
-        ) : null}
+      <div className="font-mono text-[10px] text-ink-3" data-testid="terms">
+        gate {formatConversion(tender.gate)} · bond {Math.round(tender.bondRate * 100)}% · bid fee <Money amount={tender.bidFee} badges={view.termBadges.bidFee} />
       </div>
 
       <Label className="mt-3">budget allocated</Label>
@@ -381,14 +366,13 @@ function ConsumerNode({ view, refEl, stamp }) {
 
       <Label className="mt-3">wallet · net</Label>
       <div className="font-display text-[40px] font-bold leading-[1.05] tabular-nums" data-testid="wallet-net">
-        <Money amount={wallet.net} badges={[...new Set([...wallet.badgesOut, ...wallet.badgesBack])]} currency={view.currency} />
+        <Money amount={Number(wallet.net.toFixed(2))} badges={[...new Set([...wallet.badgesOut, ...wallet.badgesBack])]} currency={view.currency} />
       </div>
       <div className="mt-1">
         <Line label="escrowed" value={<Money amount={wallet.escrowed} badges={wallet.badgesOut.length ? wallet.badgesOut : [view.fallbackBadge]} />} />
         <Line label="back" value={<Money amount={wallet.back} badges={wallet.badgesBack.length ? wallet.badgesBack : [view.fallbackBadge]} />} />
         {wallet.pendingOut > 0 ? <Line label="locking, not moved yet" value={<Money amount={wallet.pendingOut} badge="PENDING" />} /> : null}
         {wallet.pendingBack > 0 ? <Line label="returning, not moved yet" value={<Money amount={wallet.pendingBack} badge="PENDING" />} /> : null}
-        <Line label="supplier bid fees" value={<Money amount={view.bidFees.total} badges={view.bidFees.badges.length ? view.bidFees.badges : [view.fallbackBadge]} />} />
       </div>
       {hero && stamp ? (
         <Motion.div
@@ -505,7 +489,7 @@ function EmptyNote({ children }) {
   return <p className={`rounded-lg border border-dashed border-line px-3 py-4 text-[12px] text-ink-3 min-[1100px]:col-start-5 min-[1100px]:row-start-2`}>{children}</p>;
 }
 
-function SupplierCard({ s, i, view, refEl }) {
+function SupplierCard({ s, i, view, snapshot, refEl }) {
   const tone = s.chip ? CARD_TONE[s.chip.kind] : "border-line";
   const gatePct = Math.min(100, (view.gate / view.scaleMax) * 100);
   const promisedPct = s.promised ? Math.min(100, (s.promised / view.scaleMax) * 100) : null;
@@ -528,13 +512,7 @@ function SupplierCard({ s, i, view, refEl }) {
             <span>{s.rejectedNote}</span>
           ) : s.bid ? (
             <span title={`commit ${s.commit}`}>
-              <Money amount={s.bid.price} badges={s.quoteBadges} /> · {s.bid.impressions.toLocaleString("en-US")} impr. · <b className="text-ink">{formatConversion(s.bid.promisedPer1000)}</b> conversion
-              {s.pricePerSignup !== null ? (
-                <>
-                  {" "}
-                  · #{s.rank} <b className="text-ink">{s.pricePerSignup.toFixed(2)}</b>/signup
-                </>
-              ) : null}
+              bid <Money amount={s.bid.price} badges={s.quoteBadges} /> · promises <b className="text-ink">{formatConversion(s.bid.promisedPer1000)}</b>
             </span>
           ) : s.commit ? (
             <span title={s.commit}>sealed {shortHash(s.commit)}</span>
@@ -542,9 +520,10 @@ function SupplierCard({ s, i, view, refEl }) {
             <span className="text-ink-3">invited</span>
           )}
         </div>
+        {s.bid ? <BidReasoning s={s} view={view} snapshot={snapshot} /> : null}
         {s.lost ? null : (
           <>
-            <div className="relative mt-3 h-[11px] rounded bg-wash" aria-hidden="true">
+            <div className="relative mt-4 h-[11px] rounded bg-wash" aria-hidden="true">
               <div className={`h-full rounded-l transition-[width] duration-700 ${s.verifiedKnown ? "bg-pass" : "bg-ink-3"}`} style={{ width: `${fillPct}%` }} />
               <u className="absolute -bottom-[3px] -top-[3px] w-0.5 bg-under no-underline" style={{ left: `${gatePct}%` }}>
                 <span className="absolute left-[-12px] top-[15px] whitespace-nowrap font-mono text-[8px] text-under">gate {formatConversion(view.gate)}</span>
@@ -568,15 +547,6 @@ function SupplierCard({ s, i, view, refEl }) {
                 </span>
               ) : null}
             </div>
-            {s.verifiedKnown && s.delivered !== null ? (
-              <div className="mt-0.5 text-[9px] text-ink-3" data-testid={`rejections-${s.id}`}>
-                {Object.keys(s.rejections).length
-                  ? `rejected: ${Object.entries(s.rejections)
-                      .map(([k, n]) => `${n} ${k.replaceAll("_", " ")}`)
-                      .join(", ")}`
-                  : "no rejected signups"}
-              </div>
-            ) : null}
           </>
         )}
       </div>
@@ -592,7 +562,7 @@ function Panel({ children, className = "", ...rest }) {
   );
 }
 
-function BotPanel({ view }) {
+export function BotPanel({ view }) {
   return (
     <Panel data-testid="bot-panel">
       <Label>bot signals · context only, never the verdict</Label>
@@ -616,7 +586,7 @@ function BotPanel({ view }) {
   );
 }
 
-function EventsPanel({ view }) {
+export function EventsPanel({ view }) {
   return (
     <Panel data-testid="events-panel">
       <Label>board events · SSE</Label>
@@ -633,47 +603,42 @@ function EventsPanel({ view }) {
   );
 }
 
-function TrackFit({ view }) {
-  const r = view.receipt;
+/**
+ * The supplier's own reason for its quote (#66 D5): `run.bids[].rationale`, LLM-written, at most 280 chars. One clamped
+ * line, a click expands it. `source ↗` opens the run record. `delivered ↗` opens the delivery evidence once the
+ * supplier has a verdict. Both links read the Board store, which keeps a run for 24 h.
+ */
+function BidReasoning({ s, view, snapshot }) {
+  const [open, setOpen] = useState(false);
+  const runId = snapshot?.id ?? view.runId;
+  const rationale = snapshot?.bids?.find((b) => b.supplier === s.id)?.rationale;
+  const delivered = Boolean(s.verdict && runId && snapshot?.delivery?.[s.id]);
+  if (!rationale && !delivered) return null;
+  const link = "whitespace-nowrap font-mono text-[9.5px] text-cobalt underline decoration-dotted underline-offset-2 hover:text-ink";
   return (
-    <Panel data-testid="track-fit">
-      <Label>track fit</Label>
-      <div className="mt-1.5 flex flex-wrap gap-1">
-        <Lit on={view.chips.discovery}>Discovery: Masumi registry</Lit>
-        <Lit on={view.chips.wallet}>Wallet</Lit>
-        <Lit on={view.chips.masumi}>Escrow: Masumi, Cardano preprod</Lit>
-        <Lit on={view.chips.dispute} tone="under">
-          Dispute path: refund
-        </Lit>
-      </div>
-      <div className={`mt-2 transition-opacity duration-500 ${r ? "" : "opacity-25"}`} data-testid="mini-receipt">
-        <div className="font-display text-[30px] font-extrabold leading-none tabular-nums text-cobalt">
-          {r ? <Money amount={r.net} badges={r.badges.length ? r.badges : [view.fallbackBadge]} currency={view.currency} /> : "·"}
-        </div>
-        {r ? (
-          <div className="mt-1 text-[10.5px] leading-[1.5] text-ink-2">
-            <b className="text-ink">{r.signups}</b> verified signups · <b className="text-ink">{r.costPerSignup === null ? "·" : Number(r.costPerSignup).toFixed(2)}</b> each
-            {r.pending ? (
-              <div className="italic text-ink-3" data-testid="mini-pending-note">
-                {r.pendingRows} money {r.pendingRows === 1 ? "row is" : "rows are"} PENDING (<Money amount={r.pendingAmount} badge="PENDING" currency={view.currency} />). {r.pendingRows === 1 ? "It never moved and is" : "They never moved and are"} not in the net.
-              </div>
-            ) : null}
-            {view.roundTwo ? (
-              <div>
-                Round 2, shown not executed: {view.roundTwo.map((x) => `${x.name} ${Math.round(x.share * 100)}`).join(" · ")} <Badge kind="SIMULATED" />
-              </div>
-            ) : null}
-          </div>
-        ) : null}
-      </div>
-    </Panel>
-  );
-}
-
-function Lit({ on, tone = "cobalt", children }) {
-  return (
-    <span className={`transition-opacity duration-500 ${on ? "opacity-100" : "opacity-35"}`}>
-      <Chip tone={on ? tone : "neutral"}>{children}</Chip>
-    </span>
+    <div className="mt-1 flex items-start gap-1.5 text-[10px] text-ink-2" data-testid={`reasoning-${s.id}`}>
+      {rationale ? (
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          title={open ? "Collapse" : rationale}
+          className={`min-w-0 flex-1 cursor-pointer text-left italic hover:text-ink ${open ? "" : "line-clamp-1"}`}
+        >
+          💬 &ldquo;{rationale}&rdquo;
+        </button>
+      ) : (
+        <span className="flex-1" />
+      )}
+      {rationale && runId ? (
+        <a className={link} href={`/api/run/${encodeURIComponent(runId)}`} target="_blank" rel="noopener noreferrer">
+          source ↗
+        </a>
+      ) : null}
+      {delivered ? (
+        <a className={link} href={`/api/run/${encodeURIComponent(runId)}/evidence/delivery.${s.id}`} target="_blank" rel="noopener noreferrer">
+          delivered ↗
+        </a>
+      ) : null}
+    </div>
   );
 }

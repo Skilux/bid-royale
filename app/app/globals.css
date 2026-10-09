@@ -108,3 +108,13 @@ body {
 .flow .cr-lost { filter: grayscale(1); }
 .flow .cr-img { flex: 0 0 52px; width: 52px; height: 92px; object-fit: cover; border-radius: 7px; border: 1px solid var(--color-line); }
 .flow .cr-img.cr-lost { opacity: 0.55; }
+/* REAL link pill (#66 D2): one glow when it mounts, i.e. when a row turns REAL during playback */
+@keyframes pill-pulse {
+  0% { box-shadow: 0 0 0 0 var(--color-cobalt); }
+  40% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-cobalt) 45%, transparent), 0 0 14px var(--color-cobalt); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+.tx-pill { animation: pill-pulse 1s var(--ease-ui) 1; }
+@media (prefers-reduced-motion: reduce) {
+  .tx-pill { animation: none; }
+}
