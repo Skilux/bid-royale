@@ -1,0 +1,59 @@
+{
+  "ok": true,
+  "flags": {
+    "simulatePayments": false,
+    "demoMode": "live"
+  },
+  "paymentAdapter": "PENDING",
+  "boardStore": "upstash",
+  "replay": {
+    "ok": true,
+    "speed": "fast",
+    "source": "data/canned/run.json",
+    "recordedRunId": "run_worked-example",
+    "recordedAt": "2026-10-08T22:00:00.010Z",
+    "finishedAt": "2026-10-08T22:00:00.810Z",
+    "events": 58,
+    "realTransfers": 0,
+    "downgradedToPreRecorded": 0,
+    "evidenceItems": 0
+  },
+  "treasury": {
+    "configured": true,
+    "reachable": true,
+    "status": 404,
+    "authOk": true
+  },
+  "env": {
+    "MASUMI_PAYMENT_BASE_URL": true,
+    "MASUMI_PAYMENT_API_KEY": false,
+    "OPENROUTER_API_KEY": true,
+    "AGENT_SHARED_SECRET": true,
+    "SUPPLIER_INVITE_URLS": false,
+    "SHOP_SIGNING_KEY": true,
+    "BOARD_SIGNING_KEY": true,
+    "KV_REST_API_URL": true,
+    "KV_REST_API_TOKEN": true,
+    "TREASURY_URL": true,
+    "TREASURY_TOKEN": true,
+    "SUPPLIER_AGENTS": true,
+    "DEMO_MODE": true,
+    "SIMULATE_PAYMENTS": true,
+    "MASUMI_NETWORK": true,
+    "MASUMI_SMART_CONTRACT_ADDRESS": true,
+    "MASUMI_KEY_BOARD": true,
+    "MASUMI_KEY_CONSUMER": true,
+    "MASUMI_KEY_TECHBLOG": true,
+    "MASUMI_KEY_CODEPODCAST": true,
+    "MASUMI_KEY_DEVNEWSLETTER": true,
+    "MASUMI_KEY_GAMINGFORUM": true,
+    "MASUMI_AGENT_BOARD": true,
+    "MASUMI_AGENT_TECHBLOG": true,
+    "MASUMI_AGENT_CODEPODCAST": true,
+    "MASUMI_AGENT_DEVNEWSLETTER": true,
+    "MASUMI_AGENT_GAMINGFORUM": true,
+    "MASUMI_REGISTRY_BASE_URL": false,
+    "MASUMI_REGISTRY_API_KEY": true
+  },
+  "time": "2026-10-08T23:45:42.984Z"
+}

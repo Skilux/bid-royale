@@ -1,0 +1,806 @@
+{
+  "step": "verification",
+  "run": {
+    "id": "run_c1f40522",
+    "createdAt": "2026-10-08T23:45:43.167Z",
+    "mode": "live",
+    "badge": "PENDING",
+    "seed": 1,
+    "status": "in_progress",
+    "nextStep": "verdicts",
+    "steps": {
+      "tender": {
+        "status": "done",
+        "startedAt": "2026-10-08T23:45:43.167Z",
+        "finishedAt": "2026-10-08T23:45:43.167Z"
+      },
+      "bids": {
+        "status": "done",
+        "startedAt": "2026-10-08T23:45:43.454Z",
+        "finishedAt": "2026-10-08T23:45:50.486Z"
+      },
+      "allocation": {
+        "status": "done",
+        "startedAt": "2026-10-08T23:45:50.863Z",
+        "finishedAt": "2026-10-08T23:45:50.883Z"
+      },
+      "locks": {
+        "status": "done",
+        "startedAt": "2026-10-08T23:45:51.130Z",
+        "finishedAt": "2026-10-08T23:45:52.712Z"
+      },
+      "feed": {
+        "status": "done",
+        "startedAt": "2026-10-08T23:45:52.989Z",
+        "finishedAt": "2026-10-08T23:45:53.020Z"
+      },
+      "verification": {
+        "status": "done",
+        "startedAt": "2026-10-08T23:45:53.303Z",
+        "finishedAt": "2026-10-08T23:45:53.326Z"
+      },
+      "verdicts": {
+        "status": "pending"
+      },
+      "settlement": {
+        "status": "pending"
+      }
+    },
+    "brief": {
+      "advertiser": "NeoRack",
+      "audience": "technical users",
+      "goal": "pay per verified signup"
+    },
+    "tender": {
+      "budget": 200,
+      "gate": 5,
+      "bondRate": 0.25,
+      "bidFee": 2,
+      "currency": "tADA",
+      "audience": "technical users",
+      "deadline": 1791503198563
+    },
+    "suppliers": [
+      {
+        "id": "techblog",
+        "name": "TechBlog",
+        "persona": "conservative"
+      },
+      {
+        "id": "codepodcast",
+        "name": "CodePodcast",
+        "persona": "moderate"
+      },
+      {
+        "id": "devnewsletter",
+        "name": "DevNewsletter",
+        "persona": "aggressive over-promiser"
+      },
+      {
+        "id": "gamingforum",
+        "name": "GamingForum",
+        "persona": "passive low-baller"
+      }
+    ],
+    "keys": {
+      "shop": "b2a558a1c11f64848265b36501724ca4195905318a3eae1c28d9aa82f420878b",
+      "board": "7c0a1895cdd26192ee2117eed8d348461776c1a7990808c118db6fe9dfa3b506"
+    },
+    "bids": [
+      {
+        "supplier": "techblog",
+        "price": 65,
+        "impressions": 1000,
+        "promisedPer1000": 5,
+        "salt": "971e52b24e246ded1184548c43eb1e72",
+        "commit": "255a0b657549d901a860a9257224d996116ff86740c9a8947a0a6421de93886a",
+        "source": "llm",
+        "rationale": "We are bidding 65 for 1,000 impressions, promising 5 signups per 1,000, which is well below our past rate of 8 to 9. The price gives a fair margin over cost and the reference price without chasing the lowest bid.",
+        "gate": {
+          "pricePerSignup": 13,
+          "winChance": 0.7,
+          "margin": 15,
+          "ev": 8.5,
+          "passed": true
+        },
+        "model": "anthropic/claude-haiku-5.5",
+        "usage": {
+          "calls": 3,
+          "tokens": 4790
+        },
+        "committedAt": 1791503148789
+      },
+      {
+        "supplier": "codepodcast",
+        "price": 55,
+        "impressions": 1000,
+        "promisedPer1000": 7,
+        "salt": "22ad196992e59ad1bbe61c51d4550703",
+        "commit": "ac51694a9925557ca60a3434d87a08fb298bb96b05cc4e5a70fd4f6cc2221541",
+        "source": "llm",
+        "rationale": "Quote promises 7 signups per 1,000 impressions, within our past 6 to 8 conversion range, so delivery risk is moderate. Price per promised signup ranks well against the reference and leaves a middling margin.",
+        "gate": {
+          "pricePerSignup": 7.857143,
+          "winChance": 1,
+          "margin": 15,
+          "ev": 13,
+          "passed": true
+        },
+        "model": "anthropic/claude-haiku-5.5",
+        "usage": {
+          "calls": 3,
+          "tokens": 4794
+        },
+        "committedAt": 1791503148789
+      },
+      {
+        "supplier": "devnewsletter",
+        "price": 60,
+        "impressions": 1000,
+        "promisedPer1000": 10,
+        "salt": "d879b25b0fe92a1cb9916a8de91a1a5c",
+        "commit": "b6f4c09966f0341f5572390face30998b0700a65133f22ccfc38a6c845f38f8f",
+        "source": "llm",
+        "rationale": "We are bidding on 1,000 impressions at a price of 60 with a conservative promise of 10 signups per 1,000, which we think we can meet. The promise is kept at the gate minimum so that a shortfall does not put our bond at risk.",
+        "gate": {
+          "pricePerSignup": 6,
+          "winChance": 1,
+          "margin": 30,
+          "ev": 28,
+          "passed": true
+        },
+        "model": "anthropic/claude-haiku-5.5",
+        "usage": {
+          "calls": 3,
+          "tokens": 4853
+        },
+        "committedAt": 1791503148789
+      },
+      {
+        "supplier": "gamingforum",
+        "price": 20,
+        "impressions": 500,
+        "promisedPer1000": 4,
+        "salt": "1209bb1a1c2d7ecb727a7642878c0b5f",
+        "commit": "935718da534b07f49e07b8d39c6b10de42254946325a2ca8eb301f5946fb55f0",
+        "source": "llm",
+        "rationale": "We bid a small, low quote to test for a spare slot, promising only what our audience reliably delivers. The estimate tool passed this quote with a healthy expected margin.",
+        "gate": {
+          "pricePerSignup": 10,
+          "winChance": 1,
+          "margin": 10,
+          "ev": 8,
+          "passed": true
+        },
+        "model": "anthropic/claude-haiku-5.5",
+        "usage": {
+          "calls": 3,
+          "tokens": 4641
+        },
+        "committedAt": 1791503148789
+      }
+    ],
+    "discovery": {
+      "source": "live",
+      "label": "Masumi registry",
+      "endpoint": "GET /registry (V2 payment source)",
+      "expected": 4,
+      "found": 4,
+      "agents": [
+        {
+          "supplier": "techblog",
+          "name": "TechBlog",
+          "persona": "conservative",
+          "agentIdentifier": "67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b10adaaad1ba6f00b23a439dcb64cc022e13ae3e4ac093f9e5a56facd1f000000",
+          "apiBaseUrl": "https://ad-slot-auction.vercel.app/api/agents/techblog",
+          "state": "RegistrationConfirmed"
+        },
+        {
+          "supplier": "codepodcast",
+          "name": "CodePodcast",
+          "persona": "moderate",
+          "agentIdentifier": "67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b10a1389a9987a72d5ac638993bbb3fae35d9edf337172d44635af33ed0000000",
+          "apiBaseUrl": "https://ad-slot-auction.vercel.app/api/agents/codepodcast",
+          "state": "RegistrationConfirmed"
+        },
+        {
+          "supplier": "devnewsletter",
+          "name": "DevNewsletter",
+          "persona": "aggressive over-promiser",
+          "agentIdentifier": "67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b109150335daa6d55f995eb38aea9773df9a05420f779b99b16831a4eff000000",
+          "apiBaseUrl": "https://ad-slot-auction.vercel.app/api/agents/devnewsletter",
+          "state": "RegistrationConfirmed"
+        },
+        {
+          "supplier": "gamingforum",
+          "name": "GamingForum",
+          "persona": "passive low-baller",
+          "agentIdentifier": "67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b10aec5ba825779ae68bb401136b41990b4915de5e04f8f15d9f263bccf000000",
+          "apiBaseUrl": "https://ad-slot-auction.vercel.app/api/agents/gamingforum",
+          "state": "RegistrationConfirmed"
+        }
+      ],
+      "skipped": [
+        {
+          "name": "Tender Board",
+          "reason": "not_a_supplier"
+        }
+      ]
+    },
+    "auction": {
+      "ranking": [
+        {
+          "supplier": "devnewsletter",
+          "price": 60,
+          "impressions": 1000,
+          "promisedPer1000": 10,
+          "pricePerSignup": 6,
+          "accepted": true,
+          "award": 60,
+          "bond": 15
+        },
+        {
+          "supplier": "codepodcast",
+          "price": 55,
+          "impressions": 1000,
+          "promisedPer1000": 7,
+          "pricePerSignup": 7.857142857142857,
+          "accepted": true,
+          "award": 55,
+          "bond": 13.75
+        },
+        {
+          "supplier": "techblog",
+          "price": 65,
+          "impressions": 1000,
+          "promisedPer1000": 5,
+          "pricePerSignup": 13,
+          "accepted": true,
+          "award": 65,
+          "bond": 16.25
+        }
+      ],
+      "accepted": [
+        {
+          "supplier": "devnewsletter",
+          "price": 60,
+          "impressions": 1000,
+          "promisedPer1000": 10,
+          "pricePerSignup": 6,
+          "accepted": true,
+          "award": 60,
+          "bond": 15
+        },
+        {
+          "supplier": "codepodcast",
+          "price": 55,
+          "impressions": 1000,
+          "promisedPer1000": 7,
+          "pricePerSignup": 7.857142857142857,
+          "accepted": true,
+          "award": 55,
+          "bond": 13.75
+        },
+        {
+          "supplier": "techblog",
+          "price": 65,
+          "impressions": 1000,
+          "promisedPer1000": 5,
+          "pricePerSignup": 13,
+          "accepted": true,
+          "award": 65,
+          "bond": 16.25
+        }
+      ],
+      "rejected": [
+        {
+          "supplier": "gamingforum",
+          "reason": "below_gate"
+        }
+      ],
+      "totalAward": 180
+    },
+    "feed": {
+      "window": {
+        "start": "2026-10-08T22:45:52.998Z",
+        "end": "2026-10-08T23:45:52.998Z"
+      },
+      "impressions": {
+        "devnewsletter": 1000,
+        "codepodcast": 1000,
+        "techblog": 1000
+      },
+      "events": [
+        {
+          "eventId": "evt_00001",
+          "sessionId": "devnewsletter.9001",
+          "supplier": "devnewsletter",
+          "ts": "2026-10-08T23:23:30.464Z",
+          "signature": "5b9326480a8072f4f191b3b2908f576942c4e6a5b3b5d0492119835cba296ffeb0d75c2d190a5165eba159a186a56577fdc9cfbbe66fcc41ac17cb11702f420b",
+          "signals": {
+            "asn": "AS16509",
+            "clickBurst": true
+          }
+        },
+        {
+          "eventId": "evt_00002",
+          "sessionId": "codepodcast.9002",
+          "supplier": "devnewsletter",
+          "ts": "2026-10-08T23:17:31.807Z",
+          "signature": "2412a9fb0aff84dd8f61c3e055bd9310a2908564e3a3961dc3f0ce791281f18cbd0bfc29239a1ec1ccff607e26ffa9bf68c96d4aa87514db639b7165d66eec0f",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00003",
+          "sessionId": "devnewsletter.9003",
+          "supplier": "devnewsletter",
+          "ts": "2026-10-09T00:45:52.998Z",
+          "signature": "c1b6c9b475faf4ecdeb6edcf8e18be0887036d880d4a9c68c75252174bab0ff24327ca428fe310c834662138f92da99b1f4f1463deb6a84e8c8929c9bb69d40c",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00004",
+          "sessionId": "codepodcast.0001",
+          "supplier": "codepodcast",
+          "ts": "2026-10-08T23:02:44.970Z",
+          "signature": "8b190b367a43bef212eb2fce1bac5bc65c29988c0edff26173bbb242ef3bd01ef0a5c95067acf4a88bcd2a0143ff115fd16168a779173cda7c6320640b7eca0e",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00005",
+          "sessionId": "codepodcast.0002",
+          "supplier": "codepodcast",
+          "ts": "2026-10-08T23:29:07.673Z",
+          "signature": "d56a02e33b9fc32a6b8941b6de330eaed4494dd75f8e6e01d7606570242b2bc46cee0ae9423418e9d43f0c531518ca6b4990339113502abb0ca79a81ef981808",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00006",
+          "sessionId": "codepodcast.0003",
+          "supplier": "codepodcast",
+          "ts": "2026-10-08T23:45:34.360Z",
+          "signature": "5df1d784baa47278bdea1b4e48a5830ff22fd3a702c11bb31d58c9406c86fefdfa878ef21c85cd21b6270135c77cc422b6b37e676769db424e9b35f4550bb004",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00007",
+          "sessionId": "codepodcast.0004",
+          "supplier": "codepodcast",
+          "ts": "2026-10-08T23:15:12.635Z",
+          "signature": "cf06de52e1c1589660fe9c0f0e150ff48e85c59d4889e6f4bd2fd8979e542e74b1e6c2cc25e08464078bea6dca9bcf24a42c5987663d821ff3b1ebf3a1da900b",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00008",
+          "sessionId": "codepodcast.0005",
+          "supplier": "codepodcast",
+          "ts": "2026-10-08T23:10:06.479Z",
+          "signature": "7c6f1423196ddb30429e1e4037862f96529e662073c90a19ff4e3b91a60d3624f0b80ab21a970fa02d4803cad8364c53750f569337aa6173a3fac2af31bc6602",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00009",
+          "sessionId": "codepodcast.0006",
+          "supplier": "codepodcast",
+          "ts": "2026-10-08T22:55:09.173Z",
+          "signature": "8b1c0dd61aa9a816101c8bd8787b8af21a53b98b9b5a428adfa49c2dd3cf36f5234e5e55a1fc631343d380589aea221a4ee546ec895beda734ac18cba34f710b",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00010",
+          "sessionId": "codepodcast.9001",
+          "supplier": "codepodcast",
+          "ts": "2026-10-08T22:49:55.529Z",
+          "signature": "56831a60573e0ddad5afea5125e86a883a436fc7ec989ba6a01aa1dc71df579a7d915e02675ef1e16225b8662ba39efd777246b23cc6afce5664ccba0803b206",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00011",
+          "sessionId": "devnewsletter.9002",
+          "supplier": "codepodcast",
+          "ts": "2026-10-08T23:31:54.586Z",
+          "signature": "5e6174fbc303e15a91e176fe1d4c48b303e8c82d86a41d7496d902697d99fa4e674b44a44c46c14379924fe00361fd3b8e027f967699dfa28a4f6af00fdd7609",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00012",
+          "sessionId": "codepodcast.9003",
+          "supplier": "codepodcast",
+          "ts": "2026-10-09T00:45:52.998Z",
+          "signature": "9fb164283e753c918cb972db66f4d5dc9a25f70f12b5e2e7473bf884f97833b5e11a313b1099dde75ba5d7774e0de9826bfa61b40b87d7cb82f4241377382506",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00013",
+          "sessionId": "techblog.0001",
+          "supplier": "techblog",
+          "ts": "2026-10-08T22:48:26.824Z",
+          "signature": "0966eb8d1dd4185670371feb48727b9a05b515a55d0b1ae6283adfbf266b88ee45fd1eb9872d93562b1d8014bc5f017293057f08799c21bd857e76b15938eb0d",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00014",
+          "sessionId": "techblog.0002",
+          "supplier": "techblog",
+          "ts": "2026-10-08T23:21:18.374Z",
+          "signature": "a36254792b565e2939f1f78ee2bd2a40701ade27b227964602fd9e6639dd82f7e1d5a68a328139ba30f66a1fa3b94fc020b63617bbd21003bf20211d4e947406",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00015",
+          "sessionId": "techblog.0003",
+          "supplier": "techblog",
+          "ts": "2026-10-08T23:03:34.529Z",
+          "signature": "6fa4099c28761331963d76a72e3900401fc4b3d0b2dfb4b5d060436b58b99d15e725fb33ce9ca94e23b454be9d378cf263d8c77d7f77e5a0498d18e88f70d002",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00016",
+          "sessionId": "techblog.0004",
+          "supplier": "techblog",
+          "ts": "2026-10-08T23:25:22.264Z",
+          "signature": "e8b52d1b50abc66d83f6670175c94410de5f8ee9407b806e7408f0c813acc3cb74be3ef3b1c2e62d22ea00ecfa24bf27a006ab33440f654553b2b98c2113c807",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00017",
+          "sessionId": "techblog.0005",
+          "supplier": "techblog",
+          "ts": "2026-10-08T23:31:23.392Z",
+          "signature": "1041698a8fa95f54be752e8915b4e26c6762d34e27806c8a7b9d658b585036c1d9c5d8eccb216bdc1792484d652263c9ce8146763a051d6429ce82ace3b7bb0b",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00018",
+          "sessionId": "techblog.0006",
+          "supplier": "techblog",
+          "ts": "2026-10-08T23:29:08.409Z",
+          "signature": "5e5c7bb8d9c5b5fd3e78c7ba2c26a495255993ce76ac3a3109e692995e943351cffcb9ca392568c1517ec25342a8088bd7c4695fea6f5df5c820814ed6ae0f0a",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00019",
+          "sessionId": "techblog.0007",
+          "supplier": "techblog",
+          "ts": "2026-10-08T23:32:06.487Z",
+          "signature": "d62ce561c3ef76121c8e764126e193d156421bacb9ffe5af92b4b0e03a981aa6bf2721be1676350fe8991c32c14a86bd938900c2d1773b9c4c0fd1dd0821e609",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00020",
+          "sessionId": "techblog.0008",
+          "supplier": "techblog",
+          "ts": "2026-10-08T23:00:14.597Z",
+          "signature": "4a589b49ce55176367ae42c09c9a0b6b3a99bce8cd1bbf9fb910052b9e0b5be7d59594d3f07a8cbcd9f7efd6c1229278587f57c2203775934dbb924b0d179302",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00021",
+          "sessionId": "techblog.9001",
+          "supplier": "techblog",
+          "ts": "2026-10-08T22:55:04.773Z",
+          "signature": "4bca29101d34b28e9ca726d0b4dd5b6c4be892682be7c92218c31d3de1d8266aa79291030935eef9c7eef7ac378e78fd48f47dd305b3ad6b4c303a1f3ab13c0a",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00022",
+          "sessionId": "devnewsletter.9002",
+          "supplier": "techblog",
+          "ts": "2026-10-08T23:10:40.507Z",
+          "signature": "f7ace3d91c775bad2d58ab6e9a11a8fcb78e99e0a1fb472997456b5f086e39b3a76a1594161e1d8368b10edfaa5efd9c3e475f751ef5e098de45f83aa80db40e",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        },
+        {
+          "eventId": "evt_00023",
+          "sessionId": "techblog.9003",
+          "supplier": "techblog",
+          "ts": "2026-10-09T00:45:52.998Z",
+          "signature": "505c0eb2b265018da939352049d8a7cd17b2a1e1f31c94008ea5a3156978a652b0616cdc8e1df94d1e41d0c3da54779c805a0b5ad336e820bee2eb257ceb0604",
+          "signals": {
+            "asn": "AS3320",
+            "clickBurst": false
+          }
+        }
+      ]
+    },
+    "verification": {
+      "verified": {
+        "codepodcast": 6,
+        "techblog": 8
+      },
+      "rejections": [
+        {
+          "eventId": "evt_00001",
+          "supplier": "devnewsletter",
+          "reason": "bad_signature"
+        },
+        {
+          "eventId": "evt_00002",
+          "supplier": "devnewsletter",
+          "reason": "wrong_attribution"
+        },
+        {
+          "eventId": "evt_00003",
+          "supplier": "devnewsletter",
+          "reason": "outside_window"
+        },
+        {
+          "eventId": "evt_00010",
+          "supplier": "codepodcast",
+          "reason": "bad_signature"
+        },
+        {
+          "eventId": "evt_00011",
+          "supplier": "codepodcast",
+          "reason": "wrong_attribution"
+        },
+        {
+          "eventId": "evt_00012",
+          "supplier": "codepodcast",
+          "reason": "outside_window"
+        },
+        {
+          "eventId": "evt_00021",
+          "supplier": "techblog",
+          "reason": "bad_signature"
+        },
+        {
+          "eventId": "evt_00022",
+          "supplier": "techblog",
+          "reason": "wrong_attribution"
+        },
+        {
+          "eventId": "evt_00023",
+          "supplier": "techblog",
+          "reason": "outside_window"
+        }
+      ],
+      "perSupplier": [
+        {
+          "supplier": "devnewsletter",
+          "received": 3,
+          "verified": 0,
+          "rejected": {
+            "bad_signature": 1,
+            "wrong_attribution": 1,
+            "outside_window": 1
+          }
+        },
+        {
+          "supplier": "codepodcast",
+          "received": 9,
+          "verified": 6,
+          "rejected": {
+            "bad_signature": 1,
+            "wrong_attribution": 1,
+            "outside_window": 1
+          }
+        },
+        {
+          "supplier": "techblog",
+          "received": 11,
+          "verified": 8,
+          "rejected": {
+            "bad_signature": 1,
+            "wrong_attribution": 1,
+            "outside_window": 1
+          }
+        }
+      ]
+    },
+    "verdicts": [],
+    "settlement": null,
+    "ledger": [
+      {
+        "id": "masumi_eyJzdXBwbGllciI6InRlY2hibG9nIiwiYWN0aW9uIjoiYmlkX2ZlZSIsInNlbGxlciI6ImJvYXJkIiwiYnV5ZXIiOiJ0ZWNoYmxvZyIsImFtb3VudCI6Miwibm9uY2UiOiI2NjJkYTQ3OWMwMDhkYWE2ZmMyYjIxOWQiLCJpbnB1dEhhc2giOiIyNTVhMGI2NTc1NDlkOTAxYTg2MGE5MjU3MjI0ZDk5NjExNmZmODY3NDBjOWE4OTQ3YTBhNjQyMWRlOTM4ODZhIiwiYmxvY2tjaGFpbklkZW50aWZpZXIiOiIzMzA2MzBhYzA2YzEwNGMwMGM2ZDAwOTgwY2MwOWNjZjAwOGM0YWM2YTIwMjk4MGVjMDRjZDAwODYxMmFiMTVjYjQ2YTI4YjAwNDVjOTg0NzQwNDA4YzVjMDFjYjFiMTQ4OTc4NDMwMDA1ODY4ODA4NDVjYTY1ODM5YTA4MzFlNDQxNzA4NWQ2MmY1NDYxYzk3MWNhMjA4MTMwYjE2NzkzMTVkY2FmNjQ1Y2MxNzYwOTg2ZjQwOTFkZWZkYzRiMDFlYzYwNjNkNTI3YzExODBiOTg1YmQ1MDA5NDE2NTgxMTA4OGM0YzFkZGM5OTA4OWVkYzk4MDg4YjVmMTMwY2Q0MmQwYzQ0MTgwMjBjNWQxYmQ2MThhNGEwMGU4YTA5MGNjODk1MDQxOGI3OTExYzkyODMxYTEzMWEwYjk3MTRiNzg2MjQ1NTE5MzYwYjlhMDg5NjFiYWUwM2Q0MjIxOTBjNDA5YjE2MDViODY0MDhjZDE2YjMwMjE1Yjc5OThjMGU5ODFhMTc4ODNhNmMxYjYzODA2ZWMwODQwYjQwOTUxZGI3MzQ5ODhjZGE1ZDVmM2YyMzk0NTEzMTJjMWQ3YTk2MDg5OTE4MTkyZjg4ZGM4MDQ3MjAxZDUwZGE0ODI0MTc2Zjk3YTI2MTMwOTEzYTAwZDc4ODhkMjFjODA4Yzg1ZTI2MDYyYjE3ODkxMTUyM2YxMDNiOGQ4YTg0YzJhMjQwM2Y2NGIyMDFhZWU3NmIyMTI2NTExYjMyMWM4YTg2MDM3ODA4NWYzMTE4OGU0OGMxOTIxOTMwODgzNmJhZDMwMzIzNTE0MDQ0NWM0NDg0MDQ0OTAzMTI0ZGRlNzA0NjI1OWM4MWUwYTQxMDYyZTg2OTZmMTZhOTMzNmFhMjY4YmNlZmEyMDQwZDU0ZGI1OWRjNjcwYTRhMTA1NDBhMjFlOThhMjQ1ZTJlOTM0OTg3Nzg0OGMxODg2OTYyMThjNDYwODNjNTE4MzgxZDFlNDQwMGI1NDBjOWQ2NGU0YjkxMWYyY2M0ODkxMGRkNjI2MDJjNTYwNDRkNmI1YmU4MWE5ODc0Y2UzNjhlMWFhM2I2NDYzM2E5MGMwNTIyMjI2MDMwN2NjNTMyMDRjYTExMDJmM2QwM2I2ZGIyOGE2MjU5NTg0NjY5MGQ0MGNhYmQxZWM0NGU5NGNjZmQzZWUxZDQ2MzAxYjJmMTQ2OTg3MWE0ZGE2YjUzOThlNTE2MzUwZjJhY2ViOGI2ODM2ZDc2ODg3ZDgwZjhlY2MzM2E4NTJlMzU2NjIxMDY0NjIxZWUzMDAwNGUwMDdkMDAwYjgxMDAwY2UxN2FlMDAxZGMwMDVlMDA0NzAwMzliOTAwMDM2ZjhhNjc1ZjkwMDAyYjEzZGMwMGJkYWYyNTAwMDRmMTAxZWYwMDAzZGY4NGIwM2YwYmQ2MDZiYzUyNjkwY2M1N2Q3ODAwMGVjMDAwYjE4ODNmMTNkNWY2MThjNDM0MmYwMjAwIn0",
+        "badge": "PENDING",
+        "action": "bid_fee",
+        "amount": 2,
+        "from": "techblog",
+        "to": "board",
+        "escrow": "330630ac06c104c00c6d00980cc09ccf008c4ac6a202980ec04cd008612ab15cb46a28b0045c984740408c5c01cb1b14897843000586880845ca65839a0831e4417085d62f5461c971ca208130b1679315dcaf645cc1760986f4091defdc4b01ec6063d527c1180b985bd50094165811088c4c1ddc99089edc98088b5f130cd42d0c4418020c5d1bd618a4a00e8a090cc8950418b7911c92831a131a0b9714b786245519360b9a08961bae03d422190c409b1605b86408cd16b30215b7998c0e981a17883a6c1b63806ec0840b40951db734988cda5d5f3f239451312c1d7a96089918192f88dc8047201d50da4824176f97a26130913a00d7888d21c808c85e26062b178911523f103b8d8a84c2a2403f64b201aee76b2126511b321c8a860378085f31188e48c19219308836bad303235140445c4484044903124dde7046259c81e0a41062e8696f16a9336aa268bcefa2040d54db59dc670a4a10540a21e98a245e2e9349877848c188696218c46083c518381d1e4400b540c9d64e4b911f2cc48910dd62602c56044d6b5be81a9874ce368e1aa3b64633a90c05222260307cc53204ca1102f3d03b6db28a62595846690d40cabd1ec44e94ccfd3ee1d46301b2f1469871a4da6b5398e516350f2aceb8b6836d76887d80f8ecc33a852e356621064621ee30004e007d000b81000ce17ae001dc005e00470039b900036f8a675f90002b13dc00bdaf250004f101ef0003df84b03f0bd606bc52690cc57d78000ec000b1883f13d5f618c4342f0200",
+        "inputHash": "255a0b657549d901a860a9257224d996116ff86740c9a8947a0a6421de93886a",
+        "txHash": null,
+        "explorerUrl": null,
+        "state": "FundsLockingRequested",
+        "phase": "bid_fee",
+        "supplier": "techblog"
+      },
+      {
+        "id": "masumi_eyJzdXBwbGllciI6ImNvZGVwb2RjYXN0IiwiYWN0aW9uIjoiYmlkX2ZlZSIsInNlbGxlciI6ImJvYXJkIiwiYnV5ZXIiOiJjb2RlcG9kY2FzdCIsImFtb3VudCI6Miwibm9uY2UiOiJlN2YyNzJhNzdiYzc1NTUxNTE1MmEzNzEiLCJpbnB1dEhhc2giOiJhYzUxNjk0YTk5MjU1NTdjYTYwYTM0MzRkODdhMDhmYjI5OGJiOTZiMDVjYzRlNWE3MGZkNGY2Y2MyMjIxNTQxIiwiYmxvY2tjaGFpbklkZW50aWZpZXIiOiIxMzAxNjAyNjBjYzA5Y2MwODYxMTAxOWEyNDUwMWIyYTBhNjA0NjAwMzFiYjA4MDYzNTliNTAxNmM4ODFkODIwMTU4MDIzNWRjMzEyNGMyNjBhYTk2ZGE0NGQ3MDliMmQyMmI4OGFkMjg1NGMzMDYwMTBkMTU1ODhjODhjMjIyMTYxMTZjMDU3MDAwZTJlYTUxNWE1YTk5MzJkNWNmMzYwODZjYjEzNjI0MTg1ZWEwZDBiOGFiNGZhMTFlOTg1Yzc3Zjg4MDJjMGMzYTM0MDI2MDlhMTA1OGM0ZjIxMDYwNTQyMGI0ZWViMDg4MzRmNGYwNTRkYWU4ODk1ODg4NTAyMDQ0MzJhODg4MjFiODA1ODUwMDc0OTg1NDg4MWM3MDU0NTRmNGQ0ZGNiNDM2YjQ3MDEwNTRkODQ1OWFkMTlhNjg1MGYwYjg2NDU0NGNiNDlhYzAwNWY0NTA5ODY4Mjg5ODM1YjhjMDhjNTk0NjE5YzJmNDY4ZjRjMGMxMGJkMjZiZDg2MDUzYjRlYzRlNjQ4NDk4NDRkYTk4NTBkODUwZDllM2E1NjZiMjA0MTgxODRlZmEzNDM0ODNkMDA1NjUxMGYwZDg5YTQ2YjA5OGIwM2Q5NDBiOGI0N2QxYTEzNGVhMTAzMDExMGY0MTcxODFjYTY0NGQxMjNjNjhjNGMyMjEzNGY0Njg4YzRlMjU1MmIzMTFkYzg4MzEzZDBkMTQ0M2NiYzExMDYwNTgzYjgyZWM4NzAwYjU2ODg4NTgxNDAxMGJjNDcwODA0MDhjMTYxYzkwYzZlNjAwZmQ1YzcyNzUxYTFjMTA0MWEwOGI0MTIwMTQyMGQ4NjQ0MzRiOWMyZWMzNTgwODk0MWU3NTNhNDFiMGVjZWYxN2QyOGMyY2MzMDAxOTk2NzAwMThhMGY0MTg2MjFhODMzMjliYzNkNDNmMzFiMmQwNjIwMjYzMjgzNTUxNWYyOWIyMjQ4MGQyNjM3YTQ0NjUzZjFlODUxNWMyMTMzNDQ0MTI0ZTA1NjJiNDEyMjQ0Y2NkM2YyMjU4MDI0NDQyNjBjMDAxOGYwZWQ1Njc4NjBhNDk2NWI4NDg5YTA3MGRkNjM5NDBiNGU2YjhhZmJhMGM1ZTEzZjUwY2Q4MWMyNjEzNGIwMzU5NTFjNmEyMTBmZDUzNGVlMmExMTRjY2JkNWVmZWQ4NmY4M2U3NGE0NjYzMDlhZjFhNmIzMjc0MmQyZTFlMTU5YWMyMDFiNzYwNDNkMzdiMGFhMWMxNzI3MzFiOWQyZTBiZmNkYzg0MGRkOTYwMDA5YzAwZmEwMDE3NGMwMDE5Y2NmZDgwMDNiODAwYmMwMDhlMDA3MzU4MDAwNmM4ODdlMDgyNWYxMDAwMmIyM2U4ODY3YTVlY2EwMDA5ZTQ0MmRlMDAwN2E2ODI2MjY4NmY5OWViODI1ZWNkMmM4NjYzM2U5YTAwMDc2MDAwNWI0NDZmOTFlY2Y5MzAyMDFhMTdlMTAwMDAwMCJ9",
+        "badge": "PENDING",
+        "action": "bid_fee",
+        "amount": 2,
+        "from": "codepodcast",
+        "to": "board",
+        "escrow": "130160260cc09cc08611019a24501b2a0a60460031bb0806359b5016c881d8201580235dc3124c260aa96da44d709b2d22b88ad2854c306010d15588c88c22216116c057000e2ea515a5a9932d5cf36086cb13624185ea0d0b8ab4fa11e985c77f8802c0c3a3402609a1058c4f210605420b4eeb08834f4f054dae889588850204432a88821b8058500749854881c705454f4d4dcb436b4701054d8459ad19a6850f0b864544cb49ac005f4509868289835b8c08c594619c2f468f4c0c10bd26bd86053b4ec4e64849844da9850d850d9e3a566b20418184efa343483d0056510f0d89a46b098b03d940b8b47d1a134ea1030110f417181ca644d123c68c4c22134f4688c4e2552b311dc88313d0d1443cbc11060583b82ec8700b568885814010bc47080408c161c90c6e600fd5c72751a1c1041a08b41201420d864434b9c2ec35808941e753a41b0ecef17d28c2cc300199670018a0f418621a83329bc3d43f31b2d06202632835515f29b22480d2637a44653f1e8515c2133444124e0562b412244ccd3f225802444260c0018f0ed567860a4965b8489a070dd63940b4e6b8afba0c5e13f50cd81c26134b035951c6a210fd534ee2a114ccbd5efed86f83e74a466309af1a6b32742d2e1e159ac201b76043d37b0aa1c172731b9d2e0bfcdc840dd960009c00fa00174c0019ccfd8003b800bc008e0073580006c887e0825f10002b23e8867a5eca0009e442de0007a68262686f99eb825ecd2c86633e9a000760005b446f91ecf930201a17e1000000",
+        "inputHash": "ac51694a9925557ca60a3434d87a08fb298bb96b05cc4e5a70fd4f6cc2221541",
+        "txHash": null,
+        "explorerUrl": null,
+        "state": "FundsLockingRequested",
+        "phase": "bid_fee",
+        "supplier": "codepodcast"
+      },
+      {
+        "id": "masumi_eyJzdXBwbGllciI6ImRldm5ld3NsZXR0ZXIiLCJhY3Rpb24iOiJiaWRfZmVlIiwic2VsbGVyIjoiYm9hcmQiLCJidXllciI6ImRldm5ld3NsZXR0ZXIiLCJhbW91bnQiOjIsIm5vbmNlIjoiZTUzYjE3NzI0NTFmYzcwM2VhYjE5OTI2IiwiaW5wdXRIYXNoIjoiYjZmNGMwOTk2NmYwMzQxZjU1NzIzOTBmYWNlMzA5OThiMDcwMGE2NTEzM2YyMmNjZmMzOGE2Yzg0NWYzOGY4ZiIsImJsb2NrY2hhaW5JZGVudGlmaWVyIjoiM2IwNGUwODZjMGNjOTA4YzAwYzkwMTMyMjAxYzA1MzAyYjIyMDI2MmIwODAyMzAwY2MwMTY0NGUwMThjODhhMGUxYjQ0ZDEyNjE5YjIyYzBhNjAwZDhkMjIwYjBkNmMxOGUyNzM4YzViMGMzMGIwNDhhNTQyNTNhNzYwNjAwYTUxMDg4Mjg5NzY1ZGUwYTEwMThjMGMwYTIxMzg2MzQ5OGUxMmIwNGNjMGEyMjMwMzBjNDgwNGVlMjEyNzE4MjI0NzhmYjI4Zjg5MGU0YzFjMjM0ZTU4NWMzZjEwMzQ0ODBhMjU0ODZjNjAxMjBjNmYzMDIyMjgzZTQ4NjAxZDIzM2UxMjcwYTIxMDEyMGE0ODRlNmNhMjNmMzgzMmYyODAzYTRjNDcxODYwNzc3ODk4NmE2MDA0MzQyNTE4MTA1NTRlMGE5NDc4OTQ0ZTcwNDgzODAwZTZkZWYyNTE3MGNlNTIzNDAyMGEzODQ0NjU3Y2NjNWNkOTgyNGUwMjU0NDgyNThmNTQxNjY5OGMyNDc3MDA4NzM0MGExZDM0MTA3NjgyYjQ2ZTQ1Mzk2MDRlMmUzOTEyNzc2MzI4MjgwYzE0NDgxMDMyZTAxMmM5MTg3NDFlOTVhZmIwZTg2MDMwYzY0ZTBhMTFlODg1ZTAxMDYyNDQ0NDAwNDUwYzhlYmIyODc4MjgwMjNjNDEyNDkzYThkOTIyZGUyMjA2MTA4M2MyYTI0MTI0NDQ2YzE4MWJjZWQyMjI5MTYyNzYzNjA4MWEwMjQzNDFiODQ4MjQ2NTM2MTYyZmM2OWJkMDAxOGU0NTE3MWU0N2Q1YWExNGZhZTA5MjI5MDNlZTQ3ZDBjYjQ4NTRmZWI4MDg4NzA2YzJhNTA5MjA2YzA4MDI4MTg3ZjBjOGMwNDRjZDlhMTgwZjAzY2JiNWVjY2M3Yjg1YzMwY2FkMzRjNWQwODYwZmFiOTU1ODQxNDFiY2Y0MWM0MTJlOGEyMjgwYTFiZDA4OWM2YzJiMzA5NTQyNzJmMGI4NDA4MjJiNTFjODgzMDMwOGEwZGY2YmFjMDUwZDg0ZTE0NTY5YmYxMjIwZDEwYzZiODA3NDJlMjg2MTE1MDJlOTMxMmI5MDVjMTI0NDM3MWYwNDk1Yzk4MTUzNDY3ZTFhODM0YzZkZjlmODYwY2Y1NjY0MDJhOTYyMWFmNjBlNjM0ZTIyM2E1NjUwMjA0Y2E2MzMzOTgyYzI4NGIyZDY4OGQ2MWIyZDkyMGExODE4MjNlZGIzODhjNDY2ZDRlZTEwYjk2YjM2Mzc0YjM3NmI5MDAyNzAwM2U4MDA1Y2QwMDA2NzczY2MwMDBlZTAwMmYwMDIzODAxY2NjMDAwMWIwYTI2YjIwNTdhMjAwMGFkOGY2ZDVjZjJiZGQ0MDAxM2MyODNiYzAwMGYwMmRhYzc3ZGNmMzgwYWYzNDgxNDRiMDVmMTQwMDAzYjAwMDJkZTI3N2Q4ZjE3Y2UwNzY0ZDBjZDQ4MDAwMDAifQ",
+        "badge": "PENDING",
+        "action": "bid_fee",
+        "amount": 2,
+        "from": "devnewsletter",
+        "to": "board",
+        "escrow": "3b04e086c0cc908c00c90132201c05302b220262b0802300cc01644e018c88a0e1b44d12619b22c0a600d8d220b0d6c18e2738c5b0c30b048a54253a760600a51088289765de0a1018c0c0a213863498e12b04cc0a223030c4804ee21271822478fb28f890e4c1c234e585c3f1034480a25486c60120c6f3022283e48601d233e1270a210120a484e6ca23f3832f2803a4c4718607778986a600434251810554e0a9478944e70483800e6def25170ce5234020a3844657ccc5cd9824e025448258f5416698c24770087340a1d34107682b46e4539604e2e3912776328280c14481032e012c918741e95afb0e86030c64e0a11e885e01062444400450c8ebb287828023c412493a8d922de22061083c2a24124446c181bced22291627636081a024341b848246536162fc69bd0018e45171e47d5aa14fae0922903ee47d0cb4854feb8088706c2a509206c08028187f0c8c044cd9a180f03cbb5eccc7b85c30cad34c5d0860fab95584141bcf41c412e8a2280a1bd089c6c2b30954272f0b840822b51c8830308a0df6bac050d84e14569bf1220d10c6b80742e28611502e9312b905c1244371f0495c98153467e1a834c6df9f860cf566402a9621af60e634e223a5650204ca6333982c284b2d688d61b2d920a181823edb388c466d4ee10b96b36374b376b90027003e8005cd0006773cc000ee002f0023801ccc0001b0a26b2057a2000ad8f6d5cf2bdd40013c283bc000f02dac77dcf380af348144b05f140003b0002de277d8f17ce0764d0cd4800000",
+        "inputHash": "b6f4c09966f0341f5572390face30998b0700a65133f22ccfc38a6c845f38f8f",
+        "txHash": null,
+        "explorerUrl": null,
+        "state": "FundsLockingRequested",
+        "phase": "bid_fee",
+        "supplier": "devnewsletter"
+      },
+      {
+        "id": "masumi_eyJzdXBwbGllciI6ImdhbWluZ2ZvcnVtIiwiYWN0aW9uIjoiYmlkX2ZlZSIsInNlbGxlciI6ImJvYXJkIiwiYnV5ZXIiOiJnYW1pbmdmb3J1bSIsImFtb3VudCI6Miwibm9uY2UiOiJkZjM0YmY4YTY4NzBmMWEyMDcyMTIzOTIiLCJpbnB1dEhhc2giOiI5MzU3MThkYTUzNGIwN2Y0OWUwN2I4ZDM5YzZiMTBkZTQyMjU0OTQ2MzI1YTJjYThlYjMwMWY1OTQ2ZmI1NWYwIiwiYmxvY2tjaGFpbklkZW50aWZpZXIiOiIwYjA0ZTA0YzA0NjAyNjAxYzEwYzYwNzYwMWIzMzEzMDJiMDgzYjE3NWU1MzIwMjlhMjEwMDg2NjMwYWJjMTgwNjY1NTQxODA4YzUxODhhMjAzMzE5NGM2MDAzMGNjMDMxYzMyODgyOGI2MDEwNDFhMzIxMTdiYzcwZjE4MTk3ODRkOTEzN2VkOWJiY2U0MTg4OTEzZTMyY2IwMjY2NDYyZDFlNGMzODQxZTk1N2EyMzA1NmFkNDVlZDc3ODcyYTRjYzE0MjljODM4YjE4ZWUyMDQ0MWNmMDMyMWM1MDg4ODJjZTY0YjQ5Y2U0MWNlODIwNTJlNGEwNDRiNDIwYzBmMDFjYzhhMGI0ZWViYzA1ODUwMDc0NTA3OTEyYjQzMDY0YzgzMDg4YmNlNjE0NzY2MDllMWNlMDQ1MDI0MmM4MjA2NDFjYmM5ZWI1ODIzMDYwMDU5MjQ0YzhmNDQ0MDhiYzkwYmM5OWZhZTlmMDJlYzgxMDYwMDE3MzBlMmIyYzEzMTgxYzZjNGQ0ZDFjNDRmMDMwNDEyMDRjMjA1OWEzMjQ0NjY4NmEzOTM5ZjYzYTljOWM0MjJkMDU4ODc5ZGQ0YzMwZmE2NDQ0NjRkYjQ5MGMwNjA3NGQ1NTUzMDBjMGI0MDgwNDFjMmI0M2Q4YzFlMWEzNTkxYTRlMDgyMWMwYzVkODY2MTBiMzk2ODU4MDgxYTVlMDFmMGUyZDBhMDY0NjcxOWQ2OGY0MDg4ZjE2ODY0MTAwNzFkYzQ0M2IzMDAyNGJjMjgwNDU3ZTEzNTYxN2NhY2EyNTUyYTA2MDZhNGUzNTQ0MWMwN2ExMDg4NjQ3NDQwMmM5MmM4MzIzZjA2ODZhNTcwODA2MDA1MWRhNTk3ODI0MDJiMjBjMDQ2MTI1OGNiYzI0OTYyNzE3ODE4MDgyMDg0ZDE0NmUwOTMxOTQ2MjEzMDA2NjhhZDkyNTBiYTRlMjYzMDExMGFjNDQxMDI1NWIyYmUxMTBjMDdhNTI5MzAyMDdjMmY4YjBmOGQ4NTIwZjQyMGM0YWY2MDk2ODQ0NGE4MmQxM2NlYjUwMjU0NDUyYTgxN2M2MDBiNGYzYzFjODE4MjQyMTYyOTQ0MjgxMjljMDRjNzgwMmQxODUyOTAwNDA1NTgyNDY0MDZiMGM0ZTIzMDFjMmFjYTI5MTk3YTNkOWRiZDhiNTRkNzE3MGM4MjYzNjAwNGMxNmQzNTk5ZDFjZThiNjVhYWNlOGViMTgyNmM0MzdkYmRhNTkwZWM3MjIyOWRjZTA3NjIyODk4MDVkYjY0MDA5YzAwZmEwMDE3MjIwMDE5Y2NmNGMwMDNiODAwYmMwMDhlMDA3MzMyMDAwNmMwODc0Y2JlZDAwMDU2NDc5YTE5ZTk3YTI4MDAyN2JjMGI3ODAwMWUyYWE5ODZmOTllYmMyNWUwOTM0OGMwMzNlMzAwMDA3NjAwMDVhMDg2ZjkxZWNmOGNjYzAwYTFkZTEwMDAifQ",
+        "badge": "PENDING",
+        "action": "bid_fee",
+        "amount": 2,
+        "from": "gamingforum",
+        "to": "board",
+        "escrow": "0b04e04c04602601c10c607601b331302b083b175e532029a210086630abc180665541808c5188a2033194c60030cc031c328828b601041a32117bc70f1819784d9137ed9bbce4188913e32cb0266462d1e4c3841e957a23056ad45ed77872a4cc1429c838b18ee20441cf0321c508882ce64b49ce41ce82052e4a044b420c0f01cc8a0b4eebc05850074507912b43064c83088bce61476609e1ce0450242c820641cbc9eb5823060059244c8f44408bc90bc99fae9f02ec8106001730e2b2c13181c6c4d4d1c44f03041204c2059a32446686a3939f63a9c9c422d058879dd4c30fa644464db490c06074d555300c0b408041c2b43d8c1e1a3591a4e0821c0c5d86610b396858081a5e01f0e2d0a0646719d68f4088f1686410071dc443b30024bc280457e135617caca2552a0606a4e35441c07a10886474402c92c8323f0686a5708060051da59782402b20c0461258cbc24962717818082084d146e093194621300668ad9250ba4e2630110ac4410255b2be110c07a52930207c2f8b0f8d8520f420c4af60968444a82d13ceb50254452a817c600b4f3c1c81824216294428129c04c7802d185290040558246406b0c4e2301c2aca29197a3d9dbd8b54d7170c82636004c16d3599d1ce8b65aace8eb1826c437dbda590ec72229dce0762289805db64009c00fa0017220019ccf4c003b800bc008e0073320006c0874cbed00056479a19e97a280027bc0b78001e2aa986f99ebc25e09348c033e30000760005a086f91ecf8ccc00a1de1000",
+        "inputHash": "935718da534b07f49e07b8d39c6b10de42254946325a2ca8eb301f5946fb55f0",
+        "txHash": null,
+        "explorerUrl": null,
+        "state": "FundsLockingRequested",
+        "phase": "bid_fee",
+        "supplier": "gamingforum"
+      },
+      {
+        "id": "masumi_eyJzdXBwbGllciI6ImRldm5ld3NsZXR0ZXIiLCJhY3Rpb24iOiJhd2FyZCIsInNlbGxlciI6ImRldm5ld3NsZXR0ZXIiLCJidXllciI6ImNvbnN1bWVyIiwiYW1vdW50Ijo2MCwibm9uY2UiOiI3NDFhNzBmMWRhYmU4MWJmZWMzZmE0MzIiLCJibG9ja2NoYWluSWRlbnRpZmllciI6IjAzMDBlMDY2MDI2MGM2MDhjMDRjMDQzMzAxOThjMDUzMDgxNTgxMDRlMWIwNjM0MDc2MDA1ODAyMzY1NjVkODM0ZDMwNjIyZTIyY2IwMDM2MThiMTk1OTM5MDQxMDhjODQzNjI0OGFkMDRhYzA3YzMyYWM4ODIzMmMwYTBlMzg1MDQ4MjU4ZWQ0MGU2YzMxMTZiNGNiNTMzMDM5MDg0OGMwNGUwNjI2MThjOGNhNWI4MjU4MjMxYjM2MjMwNWJjMGYyMWU0YzkzMDQzZTEzMzEzMGMwNzBiNGQwMjg0MDEwZDE3MDg4ODk5MDg0NzAxMTgxMzA0OGUxODBjMDYyNzBjODQzNmQ1ODQxOTBjYzQ4ZThjMTgwNGI0YTAwZTk0OGNjODhkMjM4ZTRkMDQwNjA1OGQwYTE1MDRkOTBlMGNhNDA0OTMwNDE1ODEzOTAwODk5ODFiYTQxNTJlMTliODcyMzEyYTE2Yzk1ZjEwNGQwZTEzMGIyOTgyMTU4ZTJjOTdhZTM1OGQ4ODlmNDEwNjEyY2M5MzBlMDFhNTE1ODk2YzhlMDcwZDg1OGY4ODg2NWQ5YjliOTE4ZjU2MzYyN2I5MDcwNGEyMTFiODkxMzYyM2UyODI1NDA2ZjQ1NjFjOThlOTg2NDJjODIwZjYyODNhMDc2MDg2NDM3MWM4YWMzNDU0NTEyZTMxMDJmNTIwZWQyNDBlOGEwYjBjMzhlOTJjMTA0YTFkMTE2M2UwODA2NGUwNmMyODVjMTY5NTA2MTg0MTg4YzhlMDFjMDYwZDhkNTFhMDE4YjkwMzlhMzcyZWM1OGEwYjMwZGMzMDA4ZDUyMjQyZWEwOTgxNjA0OGFjMGM4MzM3MzNkODRlOTAzODNjODQ4MzgyODE0MDM5MjAwYTI4YmYwNjAyODM2MGU0Mjk3NjAzMjJlY2ExMDI4OTkwMGQyYzllY2JhNmUzMDMzYWEwMDgyNjFlNDYwNWFjNTExMDIwN2FkMTIwNGY2OGE3NjVhMDZlZWIyMjE4MGFjNmM2ZjlhMTkwNjg1YzljMTUwYjRkOGRjNWYyOGExYzA4MGRjY2Q1ZjIzNDQ5ZGUzNzBlMTVlNzAzMjQwODc2Mjk1YTA4MTAyOTgyNjZmMWY4MDU5MjBmMTYyM2M5MGY2MmM4NDQxMDE0MDQwYjA5NDkyY2QyNjUxMzAxMDA3ZWQ0NjA5NDJlOTY1MWIwNjk5ZGNlOWFjYzM5NmUxNjY1Yzk0M2VmNTgwOGI2NmI1ZGJlZDBlY2IxMzk5ZDkxOTc2YmFkY2U1MDgyMjFmNjIwMTAwMDEzODAxZjQwMDJlNjgwMDMzOTVlNjAwMDc3MDAxNzgwMTFjMDBlNjA4MDAwZGExMjcwYzg1YmQ4MDAwMTU5OWVjNjk1ZWI3OGE4MDAyNzk0MDhmODAwMWUxOWI5ODVmOTVlYzAyZGVkMDhjODI2M2JlMjAwMDA3NjAwMDViNzQ1Zjk5ZWVmYjBjMjQyNjExMDBlMDQwMDAifQ",
+        "badge": "PENDING",
+        "action": "award",
+        "amount": 60,
+        "from": "consumer",
+        "to": "devnewsletter",
+        "escrow": "0300e0660260c608c04c04330198c05308158104e1b063407600580236565d834d30622e22cb003618b19593904108c8436248ad04ac07c32ac88232c0a0e385048258ed40e6c3116b4cb5330390848c04e062618c8ca5b8258231b362305bc0f21e4c93043e133130c070b4d0284010d170888990847011813048e180c06270c8436d584190cc48e8c1804b4a00e948cc88d238e4d0406058d0a1504d90e0ca40493041581390089981ba4152e19b872312a16c95f104d0e130b2982158e2c97ae358d889f410612cc930e01a515896c8e070d858f88865d9b9b918f563627b90704a211b8913623e2825406f4561c98e98642c820f6283a0760864371c8ac3454512e3102f520ed240e8a0b0c38e92c104a1d1163e08064e06c285c169506184188c8e01c060d8d51a018b9039a372ec58a0b30dc3008d52242ea09816048ac0c833733d84e90383c848382814039200a28bf06028360e429760322eca10289900d2c9ecba6e3033aa008261e4605ac5110207ad1204f68a765a06eeb22180ac6c6f9a190685c9c150b4d8dc5f28a1c080dccd5f23449de370e15e703240876295a0810298266f1f805920f1623c90f62c8441014040b09492cd2651301007ed460942e9651b0699dce9acc396e1665c943ef5808b66b5dbed0ecb1399d91976badce508221f620100013801f4002e68003395e60007700178011c00e608000da1270c85bd80001599ec695eb78a800279408f8001e19b985f95ec02ded08c8263be20000760005b745f99eefb0c24261100e04000",
+        "txHash": null,
+        "explorerUrl": null,
+        "state": "FundsLockingRequested",
+        "phase": "lock",
+        "supplier": "devnewsletter"
+      },
+      {
+        "id": "masumi_eyJzdXBwbGllciI6ImRldm5ld3NsZXR0ZXIiLCJhY3Rpb24iOiJib25kIiwic2VsbGVyIjoiYm9hcmQiLCJidXllciI6ImRldm5ld3NsZXR0ZXIiLCJhbW91bnQiOjE1LCJub25jZSI6Ijk4M2QwYjlhZDU1MzlkM2EyM2U1OTJkNyIsImJsb2NrY2hhaW5JZGVudGlmaWVyIjoiMGIwNDMwYzYwYWMyMDFjMjBhNjAzNjAyNzA0MDQ2MjAzMzAxZDgwNGMyMDgwOGM2YjY3MDA2NjIyYTA4NmU0NDM4MTAwOTg4MzgwMGMwYjRhNjlkNjExYjRiYWE3MmQwMmE4OTJhMzBkMGMwYzY4MDhiMDU2NjYwOTBlMzBhMGMwMTA0MDU5YjQxNDIwMGJjODQxMGUwMGU2MTQ0MzAwMjMxNDkxMDIxOTUxMTFjYzE5YWU2YmQ3ZWIzMWJjYzMzMDM1MzllOTIwNDU0MWI0MDc5MjFjMDYwNGFhMDYzZDE2MzAwNDBiODgyOTE2MzVhNjE2MjZhZmJhMzAzMDY5MTIzMDE4MDYwMjNhNjczZGIzMTE1MTQwMWQxMjIwNGJiMDg4M2QwNDA0MDYxMjNkMDYxMzA2MDA4MmE0NDk3NDM0NTQ5MjI2MzMwMTBlMTYzMzE3NGIyYmIwNDIyOTMwMWMyOGIzMGUyYTEwZDgwMGE2NTgyYjgyMmEwZTIwNjJjZTA2M2FjMzE0ZGQ0MGRkMWQwYjU4YjA1MjAxMTIwZTYyMWMwY2E3OTYxYTllNWU2ZTFlODI0MjQ0MjA1MjExNTYyNzI2MDEzNDAwYmMzZTFlYTI4MDgxZThkOGFhNjAwZTE0OGE4NzBiZDE0ODg3NjgwMjMxMDczMzIzNDE1MGQxMTg5YzRiMGM5NGUxODA1Y2E0MDgwODhjODYwNmZiNTExODJlNzM4NzE4MDkxMjIzOTA5MDE4MGYxYzAxY2MwNjAxY2RlODkxNzgxNGRlODc0NDBhYTA2NGFhM2YxNDgwODA5MzYyODM4MDEzMzc4YjEwMmJjMjIzODg4NTcyM2E0MWM2Y2E0MmU0MTM5NTEyZjI5NjE2ODc2MGIxZDIzOGY0NzBhMDRiMDcwMDIyNGM2NjEzMzMwZTExNDM4NjkxYmRlYzU3NmQyMjhlNmZkMDIyNjUxMDEwMjE4MTlmNTZhMDkwODAxMDYwNjQwMjA3MDEwNDliYzhhYzlhN2ExODAxMmUxMTAwODA5MDk5MzQ3ZDE1NjEwMDRiYzQxMGIwYTkwYzE1MDg5OWYzOGQ4NGVlYjNiNDhmYWJjOWQxZTg5YTcwMzY1YzEwMmU5M2FiMDkzNDIwNjYxNjVlODNhMDIzOTdjNGRmNDFhYTA0YTI2M2U4ZjdiNmI4MjJhMDY2NTIzNjEyMjAyNjUzNjVhY2RlNjhiMGI4YWNkNjFiMDgxYzNiNmQwNWRhYTFmNmI4Njc3MWQzNDcwMzM4NWM1YTA4NmI4OThiYjZjODAxMzgwMWY0MDAyZTcwMDAzM2I5ZTA4MDA3NzAwMTc4MDExYzAwZTYyMDAwMGRhZTJlOTU3ZDIwMDBhZDhmOTAzOWU1NzkyODAwMjc5ODA3NzgwMDFlZDAxMThkMDNiZWU3YjMwNTdiNjBkMjA5ODJmYjQwMDAxZDgwMDE2ZDEzYmVjNzhiZTQzMzAwNjg0Zjg0MDAwMDAifQ",
+        "badge": "PENDING",
+        "action": "bond",
+        "amount": 15,
+        "from": "devnewsletter",
+        "to": "board",
+        "escrow": "0b0430c60ac201c20a603602704046203301d804c20808c6b67006622a086e44381009883800c0b4a69d611b4baa72d02a892a30d0c0c6808b05666090e30a0c0104059b414200bc8410e00e614430023149102195111cc19ae6bd7eb31bcc3303539e9204541b407921c0604aa063d1630040b88291635a61626afba30306912301806023a673db31151401d12204bb0883d040406123d0613060082a449743454922633010e1633174b2bb04229301c28b30e2a10d800a6582b822a0e2062ce063ac314dd40dd1d0b58b05201120e621c0ca7961a9e5e6e1e824244205211562726013400bc3e1ea28081e8d8aa600e148a870bd148876802310733234150d1189c4b0c94e1805ca408088c8606fb51182e7387180912239090180f1c01cc0601cde8917814de87440aa064aa3f1480809362838013378b102bc2238885723a41c6ca42e4139512f296168760b1d238f470a04b0700224c6613330e11438691bdec576d228e6fd02265101021819f56a09080106064020701049bc8ac9a7a18012e1100809099347d1561004bc410b0a90c150899f38d84eeb3b48fabc9d1e89a70365c102e93ab09342066165e83a02397c4df41aa04a263e8f7b6b822a06652361220265365acde68b0b8acd61b081c3b6d05daa1f6b86771d34703385c5a086b898bb6c8013801f4002e700033b9e08007700178011c00e620000dae2e957d2000ad8f9039e579280027980778001ed0118d03bee7b3057b60d20982fb40001d80016d13bec78be43300684f8400000",
+        "txHash": null,
+        "explorerUrl": null,
+        "state": "FundsLockingRequested",
+        "phase": "lock",
+        "supplier": "devnewsletter"
+      },
+      {
+        "id": "masumi_eyJzdXBwbGllciI6ImNvZGVwb2RjYXN0IiwiYWN0aW9uIjoiYXdhcmQiLCJzZWxsZXIiOiJjb2RlcG9kY2FzdCIsImJ1eWVyIjoiY29uc3VtZXIiLCJhbW91bnQiOjU1LCJub25jZSI6IjE4ZjcxMjkwMWU1ZmJmNjFmNmU0ZjI3ZSIsImJsb2NrY2hhaW5JZGVudGlmaWVyIjoiMmIwNjYwMWM2MDZjYTI5MDBjMDUzNDgxMTgwOWMwMTYzMzI0MDEzNzQ5NTAxZDk5MDE4Yzc0MmY1NGUxYzE0MjQ2MWQwMDhjYzQzZDAwOTkxZTM4YjE4MDEwZDQ2NmM5ODIzNjBhOTUwMDMzMzAzOTdhNDQyYmQxOWMxMmE4ZDg5NzRiYzRiMjE0NzBjMmEzZWE1NTM0MDQwOTgxYzc5YmRkMzI1ZTYxYzUwZWM4Yzg1Yjc0NzEwOWIxMDhjZGNlMzhmNzRmNjFkYmNjNGIyZjBiOGUxZjA5MjQzODE4OWJhMzNiYjhhZjAyM2QwZTJhMDIwZTM4ODgwODE3MWIxZTNhMzg1ZjJhNDgzMjVjMjE1MTVjMDAxZDMyMzViMTFiMTUzMjMxYjhhMzM4OGEwMzQyM2EzODliMjEwMjA5NTgzYTMwMTQyYTJmMDgxYzMyMWI1YzM3NTgxYjIyYTBjMjIzOWQwOTNiYWYyNjcxYThmODljMzAwYmFmMzg4OTBjMjgzMDFiMjViMjI3OTVhZjA4ZTI0ODg4MjY4MjNjOTBiYzFiMGVjNWIwMmM4YTI0MzY3YTBiYjQxZDFkMGY0MTIxN2ExOTFiODQwZTA5MGMwZGE1OTEwNTMyYTgxYWE2ZDQ4NTMxMjM1MDcwOTY1YzJjOGM0NjE2NjA4MWM0ZTI0MjM4OGVlY2QxMjM5ODQ0MjY2Y2E2YzE4Y2MxMWE0OWIxNDMxMTBlMjk0YzM1OTI2NDVlNDc3MDJmMTkwZTgwOTE5MDM4MWI1ZTBjOWU2OGNjODBmMmEwYzgzYTI0MGEwZjcxNmE4ZGM2MDM1ZGEzOWEyOWE2NDEzM2M4NDBjNjBkMWEyZjM0NjEzZDM4ODcyNjdhMmUyNzg0MjEyOTA4ZTBjZjA5MWM0NDk0ODJhMTE4NDkxMjBkZGU0YTg3YTE3NTljMzQ3NDM5MDM4MzI5NTFkMDUyYzY3MWEzMzE4NDE3OGFhMDY4YTgzMDA5MGQyNjhmNTBhNDI4ZmI3MmIwODYxZjAzODBkOTYyZWEwYzNhNGJjNmE0NjAyMDg1NjAwZTcyOTIwMmFiOTI0NTUzNjAzNGFhZDU0ODkzNDY4OTNjZTA5ZDgwMjIyZDgzODJhMjgxOTY1ZTA4NDI0NzA0ODA5NWNjODM3NmM4MGRhZTM2NmVlYzdhZTMxODRkNWE2MjA1OTg4MWU2MzQwNjBmNTk2YWIzNjNhZDM2MDVmYTJlZDE5MDc3NGYxZDRkYTA3M2E1ZGVlNzAxYmEzODg0YWQ5YzBlMDAwNGUwMDdkMDAwYjgyMDAwY2VhN2U0MDAxZGMwMDVlMDA0NzAwMzlhZjAwMDM2NjQ2YjQ1ZmM0MDAyYjQzZTZkNGYxN2FhODAwMjc4OTAzNzgwMDFlNDA5NThhZmE5ZTcwMDVlZTkwODJlODEzZTYwMDAwNzYwMDA1Yjc0YWZhMWU0Zjg4Y2U4MzIxODkxMDAwMDAwIn0",
+        "badge": "PENDING",
+        "action": "award",
+        "amount": 55,
+        "from": "consumer",
+        "to": "codepodcast",
+        "escrow": "2b06601c606ca2900c0534811809c0163324013749501d99018c742f54e1c142461d008cc43d00991e38b18010d466c982360a95003330397a442bd19c12a8d8974bc4b21470c2a3ea5534040981c79bdd325e61c50ec8c85b747109b108cdce38f74f61dbcc4b2f0b8e1f092438189ba33bb8af023d0e2a020e388808171b1e3a385f2a48325c21515c001d3235b11b153231b8a3388a03423a389b210209583a30142a2f081c321b5c37581b22a0c2239d093baf2671a8f89c300baf38890c28301b25b22795af08e2488826823c90bc1b0ec5b02c8a24367a0bb41d1d0f41217a191b840e090c0da5910532a81aa6d48531235070965c2c8c46166081c4e242388eecd1239844266ca6c18cc11a49b143110e294c3592645e47702f190e809190381b5e0c9e68cc80f2a0c83a240a0f716a8dc6035da39a29a64133c840c60d1a2f34613d3887267a2e2784212908e0cf091c449482a11849120dde4a87a1759c34743903832951d052c671a33184178aa068a830090d268f50a428fb72b0861f0380d962ea0c3a4bc6a4602085600e729202ab9245536034aad5489346893ce09d80222d8382a281965e084247048095cc8376c80dae366eec7ae3184d5a62059881e634060f596ab363ad3605fa2ed190774f1d4da073a5dee701ba3884ad9c0e0004e007d000b82000cea7e4001dc005e00470039af00036646b45fc4002b43e6d4f17aa80027890378001e40958afa9e7005ee9082e813e60000760005b74afa1e4f88ce8321891000000",
+        "txHash": null,
+        "explorerUrl": null,
+        "state": "FundsLockingRequested",
+        "phase": "lock",
+        "supplier": "codepodcast"
+      },
+      {
+        "id": "masumi_eyJzdXBwbGllciI6ImNvZGVwb2RjYXN0IiwiYWN0aW9uIjoiYm9uZCIsInNlbGxlciI6ImJvYXJkIiwiYnV5ZXIiOiJjb2RlcG9kY2FzdCIsImFtb3VudCI6MTMuNzUsIm5vbmNlIjoiYWY1NGQwOGQ2YWVlZTgyM2RiNWVhNmUyIiwiYmxvY2tjaGFpbklkZW50aWZpZXIiOiIyNzAyNjAyYzYwNDYwNjYyMGNjNzAwNzAwMTk5YzAwOWIyMDZjNjY5YzBhNjc5ODAzYjNhZTk4MjIyMDIzM2FjNTYwMmIzNGVhMjczMGNhNDU5NjkxYzFlMjAzMWIwN2M5MWYwMDQzMmE4ODMzMDJhZDE4MTg3NDU5ODg4YzhjODA0ODNlNjA0NWYyYTU4YWIyMDlmNGM0MDg2ZjlmM2Q2NDRhNDU4MmEyMzEzNDJhZjRhOGY3YmUxOTMxNzhkZDIyNjQ4YmFlMTgxZDIxZDE4MTM4ZTA2ODU4YzEwNGUwZjg5NGUxNjhjMWU5MzA0NWExODg3ODQ0ZTE4ODI0ODMyMTJkMDQ2NGMwZjhlMDcxODA4OTUwNGI5MDAwZTkxM2U4ZTRmNWU0NDQ0ZGYxMTFlMWQxMjFlOTQ0YjFmMDQwY2IxMGUzMTBiMTgxNTM5MGE4NDE4OTkwN2E0MTUxMjEwNGIxYTBjMDg0Zjk5MDQxOTRmMzRjNjVlNjM5MjEyODA5MTllMTI4Njg4NWU4ZTE4NjQwODcxZGYwZjgyNWYwYTU4MWYzZjFkYjE0ZmNlOWI0ZmM0ODQwMTk5MzkzZTg1OGQ5NWNmMTUzYzU0Y2VhMjIwM2IwMTgwZjQ3YTAzMGIwZDQxYzA4MWEwOTA2ZTNhMTYwNDM0NDMyMzZlY2E0MjIyMTIwNzE3OGEyNTg4ZTkzYzFmMTMwZDA3YTMwMTg0ZDAzZTJmY2UwNGMxMTI2MGE4NDUxOWFkMWVjZDAxMTMwMDEwYjM1NzA0MTk0NjQ0NTA5OTNjYzcxNjI0MTE0ZGE0ZTJmNGE4Yzk0ODQ0MzcwNjM1NzM3ODQwMDY2MjQ4YzQ0OGI1MTY3ZDcxNzY1MDFmODA4MjY3MThhOTNjYjhlYjg4MzQ4ZTgyYTFlNGFjMjI0YjNkMWI4ODg1NDkwMzY1ODg3NDI3Y2MwNjgyYTNlMWM4NjZmMDY1M2ZhNDZhYTA3MGEyNDgzNjI0MTFhMzI0NWE5ODE4YWY1MTAyZDI4NzYwNTNlNTY5ODEzZTA1YTI0NDZjMDhiNTNlODE0ZDMxYzMzZGVkYjg1Yjc0YTgyMTA4OTg1Y2EzZTFmMWE2NDkwMTQ0NGRjM2I1NzgxMmIwMjA0MjM4ZDM0MzZjMTFhMDJhOGVkZDBmODhlYTg1YWZkOTFhMTMyOThjY2U2MGIyNTlmMDU2ZDc3NjE3MTM2MmIxZGI1MWQwZmI0MzliODRlMDQ3M2EwOGFlMzczYmE1ODJhNjQwMDEzODAxZjQwMDJlZjgwMDMzOWVlYTgwMDc3MDAxNzgwMTFjMDBlNjIyMDAwZDgxMjU5ODdlODAwMGFjYjdmMWJkZTFmZDQwMDRmM2UyOWUwMDFlMjgwZDg3NzllZWM4MjFlNjkwMjg5NjM1ZTg4MDAwNzYwMDA1OWM0Nzc5NmVkN2E4YzYwMGMxODExMDAwIn0",
+        "badge": "PENDING",
+        "action": "bond",
+        "amount": 13.75,
+        "from": "codepodcast",
+        "to": "board",
+        "escrow": "2702602c604606620cc700700199c009b206c669c0a679803b3ae982220233ac5602b34ea2730ca459691c1e2031b07c91f00432a883302ad18187459888c8c80483e6045f2a58ab209f4c4086f9f3d644a4582a231342af4a8f7be193178dd22648bae181d21d18138e06858c104e0f894e168c1e93045a1887844e1882483212d0464c0f8e0718089504b9000e913e8e4f5e4444df111e1d121e944b1f040cb10e310b1815390a84189907a41512104b1a0c084f9904194f34c65e63921280919e1286885e8e18640871df0f825f0a581f3f1db14fce9b4fc4840199393e858d95cf153c54cea2203b0180f47a030b0d41c081a0906e3a16043443236eca42221207178a2588e93c1f130d07a30184d03e2fce04c11260a84519ad1ecd01130010b3570419464450993cc71624114da4e2f4a8c94844370635737840066248c448b5167d7176501f80826718a93cb8eb88348e82a1e4ac224b3d1b8885490365887427cc0682a3e1c866f0653fa46aa070a248362411a3245a9818af5102d2876053e569813e05a2446c08b53e814d31c33dedb85b74a82108985ca3e1f1a64901444dc3b57812b0204238d3436c11a02a8edd0f88ea85afd91a13298cce60b259f056d776171362b1db51d0fb439b84e0473a08ae373ba582a640013801f4002ef800339eea8007700178011c00e622000d8125987e8000acb7f1bde1fd4004f3e29e001e280d8779eec821e690289635e880007600059c47796ed7a8c600c1811000",
+        "txHash": null,
+        "explorerUrl": null,
+        "state": "FundsLockingRequested",
+        "phase": "lock",
+        "supplier": "codepodcast"
+      },
+      {
+        "id": "masumi_eyJzdXBwbGllciI6InRlY2hibG9nIiwiYWN0aW9uIjoiYXdhcmQiLCJzZWxsZXIiOiJ0ZWNoYmxvZyIsImJ1eWVyIjoiY29uc3VtZXIiLCJhbW91bnQiOjY1LCJub25jZSI6ImY0OTFjMjgzZTZlYmRhNzg5ZmE1Y2NiNSIsImJsb2NrY2hhaW5JZGVudGlmaWVyIjoiMjE4MzYwOGMwNjYwZWMwMmMyMzAyNjYwMTU4MGE2YzAwMzAwOGQ1MDYzMmYwNjA4ZTAwMWMyMTYyNDBjYzIyNTAyNzA2Mjc2MDA5OTQ0OTY1MDFjODQ1OTM2MzI1MmE0YTMwMjJlNTQ4ZDcyZTVhMjhiMDgyOGMwYjA2NDkwOTcwYzYwYjg4OTgwNmI1OTIxNDkyMGQyYTY0MTllNzAxODYxODA5MDg3Y2MyNTJjN2MxMGMwY2FkNmVkYTZkOTM3MDI2YzFiZWYwMjIwMjA2MzYwMjI1Mjk5ZDEzM2UzYzA0ODYwMjAyMmEwZGIwMjBhYTJhYWUwNjJkMjUwNDJkMjE4YTNmOWFhZjAwNjA0MTQwMWQwNDBjMmQxODJlMDIxNTJhMDgyYTBmMzAxNDA5MmQwNDBhMDQ5NjMyMjE0OTBjMzIxOTE0YTUwNjE4MDIxNDA2MTc0OTAyMmE3NzE0MTgyYzI5MjMzZjkxOTBlN2EwODgyZTEzMzIwZTJhMTQyZDBjMjUzYTI1YTBjMjMyMGM0YzEzMmNiMjJkOWFkNjM2ZWYzYTA0MzkzODZjYjgzYzNjMmIzZTk0MjUxYmY3NWQyMDQ5Mjc5NjJkMDkyMzVkNDcyMzc5ZjQ5YWM2MGMzMjA4YzMwNzUxMDg2MDcwZmQxNGMwZWI0MGFiOTU0MGE2MTIxMTA0ZTM5MDgxMzA5ODk0NjUwOTE3MWE4NWExMzRmYWMwMDgwYzQ5NjRjMzg5MWNhYzk0MzNhZjEzNDU0NTYwYTgyYTBlNjAyNTBjMGUxNzMwNjA5ODNmMjIzMTBjODUzNmExOTE5MGYwMTJiNzRjNmZkMmMwODRlYzcwYTYwYzE0NjY1N2E5ODAwMWM4MjIyNzg0MjY0MTUzNDE1MDI3MmMzYjBjMGRiMDgyNThiMGI4MTIxNDFmYzQ2YTgwNDAyMDVjMmMzMDQ0ODJhNmVhMzkxNTEwNGEwNDk5MGMyMzM4ZWQ5MTIwMDM5OWEyMTc2MTYxZjJmMDg0MTgzNTU5YTUwMDZhMDU0Y2FjMjk2OGQ2MDI2ODRhNjhiNjg4MjZhMzQ3ZTZhNGYzNmMxODVlZWQyMTA5ODA4M2IxZDExYzQ4NDg0ZTJlMTI5NjA4NmMxMGRhMzcwNTgzOTRiNjA4ODEwOTJjN2ViNjEwYWE2MGVlNjlmMWFjNDBiZmFmOGEzNzFhMWJhNmFhZDk5ZGE5Y2M2NmE3NTA1NjZiNTQwNmNiNjNiMGIwNTM1ODg3MDcwOWNhMDY3MzY4MWFhZTYwMWI5ZGQ3MDVkZGM0MDA5YzAwZmEwMDE3NTQwMDE5YzJmNjAwMDNiODAwYmMwMDhlMDA3MzYwMDAwNmM1NjY5NmJjNDAwMDU2MjdhZTBjODA1ZWQ3OGE4MDAyN2FlMGY3ODAwMWU4YzA1ODFmODVlMTgzNWVlZjJjOGE2MmJlMjQwMDA3NjAwMDU5NzQxZjg5ZWFmYjBjMzAzYTE0YzJkMDQwMDAwIn0",
+        "badge": "PENDING",
+        "action": "award",
+        "amount": 65,
+        "from": "consumer",
+        "to": "techblog",
+        "escrow": "2183608c0660ec02c23026601580a6c003008d50632f0608e001c216240cc2250270627600994496501c8459363252a4a3022e548d72e5a28b0828c0b06490970c60b889806b59214920d2a6419e701861809087cc252c7c10c0cad6eda6d937026c1bef0220206360225299d133e3c048602022a0db020aa2aae062d25042d218a3f9aaf006041401d040c2d182e02152a082a0f3014092d040a04963221490c321914a506180214061749022a7714182c29233f9190e7a0882e13320e2a142d0c253a25a0c2320c4c132cb22d9ad636ef3a0439386cb83c3c2b3e94251bf75d204927962d09235d472379f49ac60c3208c30751086070fd14c0eb40ab9540a6121104e390813098946509171a85a134fac0080c4964c3891cac9433af13454560a82a0e60250c0e173060983f22310c8536a19190f012b74c6fd2c084ec70a60c146657a98001c82227842641534150272c3b0c0db08258b0b812141fc46a8040205c2c304482a6ea3915104a04990c2338ed91200399a2176161f2f084183559a5006a054cac2968d602684a68b68826a347e6a4f36c185eed21098083b1d11c48484e2e1296086c10da37058394b60881092c7eb610aa60ee69f1ac40bfaf8a371a1ba6aad99da9cc66a750566b5406cb63b0b05358870709ca0673681aae601b9dd705ddc4009c00fa0017540019c2f60003b800bc008e0073600006c56696bc40005627ae0c805ed78a80027ae0f78001e8c0581f85e1835eef2c8a62be240007600059741f89eafb0c303a14c2d040000",
+        "txHash": null,
+        "explorerUrl": null,
+        "state": "FundsLockingRequested",
+        "phase": "lock",
+        "supplier": "techblog"
+      },
+      {
+        "id": "masumi_eyJzdXBwbGllciI6InRlY2hibG9nIiwiYWN0aW9uIjoiYm9uZCIsInNlbGxlciI6ImJvYXJkIiwiYnV5ZXIiOiJ0ZWNoYmxvZyIsImFtb3VudCI6MTYuMjUsIm5vbmNlIjoiNGM4ZjRiMTVhMWY3Y2EwYWUyMDZkMWM0IiwiYmxvY2tjaGFpbklkZW50aWZpZXIiOiIzMTg1MzA4YzBlYzBhYzA2NjA0YzA2NjAwOTgyNDAyMzI1YTQyMjgwMzhhNzAwODYxYTE1MWU2ODAwYzg0YzQ5NDE0MmYwMDJjMzJlNDhjODQwOWM1ZWU4NDViNDc1MGMyMzM0YjkxYWUwYTY4YTAyNWMwMGQ4MjMxMGFjMDM5YzYwOGQwYjAzMDMyYzA1NWMwMzA5ODI1MzJhMzYzYWM1MGEzMzA4NTcwYzMwODIxMWE1YjcxMTg1MDg4OGQzZGE0MTNiNDI0NjVhZTEyMGUxOTE5MDQzMDI0NWMxZjBlMTAwNDYwNjI2NDA4NDYyODRmNmEwODdiNDIwNDA4NWQ0MGI0NzM0ODk4MGU0NjYwMDQxOTQ2MGUxODFmMGEwYWNhODAzYTAyZWI2MTViN2QxODA4MThhYTEwMzgwYTE5MjQwMzQ2MmFkMTNjMTkwZTM0OGEzMDM4MDgwYTA0ZGM3Njg5NDg5OTE4NDY3NDYwMGEzODRhMDI5YzNjYzViNDE5MzQzODcwYjVjNDFkZDBmNDI5NTFiODExYjA1NDYwNWQxMDBlMzAwZTQyOTAxOTEwNzk1ZjA4MmQ2MmUyZDcyMzE0OTRiYzA0MGUwYTg4MTk0ZDI2MDVjMGUxMDgyMDUyMWZjMDQ1MDIzMGM5NzA5YTQ2MWMwNjA2ODc3MWIxNGUzYjVjMjgyYjYxNDEwMGIwZDAwOTQ0YjI0MzI2NTYwMjc4NjA1MDBlMTYwNjBjMDIwNDMwOTA4NDRmMmRjNjA3MzI0MDQxNmNlYzBlMDIwN2MyMDE3MjMxODQ3YzU2NzgzZDA0ODUzYjg0ZDBmMjRkMTA1NjQ5MDIyYWM4NjFjYzA5YmI0NDAxYTI1YTMwOTBjMTZkOGE4NmUxYzUxM2I1NmU2Y2RjNzM5NWUyMDcwYjBkOTYwYzExMjQ5ZjI1NDM2M2ZkNjYyOTM0MDcwZDk1Y2U3MTE5NDQyZTcxNzAwZTAwNDFlMGIwMjA5NGM2MGE1Mjk3YzA4MjQ5ZTZjODVlM2MzMTFhMDA4MTg0YzBhMTIxM2NkYTg4YTQ3OTgxYjJjNmI4M2EwZTQ3ODI1OWMxOTRjMjE4MDgwOTA2MjdiMTk0YTBmZWM1MzA4OGI4NWUwMzQwZDgwNTYxYTcxNjBlYzA0MDUxMDY3NDBhMjE2NjRjYjMwMTE2OWQxOTNlMTU1Y2NjMzExYzIwNGUxNTZlZWQ5MjYxNTQ3NDNjZTYwYjI1OGFkNDBiMDNiODQ4YjYzYjU0MmMxZjZmMGE0MTFjYzdhZTMzODVjYWVkYWZiYTNkOWU0M2E0MTIwMDA0ZTAwN2QwMDBiODgwMDBjZTc3YjAwMDFkYzAwNWUwMDQ3MDAzOWExMDAwMzZhNGE3MjhmOGMwMDAxNTk1ZWMwMTQwNzdhM2VhYTAwMDllYzAyYmUwMDA3Yjg4NTYxZmU3Nzg1MDhmYmE0NzIzOThkZmFlMDAwMWQ4MDAxNjA5MWZlNTdiN2VlMzIzMGI4NDA0NDAwMDAifQ",
+        "badge": "PENDING",
+        "action": "bond",
+        "amount": 16.25,
+        "from": "techblog",
+        "to": "board",
+        "escrow": "3185308c0ec0ac06604c06600982402325a4228038a700861a151e6800c84c494142f002c32e48c8409c5ee845b4750c2334b91ae0a68a025c00d82310ac039c608d0b03032c055c030982532a363ac50a3308570c308211a5b711850888d3da413b42465ae120e19190430245c1f0e10046062640846284f6a087b4204085d40b47348980e46600419460e181f0a0aca803a02eb615b7d180818aa10380a192403462ad13c190e348a3038080a04dc76894899184674600a384a029c3cc5b419343870b5c41dd0f42951b811b054605d100e300e42901910795f082d62e2d7231494bc040e0a88194d2605c0e10820521fc0450230c9709a461c06068771b14e3b5c282b614100b0d00944b2432656027860500e16060c02043090844f2dc6073240416cec0e0207c2017231847c56783d04853b84d0f24d105649022ac861cc09bb4401a25a3090c16d8a86e1c513b56e6cdc7395e2070b0d960c11249f254363fd662934070d95ce7119442e71700e0041e0b02094c60a5297c08249e6c85e3c311a008184c0a1213cda88a47981b2c6b83a0e478259c194c21808090627b194a0fec53088b85e0340d80561a7160ec0405106740a21664cb301169d193e155ccc311c204e156eed926154743ce60b258ad40b03b848b63b542c1f6f0a411cc7ae3385caedafba3d9e43a4120004e007d000b88000ce77b0001dc005e00470039a100036a4a728f8c0001595ec014077a3eaa0009ec02be0007b88561fe778508fba472398dfae0001d80016091fe57b7ee3230b840440000",
+        "txHash": null,
+        "explorerUrl": null,
+        "state": "FundsLockingRequested",
+        "phase": "lock",
+        "supplier": "techblog"
+      }
+    ],
+    "receipt": null,
+    "roundTwo": null
+  },
+  "repeated": false
+}

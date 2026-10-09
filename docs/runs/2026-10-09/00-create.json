@@ -1,0 +1,88 @@
+{
+  "run": {
+    "id": "run_c1f40522",
+    "createdAt": "2026-10-08T23:45:43.167Z",
+    "mode": "live",
+    "badge": "PENDING",
+    "seed": 1,
+    "status": "in_progress",
+    "nextStep": "bids",
+    "steps": {
+      "tender": {
+        "status": "done",
+        "startedAt": "2026-10-08T23:45:43.167Z",
+        "finishedAt": "2026-10-08T23:45:43.167Z"
+      },
+      "bids": {
+        "status": "pending"
+      },
+      "allocation": {
+        "status": "pending"
+      },
+      "locks": {
+        "status": "pending"
+      },
+      "feed": {
+        "status": "pending"
+      },
+      "verification": {
+        "status": "pending"
+      },
+      "verdicts": {
+        "status": "pending"
+      },
+      "settlement": {
+        "status": "pending"
+      }
+    },
+    "brief": {
+      "advertiser": "NeoRack",
+      "audience": "technical users",
+      "goal": "pay per verified signup"
+    },
+    "tender": {
+      "budget": 200,
+      "gate": 5,
+      "bondRate": 0.25,
+      "bidFee": 2,
+      "currency": "tADA",
+      "audience": "technical users"
+    },
+    "suppliers": [
+      {
+        "id": "techblog",
+        "name": "TechBlog",
+        "persona": "conservative"
+      },
+      {
+        "id": "codepodcast",
+        "name": "CodePodcast",
+        "persona": "moderate"
+      },
+      {
+        "id": "devnewsletter",
+        "name": "DevNewsletter",
+        "persona": "aggressive over-promiser"
+      },
+      {
+        "id": "gamingforum",
+        "name": "GamingForum",
+        "persona": "passive low-baller"
+      }
+    ],
+    "keys": {
+      "shop": "b2a558a1c11f64848265b36501724ca4195905318a3eae1c28d9aa82f420878b",
+      "board": "7c0a1895cdd26192ee2117eed8d348461776c1a7990808c118db6fe9dfa3b506"
+    },
+    "bids": [],
+    "discovery": null,
+    "auction": null,
+    "feed": null,
+    "verification": null,
+    "verdicts": [],
+    "settlement": null,
+    "ledger": [],
+    "receipt": null,
+    "roundTwo": null
+  }
+}
