@@ -1,7 +1,7 @@
 # Honest limitations
 
-Shown in the UI and the README. Honest labelling is worth 10% of the score —
-and it's the cheapest 10 points available.
+What in Bid Royale is real, what is simulated, and where the demo stops short
+of production. The same labels appear in the UI and the README.
 
 ## What's real
 
