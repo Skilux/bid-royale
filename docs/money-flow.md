@@ -31,7 +31,7 @@ See ADR 0002 (`docs/adr/0002-seller-agents-on-vercel.md`).
 All 5 agents (TechBlog, CodePodcast, DevNewsletter, GamingForum, Tender Board)
 are registered on Preprod: `RegistrationConfirmed`, 6.5 min each.
 
-## The amounts
+## The amounts (worked example)
 
 | Item | tADA |
 |---|---|
@@ -46,6 +46,18 @@ are registered on Preprod: `RegistrationConfirmed`, 6.5 min each.
 
 Consumer net = −200 awards + 70 DevNewsletter award back + 3.75 + 17.5
 forfeits = −108.75. The gate is unchanged: 5 signups per 1,000 impressions.
+
+This table is the pinned worked example, the offline fixture
+`app/data/seeds/board-run.worked-example.json`. The demo, the video and the replay use
+the recorded run `run_c1f40522` (#45), with LLM quotes:
+
+| Item | tADA |
+|---|---|
+| Awards TechBlog / CodePodcast / DevNewsletter | 65 / 55 / 60 (180 of 200) |
+| Bonds, 25% of award | 16.25 / 13.75 / 15 |
+| CodePodcast forfeit: 13.75 × (7 − 6) ÷ 7 | 1.964286, under the 2 tADA minimum, never sent (#62), not counted |
+| DevNewsletter forfeit (Under gate): full bond | 15 |
+| Consumer net for 14 verified signups (8 + 6) | **−105** (7.50 per signup): −180 awards + 60 award back + 15 forfeit |
 
 ## The flow
 

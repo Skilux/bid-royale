@@ -6,7 +6,7 @@ Numbers are the one recorded run `run_c1f40522` (#45, results comment, 9 Oct 202
 
 Open points before speaking:
 
-- The recorded receipt was built before the #62 fix and counts the unsent 1.964286 as returned. If it shows on screen, it reads net -103.04 (7.36 per signup), not -105. Say -105 only with the arithmetic on screen, or recompute the receipt first.
+- The recorded receipt in `app/data/canned/run.json` is rebuilt with the #62 `buildReceipt`: it reads net -105 (7.50 per signup), the unsent 1.964286 is shown as one PENDING note and not counted.
 - The 15 tADA DevNewsletter forfeit has a tx hash (`83c3fa9dcb…`) but the node still reported `Pending` at collection time. Not checked: whether it has confirmed on chain.
 - Network fees: not measured in #45. Say nothing about them.
 - Refund path A2 (supplier never submits) was not exercised in #45.

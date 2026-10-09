@@ -25,8 +25,8 @@ transactions ran. The last step is the receipt, with a ledger for every agent.
 3. Money locks in Masumi escrow, with REAL tx links.
 4. Only verified signups count. DevNewsletter stays at 0.
 5. Three verdicts. The Under-gate refund is the hero moment, the only red path.
-6. Receipt: −108.75 tADA for 14 verified signups, about 7.77 each, plus a
-   ledger per agent.
+6. Receipt: −105 tADA for 14 verified signups, 7.50 each (recorded run
+   `run_c1f40522`), plus a ledger per agent.
 
 ## 3. Pacing: two modes
 
@@ -119,14 +119,14 @@ diagram scales down and the panel stacks under it.
 | 1 | Brief | User → Consumer, message |
 | 2 | Tender | Consumer → Board, message |
 | 3 | Invite | Board → 4 suppliers, messages |
-| 4 | Sealed bids | 4 commits + 4 × 0.2 fees, SIMULATED |
+| 4 | Sealed bids | 4 commits + 4 × 2 tADA bid fees, REAL |
 | 5 | Reveal | 4 reveals, ranking table, GamingForum Lost bid |
-| 6 | Awards | Consumer → escrow 7 + 6 + 7, REAL |
-| 7 | Bonds | Winners → escrow 17.5 + 15 + 17.5, REAL |
+| 6 | Awards | Consumer → escrow 65 + 55 + 60, REAL |
+| 7 | Bonds | Winners → escrow 16.25 + 13.75 + 15, REAL |
 | 8 | Delivery | 14 signed signups feed → Board, counters, DevNewsletter 0 |
-| 9 | Pass | Escrow → TechBlog 70 + 17.5 |
-| 10 | Short of promise | Escrow → CodePodcast 60, bond 15 → Board → 11.25 back + 3.75 forfeit to Consumer, formula shown |
-| 11 | Under gate | Escrow → Consumer 70 refund (red, 2.8 s), bond 17.5 → Board → Consumer |
+| 9 | Pass | Escrow → TechBlog 65 + 16.25 bond back |
+| 10 | Short of promise | Escrow → CodePodcast 55, bond 13.75 → Board → 11.79 back, forfeit 1.96 (13.75 × (7 − 6) ÷ 7), formula shown. The forfeit is under the 2 tADA minimum, so it is PENDING and not counted (#62) |
+| 11 | Under gate | Escrow → Consumer 60 refund (red, 2.8 s), bond 15 → Board → Consumer |
 | 12 | Receipt | Ledger per agent |
 
 ## 10. Components

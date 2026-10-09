@@ -67,6 +67,10 @@ Degrade path if preprod is unreachable: labelled simulated ledger
 All amounts are tADA, the spec ×10 (#24). Every call, key, escrow state and
 measured time: [`docs/money-flow.md`](money-flow.md).
 
+Amounts in this walkthrough are the pinned worked example (70 / 60 / 70, net -108.75).
+The recorded run `run_c1f40522` that the demo and video show has awards 65 / 55 / 60,
+net -105, see [`money-flow.md`](money-flow.md).
+
 1. **Brief and tender.** User NeoRack gives the Consumer agent the brief:
    budget 200, technical users, pay per verified signup. The Consumer agent
    publishes the tender to the Tender Board: gate 5 signups per 1,000

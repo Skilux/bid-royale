@@ -21,7 +21,7 @@ Brief → tender → live dashboard → settlement beat → receipt.
 - **Dashboard (plan):** the tender, the 4 bids, GamingForum shown as rejected
   below the gate, impressions and verified signups per supplier, verdict
   badges (Pass, Short of promise, Under gate, Lost bid).
-- **Receipt (plan):** Consumer net −108.75 tADA for 14 verified signups;
+- **Receipt (plan):** Consumer net −105 tADA for 14 verified signups (recorded run `run_c1f40522`; the worked example reads −108.75);
   round-2 reallocation shown as the optimizer's decision (illustrative).
 - **Routes (plan):** `/` (brief + run button), `/tender` (tender + bids),
   `/dashboard` (impressions + verified signups per supplier, verdicts),
