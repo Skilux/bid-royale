@@ -34,7 +34,7 @@ badge is a bug. Source: [`docs/honest-limitations.md`](docs/honest-limitations.m
 | Round 2 reallocation | **SIMULATED** | Shown on the receipt, no chain operations |
 | Supplier registration, agent identifiers | **REAL** | 5 agents registered on Preprod, see [`docs/plan/lane-masumi.md`](docs/plan/lane-masumi.md). Discovery in the recorded run was `live` from the registry, all four suppliers `RegistrationConfirmed` |
 | Run totals, recorded run | **REAL** | 10 escrows per run (3 awards, 3 bonds, 4 bid fees), all locked REAL 2.1 min after settlement start. All 21 ledger rows REAL: 20 within 17 min, the last after the #62 treasury fix (53 min) |
-| `DEMO_MODE=canned` replay | **PRE-RECORDED** | Judge URL and lifeline. Replays the one real recorded run, `app/data/canned/run.json` (`app/lib/replay`), with its time cut labelled; REAL tx links from the recording stay REAL. There is no separate warm run (#30). Since `159e8ca` the replay is `run_c1f40522`, recorded before its late forfeit was sent; a re-record shows all 21 rows REAL |
+| `DEMO_MODE=canned` replay | **PRE-RECORDED** | Judge URL and lifeline. Replays a recorded real run picked from `app/data/canned/index.js` (`app/lib/replay`), default the final `run_c1f40522` with all 21 rows REAL, with its time cut labelled; REAL tx links from the recording stay REAL. There is no separate warm run (#30) |
 
 ## Honest limitations
 
@@ -183,7 +183,7 @@ In a canned replay the bundle is restored from the recording and shown PRE-RECOR
    `curl -X POST localhost:3000/api/run/<id>/all` runs every step. Open
    `localhost:3000/receipt?run=<id>`. For a persistent setup, copy `.env.example`
    to `app/.env.local` and fill it. Never commit `.env.local`.
-3. **Flags:** `SIMULATE_PAYMENTS=true` uses the labelled simulated ledger, every badge reads SIMULATED. `false` uses real Masumi preprod escrows and needs the Masumi keys. `DEMO_MODE=canned` replays `app/data/canned/run.json` (see `docs/demo-runbook.md`, Canned replay), `live` is the default.
+3. **Flags:** `SIMULATE_PAYMENTS=true` uses the labelled simulated ledger, every badge reads SIMULATED. `false` uses real Masumi preprod escrows and needs the Masumi keys. `DEMO_MODE=canned` replays the default recording of `app/data/canned/index.js` (see `docs/demo-runbook.md`, Canned replay), `live` is the default.
 4. **Checks:** `npm run check` in `app/` (tests, secrets scan, layout rule, badge guard, ESLint). `npm run check:full` adds `next build`. `npm run setup:hooks` enables the pre-commit hook.
 
 Deploying is manual from the team MacBook with the Vercel CLI, see

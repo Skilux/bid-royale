@@ -86,15 +86,15 @@ Measured in `run_c1f40522` (9 Oct 2026, Prague time, minutes after settlement st
 
 ### Numbers to check
 
-All from `run_c1f40522`, the recorded run (`app/data/canned/run.json`). The worked example (70 / 60 / 70, net −108.75) is the offline fixture only.
+All from `run_c1f40522`, the final recording (id `final`, `app/data/canned/c1f40522-final.json`, the default replay). The worked example (70 / 60 / 70, net −108.75) is the offline fixture only.
 
 - Awards 65 + 55 + 60 = 180 of 200. Bonds 16.25 + 13.75 + 15 = 45. Bid fees 4 × 2 = 8, all REAL.
 - Price per promised signup (1,000 impressions each): DevNewsletter 60 ÷ 10 = 6.00, CodePodcast
   55 ÷ 7 = 7.86, TechBlog 65 ÷ 5 = 13.00.
 - Delivered per 1,000: TechBlog 8 (promised 5), CodePodcast 6 (promised 7), DevNewsletter 0 (promised 10).
-- CodePodcast forfeit 13.75 × (7 − 6) ÷ 7 = 1.964286. It is under the 2 tADA minimum, so it never moved (#62) and is not in the net.
-- Consumer net −180 + 60 award back + 15 DevNewsletter bond forfeit = −105. 105 ÷ 14 = 7.50 per signup.
-- Open: the replay recording is the snapshot taken at the 40-min timer fallback. The final run (`docs/runs/2026-10-09/`, 9 Oct, 02:39 Prague) sent the CodePodcast forfeit as 2.00 tADA, REAL, so its receipt reads net −103.04 and 7.36 per signup with no PENDING row. If the recording is swapped for the final run, change these numbers and the Receipt beat to match.
+- CodePodcast forfeit 13.75 × (7 − 6) ÷ 7 = 1.964286. It is under the 2 tADA minimum, so the Board topped it up by 0.035714 and the treasury sent 2.00 tADA, REAL (#62, `docs/runs/2026-10-09/README.md`). The ledger row shows 1.964286 with tx `9b5053b741…`. It counts in the net.
+- Consumer net −180 + 60 award back + 15 DevNewsletter bond forfeit + 1.964286 CodePodcast forfeit = −103.035714. 103.035714 ÷ 14 = 7.36 per signup. All 21 ledger rows are REAL, none PENDING.
+- The recording `before-62-fix` (the snapshot at the 40-min timer, one PENDING row) reads net −105 and 7.50 per signup. The pitch and any shot that quote −105 and 7.50 match that one, not the default replay. Pick one before the voiceover is timed.
 
 ### Dependencies
 
@@ -102,7 +102,7 @@ All from `run_c1f40522`, the recorded run (`app/data/canned/run.json`). The work
   refund 5.7 min in `run_c1f40522`, A2 fallback 27.8 min measured 8 Oct). If the run fails, the beat falls back
   to the labelled simulated ledger and the tally says so. Never label it REAL.
 - GamingForum's card shows a price that depends on the bid source. The Board's
-  default quotes and the recorded `app/data/canned/run.json` say 20. The persona
+  default quotes and the recorded `app/data/canned/c1f40522-final.json` say 20. The persona
   pin (the fallback when supplier agents run, `SUPPLIER_AGENTS=local` being the
   production default) says 30, a live model quote lands in 10–40, and the shot
   list above uses 20, as recorded. Check the number on the card against
@@ -162,30 +162,42 @@ Rules:
 4. Every env change needs a redeploy. A new value reaches the site only after the next deploy, and only Danila deploys.
 5. After each deploy, open `/api/health` and check `flags.simulatePayments`, `flags.demoMode`, `paymentAdapter` and the `env` block. `env` shows true or false per variable, never values. Do not start a run until the flags match the row above. `treasury` probes the worker with the real token: `authOk: true` means `TREASURY_URL` and `TREASURY_TOKEN` work, `false` means the worker rejected the token, `reachable: false` means the URL is wrong or the worker is down. Vercel hides both values, so this is the only check.
 
+## Judge URL: recorded runs and Run live
+
+The judge page `/` and `/dashboard` play recordings from the registry `app/data/canned/index.js`.
+The first entry is the default. Every recording plays badged PRE-RECORDED, REAL rows keep their explorer link,
+and a replay reaches the receipt in about 25 s.
+
+| Recording id | Title | Summary | Note |
+|---|---|---|---|
+| `final` (default) | Final run, all rows REAL | net −103.04 tADA, 14 signups, 21 of 21 rows REAL | `run_c1f40522` after the #62 fix, late CodePodcast forfeit last |
+| `before-62-fix` | Same run, before the treasury fix | net −105.00 tADA, 14 signups, 20 of 21 rows REAL | snapshot at the settlement timeout, one PENDING row, not counted as moved |
+
+- Picker: radio cards under the brief on `/`, a select next to Run recorded on `/dashboard`. Switching while a replay plays restarts it with that recording.
+- Deep link: `/?replay=<id>` and `/dashboard?replay=<id>` open and play that recording. An unknown id is ignored and the default plays. The address bar follows the pick.
+- Run live asks first. Nothing is sent before the confirm. On production (`SIMULATE_PAYMENTS=false`) the dialog says: this starts a REAL run on Cardano preprod, 10 escrows in test ADA with no real value, full settlement about 15–20 minutes, with the measured steps (locks about 2 min, refund about 6 min, releases about 13 min, every row about 17 min). Buttons: Start real run, Watch the recording instead (plays the default). Esc cancels. With `SIMULATE_PAYMENTS=true` it says the run is SIMULATED and finishes in under 30 s. `/dashboard?mode=live` opens the same dialog.
+- One real run at a time: with real payments, `POST /api/run` answers 409 `live_run_in_progress` with `activeRunId` while a run is settling or within 90 s of the last start. `GET /api/run` returns `{ guarded, active }`. The dialog uses it to offer Attach to that run, and a 409 attaches to the run in flight instead of replaying. A settling marker older than 60 min is ignored.
+
+**Add or swap a recording (one place):**
+
+1. `cd app && BOARD_URL=https://<deployment> npm run record:canned -- <runId>` writes `app/data/canned/<runId>.json` (GET only, with the evidence bundle). Use `--out data/canned/<name>.json` for another name. A run whose `run.completed` sits mid-stream (a late finish) is closed correctly by the script.
+2. Add an entry to `RECORDINGS` in `app/data/canned/index.js`: `id`, `file`, `title`, `runId`, `recordedAt`, `summary` (net, signups, REAL rows, total rows), `badgeNote` (what the money was), and the `load` import line. Put the default first.
+3. `cd app && npm run check`. `catalog.test.js` fails on a stale summary, an unregistered file in `data/canned`, or a recording without `run.created` first, `run.completed` last and status `completed`.
+4. Only add completed runs. Check the currency: `run_243e78ea` and `run_74d46808` (8 Oct, simulated) use tUSDM and a 1/10 budget, so they were left out.
+
 ## Canned replay (`DEMO_MODE=canned`)
 
-The judge URL replays one recorded run, badged PRE-RECORDED. The REAL preprod tx
-links from the recording stay REAL links with their recorded timestamps. Code:
-`app/lib/replay/`. Recording: `app/data/canned/run.json`.
+The server replay of `POST /api/run` serves one registry recording, badged PRE-RECORDED, REAL tx
+links kept with their recorded timestamps. Code: `app/lib/replay/`. Recordings: `app/data/canned/`.
 
 | Env var | Values | Effect |
 |---|---|---|
 | `DEMO_MODE` | `canned` or `live` (default) | `canned`: `POST /api/run` loads the recording and the SSE stream replays it. `live`: a real run. A failing live step degrades to the replay and emits `mode.degraded`. |
 | `REPLAY_SPEED` | `fast` (default), `normal`, `instant` | `fast`: whole stream in 25 s or less, 0.35 s pause before each step. `normal`: recorded timing, 1x. `instant`: no delay, for tests. |
-| `REPLAY_RECORDING` | file path, optional | Replays that file instead of `app/data/canned/run.json`. Relative paths start in `app/`. |
+| `REPLAY_RECORDING` | recording id or file path, optional | Replays that registry recording (`before-62-fix`) or file instead of the default. Relative paths start in `app/`. |
 
-Check after a deploy: `/api/health` shows `flags.demoMode: "canned"` and `replay.ok: true`
-with `replay.recordedRunId`, `replay.events` and `replay.realTransfers`.
-
-**Swap in the real #45 recording (no code change):**
-
-1. Take the run from the deployed app: `cd app && BOARD_URL=https://<deployment> npm run record:canned -- <runId>`.
-   It writes `app/data/canned/run.json`. Or copy the file Vladimir saved in
-   `docs/runs/2026-10-09/` to `app/data/canned/run.json` (shape: `{ run, events }`).
-2. Open the file and check there are no secrets. Tx hashes are public.
-3. Run `cd app && npm run check`. Then start `DEMO_MODE=canned npm run dev` and open
-   `localhost:3000/api/health`. Expect `replay.ok: true` and `replay.realTransfers` above 0.
-4. Commit, push to `main`, tell Danila to deploy.
+Check after a deploy: `/api/health` shows `flags.demoMode`, and `replay.ok: true` with `replay.recordedRunId`,
+`replay.events`, `replay.realTransfers`, `replay.default` and the `replay.recordings` list.
 
 The loader rejects a recording that has no `run.created` first, no `run.completed` last,
 an unknown event name or a run status other than `completed`. A `REAL` badge without a

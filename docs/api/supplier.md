@@ -168,7 +168,7 @@ Worked values at `R = 10`, `bidFee = 2` (computed by running `estimateWinChance`
 
 `gamingforum` clamps promised per 1,000 at 4, below the gate of 5, so it can only ever be a `lost_bid` at the current gate. Its 2 tADA bid fee is not returned.
 GamingForum's price differs between two pinned sources. The persona pin is 30 (`personas.js`). It is the quote under `PERSONA_MODE=pinned`, and the fallback for the supplier-agent path (`SUPPLIER_AGENTS=local` or `http`). Under the default `PERSONA_MODE=llm` the price is chosen by the model within the persona clamp of 10–40.
-The Board's own default quotes are 20 (`app/lib/board/scenario.js`, `PINNED`, used when no supplier-agent source is set), and the stand-in recording `app/data/canned/run.json` carries 20.
+The Board's own default quotes are 20 (`app/lib/board/scenario.js`, `PINNED`, used when no supplier-agent source is set), and the recording `app/data/canned/c1f40522-final.json` carries 20.
 The auction result is the same either way: GamingForum promises 4 per 1,000, is below the gate and is a Lost bid. Only the number shown on its card differs (#58).
 
 ### Risk of a verdict: what the bond does to your result

@@ -201,8 +201,8 @@ in-memory store per server process. Every Upstash call has a 5 s AbortController
 ## Hook points
 
 - **Canned replay ([S12])**: `canned.js` `getCannedReplay()` is `createReplay()` from `app/lib/replay`.
-  It returns `async ({ runId }) => ({ run, events })` in the fixture shape, from `app/data/canned/run.json`
-  (or `REPLAY_RECORDING`). With `DEMO_MODE=canned`, `POST /api/run` stores that transcript under the new run id
+  It returns `async ({ runId }) => ({ run, events })` in the fixture shape, from the default recording of `app/data/canned/index.js`
+  (or `REPLAY_RECORDING`, a recording id or a file). With `DEMO_MODE=canned`, `POST /api/run` stores that transcript under the new run id
   (`mode: "canned"`, `badge: "PRE-RECORDED"`) and the SSE stream replays it. Replay events keep their recorded `ts`
   and carry a `dueAt`; `service.js` wraps the store with `withReplayPacing`, which hides an event, and what it shows
   in `GET /api/run/:id`, until it is due. `REPLAY_SPEED=fast` (default) fits the stream in 25 s.
