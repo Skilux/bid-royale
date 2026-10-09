@@ -116,7 +116,7 @@ Notes for UI:
   on one server share ids. Key UI lists by `runId` + `id`.
 - Worked example: Consumer net -108.75 tADA, 14 signups, 7.7679 per signup. TechBlog Pass (8 of 7),
   CodePodcast Short of promise (6 of 8, 3.75 forfeited), DevNewsletter Under gate (0 of 12, award 70
-  back, 17.5 forfeited), GamingForum Lost bid (4 per 1,000, below the gate).
+  back, 17.5 forfeited), GamingForum Lost bid (0.4%, below the gate).
 
 ## SSE
 

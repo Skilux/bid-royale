@@ -39,13 +39,13 @@ are registered on Preprod: `RegistrationConfirmed`, 6.5 min each.
 | Bid fee, per bidder (4 bidders) | 2 |
 | Awards TechBlog / CodePodcast / DevNewsletter | 70 / 60 / 70 |
 | Bonds, 25% of award | 17.5 / 15 / 17.5 |
-| CodePodcast forfeit (Short of promise): 15 × (8 − 6) ÷ 8 | 3.75 |
+| CodePodcast forfeit (Short of promise): 15 × (0.8 − 0.6) ÷ 0.8 | 3.75 |
 | CodePodcast bond remainder | 11.25 |
 | DevNewsletter forfeit (Under gate): full bond | 17.5 |
 | Consumer net for 14 verified signups (8 + 6) | **−108.75** (about 7.77 per signup) |
 
 Consumer net = −200 awards + 70 DevNewsletter award back + 3.75 + 17.5
-forfeits = −108.75. The gate is unchanged: 5 signups per 1,000 impressions.
+forfeits = −108.75. The gate is unchanged: 0.5% conversion.
 
 This table is the pinned worked example, the offline fixture
 `app/data/seeds/board-run.worked-example.json`. The demo, the video and the replay use
@@ -55,7 +55,7 @@ the recorded run `run_c1f40522` (#45), with LLM quotes:
 |---|---|
 | Awards TechBlog / CodePodcast / DevNewsletter | 65 / 55 / 60 (180 of 200) |
 | Bonds, 25% of award | 16.25 / 13.75 / 15 |
-| CodePodcast forfeit: 13.75 × (7 − 6) ÷ 7 | 1.964286, under the 2 tADA minimum, never sent (#62), not counted |
+| CodePodcast forfeit: 13.75 × (0.7 − 0.6) ÷ 0.7 | 1.964286, under the 2 tADA minimum, never sent (#62), not counted |
 | DevNewsletter forfeit (Under gate): full bond | 15 |
 | Consumer net for 14 verified signups (8 + 6) | **−105** (7.50 per signup): −180 awards + 60 award back + 15 forfeit |
 
@@ -85,14 +85,14 @@ report is the supplier's delivery report, or the scripted one the Board builds w
 report, the verdict hash alone is anchored. The reconciler (`app/lib/board/reconcile.js`, #49) advances every escrow below
 until it is terminal, and the Railway treasury worker triggers it every 30 s, so no browser has to stay open.
 
-**Pass, TechBlog (delivered 8 of 7 promised)**
+**Pass, TechBlog (delivered 0.8% against 0.7% promised)**
 
 | Escrow | Calls in order (whose key) | Money moves | States | Measured |
 |---|---|---|---|---|
 | Award 70 (early release) | TechBlog `submit-result` (TechBlog) → Consumer `request-refund` (Consumer) → Consumer `cancel-refund-request` (Consumer) → node pays out | 70 to TechBlog | `FundsLocked` → `ResultSubmitted` → `Disputed` → `WithdrawAuthorized` → `Withdrawn` | 13.0 min (`run_c1f40522`) |
 | Bond 17.5 (cooperative return) | TechBlog `request-refund` (TechBlog) → Board `authorize-refund` (Board) | 17.5 back to TechBlog | `FundsLocked` → `RefundRequested` → `RefundWithdrawn` | 6.8 min (`run_c1f40522`) |
 
-**Short of promise, CodePodcast (delivered 6 of 8)**
+**Short of promise, CodePodcast (delivered 0.6% against 0.8%)**
 
 | Escrow | Calls in order (whose key) | Money moves | States | Measured |
 |---|---|---|---|---|
@@ -100,7 +100,7 @@ until it is terminal, and the Railway treasury worker triggers it every 30 s, so
 | Bond 15 (Board collects by early release) | Board `submit-result` (Board) → CodePodcast `request-refund` (CodePodcast) → CodePodcast `cancel-refund-request` (CodePodcast) | 15 to the Board | as Pass | 13.0 min (inferred from the award release in `run_c1f40522`, same path) |
 | Treasury transfers (not escrows) | treasury worker, Admin key, only for a Board-signed verdict, after the bond is `Withdrawn` | 3.75 to the Consumer, 11.25 to CodePodcast | — | bond remainder 16.1 min; the sub-2-tADA forfeit was refused (`BelowMinimum`, #62), `run_c1f40522` |
 
-**Under gate, DevNewsletter (delivered 0 of 12)**
+**Under gate, DevNewsletter (delivered 0% against 1.2%)**
 
 | Escrow | Calls in order (whose key) | Money moves | States | Measured |
 |---|---|---|---|---|
@@ -109,7 +109,7 @@ until it is terminal, and the Railway treasury worker triggers it every 30 s, so
 | Bond 17.5 (Board collects by early release) | as CodePodcast's bond | 17.5 to the Board | as Pass | 13.0 min (inferred, as CodePodcast's bond) |
 | Treasury transfer | treasury worker, Board-signed verdict required | 17.5 to the Consumer | — | 17.0 min (`run_c1f40522`) |
 
-**Lost bid, GamingForum (promised 4 per 1,000, below the gate)**: no escrow.
+**Lost bid, GamingForum (promised 0.4%, below the gate)**: no escrow.
 Only the 2 tADA bid fee, REAL, not returned: the Board collects it like every
 other bid fee.
 

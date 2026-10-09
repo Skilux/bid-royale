@@ -16,9 +16,9 @@ Zero-network instant demo: discovery works before any API is wired.
 
 - `suppliers.json` (richer version) — 4 supplier agents (TechBlog, CodePodcast, DevNewsletter,
   GamingForum): registry entry, `api_base_url`, bid price, impressions,
-  promised signups per 1,000, and serving cost per 1,000 as operator config.
-- `tender.json` — the NeoRack tender: budget 200 tADA, gate 5 signups per
-  1,000 impressions, bond 25% of award, audience technical users.
+  promised conversion, and serving cost per 1,000 as operator config.
+- `tender.json` — the NeoRack tender: budget 200 tADA, gate 0.5%
+  conversion, bond 25% of award, audience technical users.
 - `canned-run.json` — recorded successful SSE transcript for
   `DEMO_MODE=canned`, holding the worked example (all tADA): TechBlog 70 /
   Pass, CodePodcast 60 / Short of promise (3.75 forfeited), DevNewsletter 70 /

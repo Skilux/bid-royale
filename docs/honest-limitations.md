@@ -62,7 +62,7 @@ and it's the cheapest 10 points available.
   check whether a signup is a real human. Bot signals are dashboard context
   only, never the verdict.
 - The 3 verdicts, the pro-rata forfeit (bond × (promised − delivered) ÷
-  promised) and the gate (5 verified signups / 1k impressions) are policy
+  promised) and the gate (0.5% verified conversion) are policy
   choices, not laws of nature — crude next to real media-mix modeling.
 - The supplier win-chance rule is a proposal, not decided. The budget fill
   rule for a bid that does not fit is not defined.

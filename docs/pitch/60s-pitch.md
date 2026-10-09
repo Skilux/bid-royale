@@ -19,7 +19,7 @@ Pace: 2.5 words per second. Screen: the judge URL Run (canned, under 30 s, badge
 
 > Advertisers pay for impressions and hope for customers. NeoRack, a GPU cloud, wants technical users, so its agent pays only for verified signups.
 
-On screen: the brief, then the tender card (budget 200 tADA, gate 5 per 1,000, bond 25%).
+On screen: the brief, then the tender card (budget 200 tADA, gate 0.5% conversion, bond 25%).
 
 **10 to 22 s. Mechanism (27 words)**
 
@@ -29,7 +29,7 @@ On screen: registry lookup, four sealed bids, GamingForum greyed out, awards 65,
 
 **22 to 42 s. Demo moment and money proof (50 words)**
 
-> Awards, bonds and bid fees lock in Masumi escrow on Cardano preprod. Real transactions. The Tender Board then counts only signed, attributed signups. DevNewsletter promised 10 per thousand and delivered zero. NeoRack's 60 tADA came back in 5.7 minutes, and the 15 bond is forfeited. That refund is this transaction.
+> Awards, bonds and bid fees lock in Masumi escrow on Cardano preprod. Real transactions. The Tender Board then counts only signed, attributed signups. DevNewsletter promised a 1% conversion and delivered zero. NeoRack's 60 tADA came back in 5.7 minutes, and the 15 bond is forfeited. That refund is this transaction.
 
 On screen: ten escrow rows with explorer links, then the Under gate stamp on DevNewsletter, then the refund tx open in the Cardano explorer (hero moment, hold it): `https://preprod.cardanoscan.io/transaction/b4854bc3d603c1ceec700ea7ac5ccdb674c3c74a962459cdf2caf935f71a84da`. Every REAL payout was on chain 17 min after settlement start. Optional line if there is time, not counted in the words: "All paid out in 17 minutes."
 
@@ -68,7 +68,7 @@ Rules for delivery:
 Answers are 1 to 3 sentences. Evidence is from the repo docs and the #45 results comment unless marked.
 
 **1. Why not just a DSP or an ad network?**
-A DSP sells impressions and the buyer carries the delivery risk. Here suppliers promise signups per 1,000 impressions in a sealed bid, post a 25% bond, and get paid against verified signups. We are not building a generalized DSP: the demo is the allocate, verify, settle loop.
+A DSP sells impressions and the buyer carries the delivery risk. Here suppliers promise a conversion rate in a sealed bid, post a 25% bond, and get paid against verified signups. We are not building a generalized DSP: the demo is the allocate, verify, settle loop.
 
 **2. What is real and what is simulated?**
 Real: Masumi escrows on Cardano preprod (3 awards, 3 bonds, 4 bid fees per run, all 10 locked REAL in the recorded run), their tx links, the registry identities, live registry discovery, the auction mechanism and the verdict logic. Simulated: the NeoRack shop, its signups and traffic, DevNewsletter's zero signups, and round 2. The judge URL replays one recorded run, badged PRE-RECORDED, with its real tx links.
@@ -112,12 +112,12 @@ Talk track (section 1):
 1. "It posts a tender: 200 tADA." Budget 200 is inferred from `docs/money-flow.md`, not stated in the #45 comment. Awards add up to 180.
 2. "Awards, bonds and bid fees lock in Masumi escrow on Cardano preprod." #45: 10 locks REAL, 2.1 min.
 3. "Real transactions."
-4. "DevNewsletter promised 10 per thousand and delivered zero." #45: Under gate, "0 vs 10".
+4. "DevNewsletter promised a 1% conversion and delivered zero." #45: Under gate, "0% vs 1%".
 5. "NeoRack's 60 tADA came back in 5.7 minutes, and the 15 bond is forfeited." Refund `b4854bc3d6…` RefundWithdrawn at 5.7 min. Forfeit `83c3fa9dcb…`, node state `Pending`.
 6. "That refund is this transaction." `b4854bc3d603c1ceec700ea7ac5ccdb674c3c74a962459cdf2caf935f71a84da`.
 7. "We built no wallets, no escrow contracts."
 8. "Net: 105 tADA for 14 verified signups." 8 + 6 + 0 = 14.
-9. On screen: "budget 200 tADA, gate 5 per 1,000, bond 25%", "net -105 tADA, 7.50 per signup", "180 locked, 75 came back (60 refund, 15 forfeit)", "every REAL payout on chain 17 min after settlement start".
+9. On screen: "budget 200 tADA, gate 0.5% conversion, bond 25%", "net -105 tADA, 7.50 per signup", "180 locked, 75 came back (60 refund, 15 forfeit)", "every REAL payout on chain 17 min after settlement start".
 
 Short versions (section 2):
 
@@ -127,7 +127,7 @@ Short versions (section 2):
 
 Q&A (section 3):
 
-13. Q1: "Suppliers promise signups per 1,000 impressions in a sealed bid, post a 25% bond, and get paid against verified signups."
+13. Q1: "Suppliers promise a conversion rate in a sealed bid, post a 25% bond, and get paid against verified signups."
 14. Q2: "Real: Masumi escrows on Cardano preprod (3 awards, 3 bonds, 4 bid fees per run, all 10 locked REAL in the recorded run)."
 15. Q2: "Live registry discovery." #45: discovery `live`, 4 agents `RegistrationConfirmed`.
 16. Q3: "We did not build wallets, escrow contracts, DIDs or an explorer."

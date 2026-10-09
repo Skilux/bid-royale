@@ -25,7 +25,7 @@ Every route, field and number on this page was read from the code on `main`, and
 
 1. The Board calls `POST <your base>/tender-invite` with the tender (`app/lib/supplier-agents/bid-source.js`, `httpInvite`). It invites all four suppliers
    in parallel and waits up to 45 s for each.
-2. You answer with a sealed quote: price, impressions, promised signups per 1,000, a random `salt`, and `commit` = SHA-256 of those fields (section 3).
+2. You answer with a sealed quote: price, impressions, promised conversion (`promisedPer1000`, signups per 1,000 impressions: 7 = 0.7%), a random `salt`, and `commit` = SHA-256 of those fields (section 3).
    Or you answer `skip`.
 3. The Board stamps the receive time (`committedAt`) and publishes only the `commit` (`bid.committed`). It locks the bid fee for every committed bid. Then it
    publishes the reveal (`bid.revealed`: price, impressions, promisedPer1000, salt). `app/lib/board/index.js`, handler `bids`.
@@ -49,7 +49,7 @@ Max duration 60 s.
 | `runId` | string, max 100 | |
 | `supplier` | one of the four ids | must equal `<name>` in the route, else 400 |
 | `tender.budget` | number | the Consumer's total budget |
-| `tender.gate` | number | minimum signups per 1,000 impressions |
+| `tender.gate` | number | minimum conversion, in signups per 1,000 impressions (5 = 0.5%) |
 | `tender.bondRate` | number | bond as a share of the award |
 | `tender.bidFee` | number | fee every bidder pays |
 | `tender.currency` | string, max 20 | |
@@ -118,7 +118,7 @@ const commit = ({ price, impressions, promisedPer1000, salt }) =>
 In the current build you return `commit` and `salt` together. The Board publishes only the commit first, stamps `committedAt` when it receives your
 answer, and publishes the salt after the bid fees are locked. Anyone can then recompute the commit.
 
-Quote rules enforced by the built-in agents (`bidFor`, `schemas.js`): price a multiple of 5, impressions an integer multiple of 100, promised per 1,000 an integer,
+Quote rules enforced by the built-in agents (`bidFor`, `schemas.js`): price a multiple of 5, impressions an integer multiple of 100, `promisedPer1000` an integer,
 each inside the persona's clamps (section 4). The Board itself only requires positive numbers (`invalid_schema` otherwise).
 
 ## 4. How to price an offer
@@ -159,17 +159,17 @@ Worked values at `R = 10`, `bidFee = 2` (computed by running `estimateWinChance`
 
 ### Persona seeds (`app/lib/supplier-agents/personas.js`, costs in tADA per 1,000 impressions)
 
-| Supplier | Style | `costPer1000` | `minMargin` | price | impressions | promised per 1,000 | Pinned quote |
+| Supplier | Style | `costPer1000` | `minMargin` | price | impressions | `promisedPer1000` (7 = 0.7%) | Pinned quote |
 |---|---|---|---|---|---|---|---|
 | `techblog` | conservative | 50 | 5 | 55–80 | 500–1500 | 5–8 | 70, 1000, 7 |
 | `codepodcast` | moderate | 40 | 5 | 45–80 | 500–1500 | 6–10 | 60, 1000, 8 |
 | `devnewsletter` | aggressive over-promiser | 30 | 5 | 50–90 | 1000–2000 | 10–15 | 70, 1500, 12 |
 | `gamingforum` | passive low-baller | 20 | 5 | 10–40 | 500–1500 | 2–4 | 30, 1000, 4 |
 
-`gamingforum` clamps promised per 1,000 at 4, below the gate of 5, so it can only ever be a `lost_bid` at the current gate. Its 2 tADA bid fee is not returned.
+`gamingforum` clamps its promise at 4 (0.4%), below the gate of 5 (0.5%), so it can only ever be a `lost_bid` at the current gate. Its 2 tADA bid fee is not returned.
 GamingForum's price differs between two pinned sources. The persona pin is 30 (`personas.js`). It is the quote under `PERSONA_MODE=pinned`, and the fallback for the supplier-agent path (`SUPPLIER_AGENTS=local` or `http`). Under the default `PERSONA_MODE=llm` the price is chosen by the model within the persona clamp of 10–40.
 The Board's own default quotes are 20 (`app/lib/board/scenario.js`, `PINNED`, used when no supplier-agent source is set), and the recording `app/data/canned/c1f40522-final.json` carries 20.
-The auction result is the same either way: GamingForum promises 4 per 1,000, is below the gate and is a Lost bid. Only the number shown on its card differs (#58).
+The auction result is the same either way: GamingForum promises a 0.4% conversion, is below the gate and is a Lost bid. Only the number shown on its card differs (#58).
 
 ### Risk of a verdict: what the bond does to your result
 

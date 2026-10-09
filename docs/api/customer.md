@@ -38,7 +38,7 @@ The terms are `TENDER` in `app/lib/config.js`. They are copied into every run as
 | Term | Value now | Meaning |
 |---|---|---|
 | `budget` | 200 tADA | The most the Board will award in total |
-| `gate` | 5 | Minimum verified signups per 1,000 impressions. A bid that promises less is rejected (`below_gate`) |
+| `gate` | 5 | Minimum verified conversion, in signups per 1,000 impressions (5 = 0.5%). A bid that promises less is rejected (`below_gate`) |
 | `bondRate` | 0.25 | Each winner locks a bond of 25% of its award |
 | `bidFee` | 2 tADA | Each bidder pays it; it is not returned |
 | `currency` | `tADA` | |

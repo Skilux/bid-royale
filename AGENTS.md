@@ -236,15 +236,15 @@ a merged violation is expensive.
   timestamp within window.
 - Bid valid: sealed (commit hash before the deadline, reveal after close,
   Board recomputes and rejects mismatches), on time, quote schema valid
-  (promised signups per 1,000 + price + impressions). Eligible only if promised
-  per 1,000 ≥ 5.
+  (promised conversion + price + impressions). Eligible only if promised
+  conversion ≥ 0.5%.
 - Bond: 25% of award, locked by each winner in escrow (Board is seller).
 - Verdict, one of 3 per supplier (plus Lost bid, rejected before the auction):
   - **Pass**: delivered ≥ promised. Supplier is paid the full award, bond returned.
-  - **Short of promise**: gate (5 per 1,000) ≤ delivered < promised. Supplier is
+  - **Short of promise**: gate (0.5% conversion) ≤ delivered < promised. Supplier is
     paid the full award, bond forfeited pro rata:
     bond × (promised − delivered) ÷ promised.
-  - **Under gate**: delivered < 5 per 1,000. Award goes back to the Consumer,
+  - **Under gate**: delivered < 0.5% conversion. Award goes back to the Consumer,
     full bond forfeited to the Consumer. Refund path A2 (supplier never submits,
     Consumer reclaims after the submit-result deadline) is open until the D9
     preprod dry run.

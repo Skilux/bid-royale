@@ -8,7 +8,7 @@ from the Board-signed verdict (`app/lib/verifier/`) and executes it via `app/lib
 ## Contract
 
 - **Inputs:** signed verdict per supplier (Pass / Short of promise / Under gate)
-  with delivered, promised and gate (5 signups per 1,000 impressions); the
+  with delivered, promised and gate (0.5% conversion); the
   award and bond escrow ids per winner; revealed bids.
 - **Money per winner:** award (Consumer → Supplier) + bond (25% of award,
   Supplier → Board), REAL. Bid fees (4) settle in the background, REAL

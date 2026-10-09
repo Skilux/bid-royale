@@ -73,8 +73,8 @@ net -105, see [`money-flow.md`](money-flow.md).
 
 1. **Brief and tender.** User NeoRack gives the Consumer agent the brief:
    budget 200, technical users, pay per verified signup. The Consumer agent
-   publishes the tender to the Tender Board: gate 5 signups per 1,000
-   impressions, bond 25% of award. The Board queries the Masumi registry
+   publishes the tender to the Tender Board: gate 0.5% conversion,
+   bond 25% of award. The Board queries the Masumi registry
    (`GET /registry` on the node, V2 payment source, Read-only key; seeded
    fallback `app/data/seeds/suppliers.json`, labelled "seeded registry"),
    emits `registry.discovered`, reads each supplier's `apiBaseUrl`, and sends
@@ -87,10 +87,10 @@ net -105, see [`money-flow.md`](money-flow.md).
    anchored on the bid's commit hash, #50).
    Sealed bid = commit hash `SHA-256(price, impressions, promised signups,
    salt)` before the deadline. After close, suppliers reveal bid + salt and the
-   Board recomputes and rejects mismatches. Eligible only if promised per
-   1,000 ≥ 5. Price per promised signup = bid ÷ (impressions ÷ 1,000 ×
-   promised per 1,000). Sort cheapest first, accept each while the running
-   total of bids ≤ 200. GamingForum (4 per 1,000) is rejected below the gate.
+   Board recomputes and rejects mismatches. Eligible only if promised
+   conversion ≥ 0.5%. Price per promised signup = bid ÷ (impressions ×
+   promised conversion). Sort cheapest first, accept each while the running
+   total of bids ≤ 200. GamingForum (0.4%) is rejected below the gate.
 3. **Lock (critical path).** The Consumer agent locks each award in escrow
    (TechBlog 70, CodePodcast 60, DevNewsletter 70 = 200; Supplier is seller). Each
    winner locks its bond in a Supplier → Board escrow (17.5, 15, 17.5 = 50).
@@ -99,23 +99,23 @@ net -105, see [`money-flow.md`](money-flow.md).
 4. **Delivery and verification.** Traffic serves. The NeoRack signup feed
    sends signed signup events to the Tender Board. Its verifier
    (the Board verifier, `app/lib/verifier`, inside the Board service, not an agent) counts verified
-   signups per supplier (TechBlog 8 · CodePodcast 6 · DevNewsletter 0 per
-   1,000). The Board signs a verdict per supplier and sends it to the
+   signups per supplier (TechBlog 0.8% · CodePodcast 0.6% · DevNewsletter 0%
+   conversion). The Board signs a verdict per supplier and sends it to the
    Consumer; its hash goes to the decision log. There is no separate Validator
    agent, wallet or fee (PRD D7). A winner may post a delivery report (#51), which is context only.
 5. **Settlement**, one of 3 verdicts per supplier (delivered ≥ promised =
-   Pass; delivered ≥ 5 but below promise = Short of promise; delivered < 5 =
+   Pass; delivered ≥ 0.5% but below promise = Short of promise; delivered < 0.5% =
    Under gate):
-   - **Pass** (TechBlog, promised 7, delivered 8): supplier submits the
+   - **Pass** (TechBlog, promised 0.7%, delivered 0.8%): supplier submits the
      result, the Consumer releases early (request-refund, then cancel) and the
      supplier gets the full award 70 (13.1 min). Supplier requests its bond
      back, Board authorizes; supplier gets 17.5 back (4.7 min).
-   - **Short of promise** (CodePodcast, promised 8, delivered 6): award 60
+   - **Short of promise** (CodePodcast, promised 0.8%, delivered 0.6%): award 60
      released early as for Pass. Board collects the bond by early release and
-     the treasury worker repays it minus the forfeit: 15 × (8 − 6) ÷ 8 = 3.75
+     the treasury worker repays it minus the forfeit: 15 × (0.8 − 0.6) ÷ 0.8 = 3.75
      forfeited to the Consumer, 11.25 returned. Escrows cannot split, so both
      are plain transfers, only for a Board-signed verdict.
-   - **Under gate** (DevNewsletter, promised 12, delivered 0): Consumer
+   - **Under gate** (DevNewsletter, promised 1.2%, delivered 0%): Consumer
      requests a refund, the supplier authorizes it, award 70 goes back to the
      Consumer (5.9 min; automatic refund after the deadline, 27.8 min, as the
      fallback). Board collects the full bond 17.5 and the treasury forwards it

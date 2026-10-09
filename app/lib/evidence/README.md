@@ -9,7 +9,7 @@ Chain gets hashes only. Evidence stays here.
 |---|---|---|
 | `tender`, `brief`, `keys` | run created | terms as published (no deadline), brief, shop and Board public keys |
 | `discovery` | bids | the `registry.discovered` result: live or seeded, reason, the agents found (#44) |
-| `bid.<supplier>` | bids | commit hash, reveal (price, impressions, promised per 1,000, salt), receive time, deadline, commit recheck |
+| `bid.<supplier>` | bids | commit hash, reveal (price, impressions, promised conversion, salt), receive time, deadline, commit recheck |
 | `allocation` | allocation | ranking, accepted, rejected, budget fill, one decision per bid |
 | `signups.<supplier>` | feed | window, impressions, the supplier's signed signup events (bot signals included as context) |
 | `verification.<supplier>` | verification | received, verified, rejected by kind, rejected event ids, bot signals as context only |

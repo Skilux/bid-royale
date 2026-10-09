@@ -19,14 +19,15 @@ Canonical terms for this repo (spec v3.1, with the 9 Oct 2026 decisions in #58: 
 ## Tender and bids
 
 - **Tender**: the brief published by the Consumer agent to the Board. Example: "Budget 200 tADA, audience technical users, pay per verified signup."
-- **Tender terms**: gate 5 signups per 1,000 impressions, bond 25% of award, budget 200 tADA. Replaces "policy card".
-- **Outcome**: a verified signup. Replaces conversion and checkout.
+- **Tender terms**: gate 0.5% conversion, bond 25% of award, budget 200 tADA. Replaces "policy card".
+- **Outcome**: a verified signup. Replaces checkout.
+- **Conversion rate**: verified signups ÷ impressions, shown as a percent: 5 signups on 1,000 impressions is 0.5%. The gate, promised and delivered are all conversion rates. In code they are held as signups per 1,000 (`promisedPer1000`, `gate: 5`), so 5 means 0.5%.
 - **Signed signup event**: a signup event signed by the shop key.
 - **Sealed bid**: commit hash `SHA-256(price, impressions, promised signups, salt)` sent before the deadline. After close, suppliers reveal the plain bid plus salt, and the Board recomputes and rejects mismatches.
-- **Promised**: signups per 1,000 impressions stated in the bid.
-- **Delivered**: verified signups per 1,000 impressions.
-- **Gate**: 5 signups per 1,000 impressions. Bids promising less are ineligible.
-- **Price per promised signup**: bid ÷ (impressions ÷ 1,000 × promised per 1,000). Bids are sorted cheapest first and accepted while the running total stays within the budget (fill rule for a bid that does not fit is open).
+- **Promised**: the conversion rate stated in the bid.
+- **Delivered**: the verified conversion rate.
+- **Gate**: 0.5% conversion. Bids promising less are ineligible.
+- **Price per promised signup**: bid ÷ (impressions × promised conversion). Bids are sorted cheapest first and accepted while the running total stays within the budget (fill rule for a bid that does not fit is open).
 - **Win chance (proposal)**: a supplier bids only if win chance × margin − 0.2 > 0. Win chance = clamp(2 − p ÷ R, 0, 1), p = own price per promised signup, R = highest winning price per signup in the last auction. Open.
 
 ## Money

@@ -55,7 +55,7 @@ here and in the UI. Full text with sources: [`docs/honest-limitations.md`](docs/
 - The verifier checks signature, attribution and time window. It is not a human check: it does not tell whether a signup is a real person. Bot signals are dashboard context only, never the verdict.
 - Attribution is first-touch. Production needs multi-touch.
 - Signed signups assume the shop key is safe. A compromised shop key mints signups.
-- The 3 verdicts, the pro-rata forfeit (bond × (promised − delivered) ÷ promised) and the gate (5 verified signups per 1,000 impressions) are policy choices, crude next to real media-mix modeling.
+- The 3 verdicts, the pro-rata forfeit (bond × (promised − delivered) ÷ promised) and the gate (0.5% verified conversion) are policy choices, crude next to real media-mix modeling.
 - The supplier win-chance rule is a proposal. The budget fill rule for a bid that does not fit is not defined.
 
 **Money**
@@ -130,8 +130,8 @@ Two honest notes on these rows:
   reported transfer status `Pending` when settlement was collected. The tx hash
   exists and the explorer link is the proof. Whether each has confirmed on chain
   was not re-checked when this page was written.
-- **The late forfeit.** CodePodcast was Short of promise (6 delivered vs 7
-  promised), so its forfeit is 13.75 × (7 − 6) ÷ 7 = 1.964286 tADA. The treasury
+- **The late forfeit.** CodePodcast was Short of promise (0.6% delivered vs
+  0.7% promised), so its forfeit is 13.75 × (0.7 − 0.6) ÷ 0.7 = 1.964286 tADA. The treasury
   first refused it for being under its 2 tADA minimum, so the run reached the
   40-min timer fallback with that row PENDING. Issue [#62](https://github.com/Skilux/bid-royale/issues/62) fixed it (`76610cb`): a
   sub-minimum transfer is rounded up to 2 tADA and the Board pays the difference.
@@ -231,7 +231,7 @@ verifier counts them, the Board signs one verdict per supplier:
 - TechBlog **Pass**: 70 paid, 17.5 bond returned.
 - CodePodcast **Short of promise**: 60 paid, 3.75 of bond forfeited to the Consumer.
 - DevNewsletter **Under gate** (0 signups): 70 back to the Consumer, 17.5 bond forfeited to the Consumer.
-- GamingForum promises 4 per 1,000, below the gate: **Lost bid**.
+- GamingForum promises a 0.4% conversion, below the gate: **Lost bid**.
 
 This section is the pinned worked example. The recorded run used LLM quotes, so its amounts differ (awards 65 / 55 / 60, bonds 16.25 / 13.75 / 15), see the [proof table](#real-transaction-proof).
 

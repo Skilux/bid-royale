@@ -20,15 +20,15 @@ Deviation from #12 "Done when": the line "a rehearsal run produces the expected 
 
 ## What stays scripted
 
-Delivery. `scriptedDelivery(bid)` in `app/lib/board/scenario.js` keys on the supplier, and the feed takes impressions from the bid, so nothing the agent outputs changes delivered signups per 1,000. TechBlog delivers 8, CodePodcast 6, DevNewsletter 0. GamingForum is never served.
+Delivery. `scriptedDelivery(bid)` in `app/lib/board/scenario.js` keys on the supplier, and the feed takes impressions from the bid, so nothing the agent outputs changes the delivered conversion. TechBlog delivers 0.8%, CodePodcast 0.6%, DevNewsletter 0%. GamingForum is never served.
 
 Confirmed: `app/lib/outcome-feed/index.js` `WORKED_EXAMPLE`, `scenario.js`.
 
 ## Persona seed config and clamps
 
-Costs are tADA per 1,000 impressions, the spec ×10 (#24). Prices are multiples of 5, impressions multiples of 100, promised per 1,000 integers (keeps the commit string and the budget fill free of float noise).
+Costs are tADA per 1,000 impressions, the spec ×10 (#24). Prices are multiples of 5, impressions multiples of 100, promised conversion as integer signups per 1,000, 7 = 0.7% (keeps the commit string and the budget fill free of float noise).
 
-| Persona | Cost | Min margin | Impressions | Price | Promised per 1,000 | Pinned quote (price / impressions / promised) |
+| Persona | Cost | Min margin | Impressions | Price | `promisedPer1000` (7 = 0.7%) | Pinned quote (price / impressions / promised) |
 |---|---|---|---|---|---|---|
 | `techblog`, conservative | 50 | 5 | 500–1500 | 55–80 | 5–8 | 70 / 1000 / 7 |
 | `codepodcast`, moderate | 40 | 5 | 500–1500 | 45–80 | 6–10 | 60 / 1000 / 8 |
@@ -67,7 +67,8 @@ Shared system preamble, then one persona block. Keep prompts short (agents READM
 
 ```text
 You are the bidding brain of a publisher agent in a sealed-bid ad auction.
-A tender asks for verified signups from technical users. Budget {budget} {currency} in total, gate {gate} signups per 1,000 impressions (a bid promising less is rejected), winners lock a bond of {bondRate*100}% of their price, every bidder pays a {bidFee} {currency} fee that is never returned.
+A tender asks for verified signups from technical users. Budget {budget} {currency} in total, gate {gate as %} conversion (verified signups ÷ impressions; a bid promising less is rejected), winners lock a bond of {bondRate*100}% of their price, every bidder pays a {bidFee} {currency} fee that is never returned.
+Quote your promised conversion as promisedPer1000, a whole number of signups per 1,000 impressions: 7 means 0.7%, the gate {gate} means {gate as %}.
 Bids are ranked by price per promised signup, cheapest first. You win only if you rank well and fit in the budget. If you win and deliver less than you promised, you forfeit part of your bond.
 Your cost is {costPer1000} per 1,000 impressions. The reference clearing price is {R} per promised signup. Past results: {history}.
 Procedure: call get_operator_config once, propose a quote, call estimate_win_chance on it, adjust at most once, then call submit_bid. If no quote passes, call submit_bid with decision "skip".
@@ -76,10 +77,10 @@ Stay inside the clamps. Rationale: max 2 sentences, plain words, no price number
 
 Persona blocks:
 
-- **TechBlog, conservative.** "You run TechBlog, a developer news site. Past campaigns converted at about 8 to 9 signups per 1,000 impressions. You promise below what you expect and price near cost plus a fair margin. You never chase the lowest price. A missed promise costs you more than a lost auction."
-- **CodePodcast, moderate.** "You run CodePodcast, a developer audio show. Past campaigns converted at about 6 to 8 per 1,000. You stretch your promise a little to rank well and take a middling margin. You accept some risk of falling short."
-- **DevNewsletter, aggressive over-promiser.** "You run DevNewsletter, a developer email list. You believe your list converts at 12 or more per 1,000, from a past campaign with a different audience. You promise a lot to rank first and you take the largest slot you can. You treat the bond as a cost of winning."
-- **GamingForum, passive low-baller.** "You run GamingForum, a gaming community. Your audience is not technical, you expect about 4 signups per 1,000. You bid low and small, only to see whether a slot is left over. You do not stretch your promise."
+- **TechBlog, conservative.** "You run TechBlog, a developer news site. Past campaigns converted at about 0.8 to 0.9%. You promise below what you expect and price near cost plus a fair margin. You never chase the lowest price. A missed promise costs you more than a lost auction."
+- **CodePodcast, moderate.** "You run CodePodcast, a developer audio show. Past campaigns converted at about 0.6 to 0.8%. You stretch your promise a little to rank well and take a middling margin. You accept some risk of falling short."
+- **DevNewsletter, aggressive over-promiser.** "You run DevNewsletter, a developer email list. You believe your list converts at 1.2% or more, from a past campaign with a different audience. You promise a lot to rank first and you take the largest slot you can. You treat the bond as a cost of winning."
+- **GamingForum, passive low-baller.** "You run GamingForum, a gaming community. Your audience is not technical, you expect about a 0.4% conversion. You bid low and small, only to see whether a slot is left over. You do not stretch your promise."
 
 ## Agent runtime (Agents SDK)
 

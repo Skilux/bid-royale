@@ -17,8 +17,8 @@ attribution by click/session ID. An outcome is a verified signup.
   `app/lib/signing/`.
 - Each event also carries unsigned `signals { asn, clickBurst }`. Dashboard context only, the
   verifier never reads them.
-- **Script (signups per 1k impressions):** TechBlog 8 on 1,000 impressions, CodePodcast 6 on
-  1,000, DevNewsletter 0 on 1,500. GamingForum is not served.
+- **Script (conversion):** TechBlog 0.8% (8 signups on 1,000 impressions), CodePodcast 0.6%
+  (6 on 1,000), DevNewsletter 0% (0 on 1,500). GamingForum is not served.
 - **Invalid events for tests:** each served supplier gets one `bad_signature`,
   `wrong_attribution` and `outside_window` event. `invalid` lists them with the expected
   reason. Pass `includeInvalid: false` to drop them.

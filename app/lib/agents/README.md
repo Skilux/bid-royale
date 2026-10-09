@@ -10,7 +10,7 @@ Verifier, Settlement engine), not an agent.
 ## Contract
 
 - **Consumer agent (NeoRack):** takes the brief, publishes the tender (budget
-  200 tADA, gate 5 signups per 1,000 impressions, bond 25% of award), locks
+  200 tADA, gate 0.5% conversion, bond 25% of award), locks
   each award in escrow.
 - **Supplier agents (×4):** TechBlog, CodePodcast, DevNewsletter, GamingForum.
   Each decides whether to bid, locks the 2 tADA bid fee, submits a sealed
