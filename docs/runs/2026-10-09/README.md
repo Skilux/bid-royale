@@ -1,15 +1,12 @@
 # Recorded run run_c1f40522 (#45)
 
 Production https://ad-slot-auction.vercel.app, real adapter (Masumi preprod), live registry discovery, LLM supplier quotes (`PERSONA_MODE` unset).
-Created 2026-10-08T23:45:43.167Z. Settlement done / timer_fallback. Files in this folder are the raw evidence; no secrets.
+Created 2026-10-08T23:45:43.167Z. Settlement done / settled. Files in this folder are the raw evidence; no secrets.
 
 ## Outcome
 - Allocation: devnewsletter 60, codepodcast 55, techblog 65; rejected: gamingforum (below_gate).
 - Verdicts: devnewsletter under_gate (delivered 0, promised 10); codepodcast short_of_promise (delivered 6, promised 7); techblog pass (delivered 8, promised 5).
-- Receipt: Consumer net -103.035714 tADA for 14 signups; badges ["REAL","PENDING"]. This net was built by the code before #62 and still counts the unsent 1.964286 tADA forfeit as returned; the money that moved gives -105.0 tADA.
-- Settlement reached the 40-min timer fallback only because of that one refused row; every other row was REAL after 17 min.
-- On-chain checks (read from the Masumi node): each bid-fee escrow's inputHash is its bid's commit (#50); the delivery result hash sits on TechBlog's award, CodePodcast's award and bond, and DevNewsletter's bond (#51).
-- Lock transactions are batched by the node: one tx can lock several escrows, so some tx links repeat.
+- Receipt: Consumer net -103.035714 tADA for 14 signups; badges ["REAL"].
 
 ## Timings (minutes after settlement start, from the event log)
 | Stage | Minutes |
@@ -22,7 +19,8 @@ Created 2026-10-08T23:45:43.167Z. Settlement done / timer_fallback. Files in thi
 | Award release, CodePodcast | 13.0 |
 | First bid fee collected | 13.0 |
 | Last bid fee collected | 15.1 |
-| Treasury transfers (last REAL) | 17.0 |
+| Treasury transfers (first two REAL) | 17.0 |
+| CodePodcast forfeit, after the #62 treasury redeploy | 53.2 |
 
 ## Transaction proof (ledger, REAL rows link to Cardanoscan preprod)
 | Phase | Supplier | Action | tADA | From → to | Badge | State | Tx |
@@ -41,7 +39,7 @@ Created 2026-10-08T23:45:43.167Z. Settlement done / timer_fallback. Files in thi
 | settlement | devnewsletter | bond_forfeit | 15 | board → consumer | REAL | Pending | [83c3fa9dcb…](https://preprod.cardanoscan.io/transaction/83c3fa9dcbefcf88bddca80eeca15890cf7e7af261758e8fe4e96534c755f370) |
 | settlement | codepodcast | award_release | 55 | consumer → codepodcast | REAL | Withdrawn | [64383b40d3…](https://preprod.cardanoscan.io/transaction/64383b40d355a3f40e9d5895400e8cc5395ad8aa31eb3335286c2b0bc8d4b7a4) |
 | settlement | codepodcast | bond_return | 11.785714 | board → codepodcast | REAL | Pending | [6862bb4516…](https://preprod.cardanoscan.io/transaction/6862bb451697b72dfa4037481079f32bd17aae451fe7c2e1dd107ce77761c733) |
-| settlement | codepodcast | bond_forfeit | 1.964286 | board → consumer | PENDING | BelowMinimum | — |
+| settlement | codepodcast | bond_forfeit | 1.964286 | board → consumer | REAL | Confirmed | [9b5053b741…](https://preprod.cardanoscan.io/transaction/9b5053b741c94501926ce9037a3ec2a9a1a3faededad27c6fbaebbb61670cc90) |
 | settlement | techblog | award_release | 65 | consumer → techblog | REAL | Withdrawn | [6a8c5cab80…](https://preprod.cardanoscan.io/transaction/6a8c5cab80e4d583dbd6e654816b1ea6945fc4b9a4f1db81db6c4cf2dec383b6) |
 | settlement | techblog | bond_return | 16.25 | board → techblog | REAL | RefundWithdrawn | [f04d859e67…](https://preprod.cardanoscan.io/transaction/f04d859e67abc497d7f95aa60e463ea61ec9efed744c69fe64a2716aa7043e5f) |
 | bid_fee_collect | techblog | bid_fee_collect | 2 | techblog → board | REAL | Withdrawn | [2790c21d53…](https://preprod.cardanoscan.io/transaction/2790c21d53a4a1933767ee1a06fc004c17188cd9f5c8ae2f13392243c11bf384) |
@@ -49,6 +47,9 @@ Created 2026-10-08T23:45:43.167Z. Settlement done / timer_fallback. Files in thi
 | bid_fee_collect | devnewsletter | bid_fee_collect | 2 | devnewsletter → board | REAL | Withdrawn | [b527828a66…](https://preprod.cardanoscan.io/transaction/b527828a6615a256e7ed3222791d8ed291324780e9cedf061d3a7c5630000bfb) |
 | bid_fee_collect | gamingforum | bid_fee_collect | 2 | gamingforum → board | REAL | Withdrawn | [2790c21d53…](https://preprod.cardanoscan.io/transaction/2790c21d53a4a1933767ee1a06fc004c17188cd9f5c8ae2f13392243c11bf384) |
 
-## Known issues
-- CodePodcast's 1.964286 tADA forfeit was refused by the treasury (`BelowMinimum`, under 2 tADA): no transaction, labelled PENDING. Fixed for future runs in #62 (rounded up to 2 tADA, Board pays the difference).
+## Known issues and notes
+- CodePodcast's 1.964286 tADA forfeit was first refused by the treasury (`BelowMinimum`, under 2 tADA), so settlement hit the 40-min timer fallback (00:26 UTC) with that row PENDING. After the #62 fix was deployed to the Railway treasury (00:37 UTC), the next reconcile tick sent it as 2.00 tADA (the Board topped up 0.035714) and the run finished late at 00:39 UTC with all 21 rows REAL. The receipt was rebuilt then.
+- The receipt row shows the amount owed (1.964286); the transaction moves 2.00. The Vercel side of #62, which labels the top-up, was not deployed yet when this happened.
+- On-chain checks (read from the Masumi node): each bid-fee escrow's inputHash is its bid's commit (#50); the delivery result hash sits on TechBlog's award, CodePodcast's award and bond, and DevNewsletter's bond (#51).
+- Lock transactions are batched by the node: one tx can lock several escrows, so some tx links repeat.
 - A second run was started by accident from the dashboard during this run. It is not part of this evidence.
