@@ -235,15 +235,16 @@ function VerdictBubble({ s }) {
   const verb =
     s.kind === "pass"
       ? `delivered ${s.delivered}. I paid the full ${formatAmount(s.paid)} and returned its ${formatAmount(s.bondReturned)} deposit.`
-      : `delivered ${s.delivered}. That clears the minimum of ${s.gate}, so I paid the full ${formatAmount(s.paid)}. It loses ${formatAmount(s.bondForfeited)} of its deposit.`;
+      : `delivered ${s.delivered}. That clears the minimum of ${s.gate}, so I paid the full ${formatAmount(s.paid)}. It loses ${formatAmount(s.bondForfeitOwed)} of its deposit.`;
   return (
     <div className="rounded-[4px_14px_14px_14px] bg-wash px-4 py-3 text-base">
       <Tag kind={s.kind}>{s.kindLabel}</Tag>
       <strong>{s.name}</strong> promised {s.promised} signups per 1,000 and {verb}
       <div className="mt-2 flex flex-wrap gap-x-3.5 gap-y-1.5 border-t border-line pt-2 text-[13.5px] tabular-nums">
         {s.transfers.map((t) => (
-          <span key={t.id}>
+          <span key={t.id} data-moved={t.moved ? "true" : "false"}>
             {t.label} <Money amount={t.amount} badge={t.badge} />
+            {t.moved && !t.note ? null : <span className="block text-[12px] italic opacity-75">{t.note ?? "pending, not moved"}</span>}
           </span>
         ))}
       </div>
@@ -254,9 +255,13 @@ function VerdictBubble({ s }) {
 }
 
 function UnderGate({ s, shown, reduced, currency }) {
+  const forfeit = s.transfers.find((t) => t.reason === "bond_forfeit");
+  const forfeitHeld = forfeit && !forfeit.moved;
   const rows = [
     { label: `My ${formatAmount(s.reclaimed)} locked for ${s.name}, returned`, amount: s.reclaimed, badge: s.refundBadge },
-    { label: `Its ${formatAmount(s.bondForfeited)} deposit, forfeited to me`, amount: s.bondForfeited, badge: forfeitBadge(s) },
+    forfeitHeld
+      ? { label: `Its ${formatAmount(forfeit.amount)} deposit forfeit to me: ${forfeit.note ?? "pending, not moved"}`, amount: forfeit.amount, badge: forfeit.badge, sign: "" }
+      : { label: `Its ${formatAmount(s.bondForfeited)} deposit, forfeited to me`, amount: s.bondForfeited, badge: forfeitBadge(s) },
   ];
   const promised = s.promised > 0 ? s.promised : 1;
   const markerAt = Math.min(100, (s.gate / promised) * 100);
@@ -283,7 +288,7 @@ function UnderGate({ s, shown, reduced, currency }) {
             shown.has(`slip:${s.supplier}:${i}`) ? (
               <SlipRow key={r.label} className="border-b border-dashed border-line py-2">
                 <span>{r.label}</span>
-                <Money amount={r.amount} badge={r.badge} sign="+" />
+                <Money amount={r.amount} badge={r.badge} sign={r.sign ?? "+"} />
               </SlipRow>
             ) : null,
           )}
@@ -379,8 +384,19 @@ export function FinalReceipt({ view }) {
         for {f.signups} verified signups.
       </div>
       {view.pendingRows > 0 ? (
-        <p className="mt-2 rounded-md border border-dashed border-ink-3 px-3 py-1.5 text-[13px]" data-testid="pending-note">
-          {view.pendingRows} money rows are <Badge kind="PENDING" />: submitted, no transaction yet. The total is planned, not paid.
+        <div className="mt-2 rounded-md border border-dashed border-ink-3 px-3 py-1.5 text-[13px]" data-testid="pending-note">
+          {view.pendingRows} money {view.pendingRows === 1 ? "row is" : "rows are"} <Badge kind="PENDING" />: no transaction yet. The total counts only money that moved.
+          {view.pending.rows.map((r) => (
+            <div key={r.id} data-testid="pending-row" className="mt-0.5">
+              Pending, not moved: {r.label} · {r.name} <Money amount={r.amount} badge="PENDING" currency={view.currency} />
+              {r.note ? <span className="italic"> {r.note}</span> : null}
+            </div>
+          ))}
+        </div>
+      ) : null}
+      {f.topUps > 0 ? (
+        <p className="mt-1 text-[13px]" data-testid="top-up-note">
+          Board topped up <Money amount={f.topUps} badges={f.topUpBadges.length ? f.topUpBadges : [view.tally.fallbackBadge]} currency={view.currency} /> to reach the 2 {view.currency} minimum. It is not in my total.
         </p>
       ) : null}
       {perSignup === null ? null : <p className="mt-1">About {perSignup} per signup. Ranked by cost per signup:</p>}

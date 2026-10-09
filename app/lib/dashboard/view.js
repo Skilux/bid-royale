@@ -1,4 +1,4 @@
-import { deriveBadge, derivePayMode, explorerFor, termBadges, uniqueBadges, FALLBACK_BADGE, KIND_LABEL } from "../receipt-view/index.js";
+import { deriveBadge, derivePayMode, explorerFor, rowNote, termBadges, uniqueBadges, FALLBACK_BADGE, KIND_LABEL } from "../receipt-view/index.js";
 import { SEED_TENDER } from "./reduce.js";
 
 const round = (n) => Math.round(n * 1e6) / 1e6;
@@ -23,6 +23,14 @@ const OUTCOME_LABEL = {
   bond_forfeit: "bond forfeited to NeoRack",
 };
 
+/** Consumer net and cost per signup from a stored receipt. A receipt stored before #62 counted PENDING rows as moved: take them out. */
+function receiptFigures(receipt, pendingRows) {
+  const c = receipt.consumer ?? {};
+  if (c.net == null || typeof c.notMoved === "number" || pendingRows.length === 0) return { net: c.net ?? null, costPerSignup: c.costPerSignup ?? null };
+  const net = round(c.net - sum(pendingRows));
+  return { net, costPerSignup: c.signups > 0 ? round(-net / c.signups) : null };
+}
+
 /** Footer honesty line. The shop and its traffic are simulated in every mode, money rows carry their own badges. */
 export function honestyLine(payMode) {
   if (payMode === "real") return "Traffic and signups are SIMULATED. Suppliers are our own agents.";
@@ -46,6 +54,7 @@ function moneyRow(m, mode) {
     explorerUrl: explorerFor({ explorerUrl: m.explorerUrl }, badge),
     state: m.state,
     error: m.error,
+    note: rowNote(m),
   };
 }
 
@@ -218,9 +227,9 @@ export function buildDashboardView(state, { signals = null } = {}) {
     })),
     receipt: state.receipt
       ? {
-          net: state.receipt.consumer?.net ?? null,
+          net: receiptFigures(state.receipt, pend(toConsumer)).net,
           signups: state.receipt.consumer?.signups ?? null,
-          costPerSignup: state.receipt.consumer?.costPerSignup ?? null,
+          costPerSignup: receiptFigures(state.receipt, pend(toConsumer)).costPerSignup,
           badges: uniqueBadges([...awardLocks, ...toConsumer].map((m) => m.badge)),
           pending: money.some((m) => m.pending),
         }

@@ -1,5 +1,14 @@
 const round = (n) => Math.round(n * 1e6) / 1e6;
 
+/** Honest label for a row the treasury refused below the Cardano minimum (#62). The row stays PENDING, never moved. */
+export const BELOW_MINIMUM_NOTE = "not transferred: below the Cardano minimum (#62)";
+
+/** Plain-words note for a money row, or null: a refused sub-minimum row, or a row the Board topped up to the minimum (#62). */
+export function rowNote(entry) {
+  if (entry?.state === "BelowMinimum") return BELOW_MINIMUM_NOTE;
+  return entry?.topUp > 0 ? `Board topped up ${round(entry.topUp)} to the 2 tADA minimum` : null;
+}
+
 const ACTION_STEP = { bid_fee: "Bid fee", award: "Escrow lock", bond: "Escrow lock", award_release: "Settlement", award_reclaim: "Settlement", bond_return: "Settlement", bond_forfeit: "Settlement" };
 
 /**
@@ -30,6 +39,7 @@ export function buildLedgers({ ledger, suppliers, nameOf }) {
       amount: round(sign * l.amount),
       badge: l.badge,
       pending: l.badge === "PENDING",
+      note: rowNote(l),
       txHash: l.txHash ?? null,
       explorerUrl: l.explorerUrl ?? null,
     });

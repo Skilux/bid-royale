@@ -92,6 +92,7 @@ function upsertMoney(state, phase, supplier, receipt) {
     to: receipt.to,
     rawBadge: receipt.badge,
     state: receipt.state ?? null,
+    topUp: receipt.topUp ?? 0,
     txHash: receipt.txHash ?? null,
     explorerUrl: receipt.explorerUrl ?? null,
     error: receipt.error ?? null,

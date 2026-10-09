@@ -465,6 +465,7 @@ function EscrowCell({ title, cell }) {
           <span>
             {o.pending ? "pending: " : o.to === "consumer" ? "← " : "→ "}
             {o.label}
+            {o.note ? <em className="block text-[10px] not-italic text-ink-3">{o.note}</em> : null}
           </span>
           <Money amount={o.amount} badge={o.badge} tx={txOf(o)} />
         </Motion.div>
@@ -651,7 +652,7 @@ function TrackFit({ view }) {
         {r ? (
           <div className="mt-1 text-[10.5px] leading-[1.5] text-ink-2">
             <b className="text-ink">{r.signups}</b> verified signups · <b className="text-ink">{r.costPerSignup === null ? "·" : Number(r.costPerSignup).toFixed(2)}</b> each
-            {r.pending ? <div className="italic text-ink-3">Some rows are PENDING. The net is planned, not paid yet.</div> : null}
+            {r.pending ? <div className="italic text-ink-3">Some rows are PENDING and left out of the net: not moved.</div> : null}
             {view.roundTwo ? (
               <div>
                 Round 2, shown not executed: {view.roundTwo.map((x) => `${x.name} ${Math.round(x.share * 100)}`).join(" · ")} <Badge kind="SIMULATED" />

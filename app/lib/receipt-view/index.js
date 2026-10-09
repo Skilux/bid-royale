@@ -1,5 +1,8 @@
+import { buildReceipt } from "../board/receipt.js";
 import { consumerNet, planSettlement } from "../settlement/plan.js";
-import { buildLedgers } from "./ledger.js";
+import { BELOW_MINIMUM_NOTE, buildLedgers, rowNote } from "./ledger.js";
+
+export { BELOW_MINIMUM_NOTE, rowNote };
 
 const round = (n) => Math.round(n * 1e6) / 1e6;
 const sum = (list, pick = (x) => x.amount) => round(list.reduce((t, x) => t + pick(x), 0));
@@ -107,12 +110,22 @@ export function buildReceiptView(run) {
           amount: t.amount,
           to: t.to,
           badge,
+          moved: badge !== "PENDING",
+          topUp: t.topUp ?? 0,
+          note: rowNote(t),
           txHash: t.txHash ?? null,
           explorerUrl: explorerFor(t, badge),
         };
       });
 
-  const lbBySupplier = new Map((run?.receipt?.leaderboard ?? []).map((r) => [r.supplier, r]));
+  const pendingSettlement = ledger.filter((l) => l.phase === "settlement" && l.badge === "PENDING");
+  const pendingToConsumer = sum(pendingSettlement.filter((l) => l.to === "consumer"));
+  const stored = run?.receipt ?? null;
+  // A receipt stored before #62 counted PENDING rows as moved and has no `consumer.notMoved`. Rebuild it from the ledger.
+  const stale = stored && typeof stored.consumer?.notMoved !== "number" && pendingSettlement.length > 0;
+  const receipt = stale ? rebuildReceipt(run, stored) : stored;
+
+  const lbBySupplier = new Map((receipt?.leaderboard ?? []).map((r) => [r.supplier, r]));
 
   const settled = [...verdicts]
     .sort((a, b) => (KIND_ORDER[a.kind] ?? 9) - (KIND_ORDER[b.kind] ?? 9))
@@ -134,6 +147,7 @@ export function buildReceiptView(run) {
         reclaimed: lb?.awardReclaimed ?? sumPlanned("award_reclaim"),
         bondReturned: lb?.bondReturned ?? sumPlanned("bond_return"),
         bondForfeited: lb?.bondForfeited ?? sumPlanned("bond_forfeit"),
+        bondForfeitOwed: sumPlanned("bond_forfeit"),
         transfers: transfersFor(v.supplier),
         verdictHash: v.hash ?? lb?.verdictHash ?? null,
         at: transferTime(run, v.supplier),
@@ -149,12 +163,13 @@ export function buildReceiptView(run) {
   const settledOut = settled.map((s) => underGateBySupplier.get(s.supplier) ?? s);
 
   const fallback = verdicts.length ? consumerNet(verdicts) : { net: 0, signups: 0 };
-  const consumer = run?.receipt?.consumer ?? {
+  const fallbackNet = round(fallback.net - pendingToConsumer);
+  const consumer = receipt?.consumer ?? {
     awardsLocked: sum(verdicts, (v) => v.award),
     returned: null,
-    net: fallback.net,
+    net: fallbackNet,
     signups: fallback.signups,
-    costPerSignup: fallback.signups > 0 ? round(-fallback.net / fallback.signups) : null,
+    costPerSignup: fallback.signups > 0 ? round(-fallbackNet / fallback.signups) : null,
   };
 
   const netBadges = uniqueBadges([
@@ -162,7 +177,7 @@ export function buildReceiptView(run) {
     ...(run?.settlement?.transfers ?? []).filter((t) => t.to === "consumer").map((t) => deriveBadge(t, { mode })),
   ]);
 
-  const leaderboard = (run?.receipt?.leaderboard ?? []).map((r) => {
+  const leaderboard = (receipt?.leaderboard ?? []).map((r) => {
     const returned = round(r.awardReclaimed + r.bondForfeited);
     const sup = settledOut.find((s) => s.supplier === r.supplier);
     const lostFees = r.kind === "lost_bid" ? bidFees.filter((l) => l.supplier === r.supplier) : [];
@@ -193,10 +208,10 @@ export function buildReceiptView(run) {
   });
 
   const rankOf = (id) => {
-    const i = (run?.receipt?.leaderboard ?? []).findIndex((r) => r.supplier === id);
+    const i = (receipt?.leaderboard ?? []).findIndex((r) => r.supplier === id);
     return i < 0 ? 99 : i;
   };
-  const roundTwo = (run?.receipt?.roundTwo ?? run?.roundTwo ?? [])
+  const roundTwo = (receipt?.roundTwo ?? run?.roundTwo ?? [])
     .map((r) => ({ supplier: r.supplier, name: nameOf(r.supplier), share: r.share }))
     .sort((a, b) => b.share - a.share || rankOf(a.supplier) - rankOf(b.supplier));
 
@@ -226,6 +241,9 @@ export function buildReceiptView(run) {
       signups: consumer.signups,
       costPerSignup: consumer.costPerSignup,
       badges: netBadges,
+      pending: receipt?.consumer?.notMoved ?? pendingToConsumer,
+      topUpBadges: uniqueBadges(ledger.filter((l) => l.phase === "settlement" && l.badge !== "PENDING" && l.topUp > 0).map((l) => l.badge)),
+      topUps: receipt?.board?.topUps ?? sum(ledger.filter((l) => l.phase === "settlement" && l.badge !== "PENDING"), (l) => l.topUp ?? 0),
       at: run?.steps?.settlement?.finishedAt ?? run?.settlement?.finishedAt ?? null,
     },
     leaderboard,
@@ -239,8 +257,37 @@ export function buildReceiptView(run) {
       fallbackBadge: FALLBACK_BADGE[payMode],
     },
     pendingRows,
+    pending: {
+      count: pendingRows,
+      toConsumer: receipt?.consumer?.notMoved ?? pendingToConsumer,
+      rows: ledger.filter((l) => l.badge === "PENDING").map((l) => ({
+        id: l.id,
+        supplier: l.supplier,
+        name: nameOf(l.supplier),
+        label: REASON_LABEL[l.action] ?? l.action,
+        amount: l.amount,
+        to: l.to,
+        state: l.state ?? null,
+        note: rowNote(l),
+      })),
+    },
     ledgers: buildLedgers({ ledger, suppliers: run?.suppliers ?? [], nameOf }),
   };
+}
+
+/** Rebuild a receipt from the run's own state, moved rows only. Keeps the stored round 2 and verdict hashes. */
+function rebuildReceipt(run, stored) {
+  const verdicts = run.verdicts ?? [];
+  const verified = Object.fromEntries((stored.leaderboard ?? []).map((r) => [r.supplier, r.verifiedSignups ?? 0]));
+  const built = buildReceipt({
+    suppliers: run.suppliers ?? [],
+    bids: run.bids ?? [],
+    accepted: verdicts.map((v) => ({ supplier: v.supplier })),
+    verdicts,
+    verified,
+    ledger: run.ledger ?? [],
+  });
+  return { ...built, roundTwo: stored.roundTwo ?? built.roundTwo };
 }
 
 function transferTime(run, supplier) {

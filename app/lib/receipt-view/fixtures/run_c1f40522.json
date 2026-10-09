@@ -1,0 +1,414 @@
+{
+ "_source": "GET /api/run/run_c1f40522 on 9 Oct 2026 (settlement still running), trimmed; tx hashes are public preprod hashes. #62",
+ "run": {
+  "id": "run_c1f40522",
+  "mode": "live",
+  "badge": "PENDING",
+  "status": "in_progress",
+  "tender": {
+   "budget": 200,
+   "gate": 5,
+   "bondRate": 0.25,
+   "bidFee": 2,
+   "currency": "tADA"
+  },
+  "suppliers": [
+   {
+    "id": "techblog",
+    "name": "TechBlog"
+   },
+   {
+    "id": "codepodcast",
+    "name": "CodePodcast"
+   },
+   {
+    "id": "devnewsletter",
+    "name": "DevNewsletter"
+   },
+   {
+    "id": "gamingforum",
+    "name": "GamingForum"
+   }
+  ],
+  "bids": [
+   {
+    "supplier": "techblog",
+    "price": 65,
+    "impressions": 1000,
+    "promisedPer1000": 5
+   },
+   {
+    "supplier": "codepodcast",
+    "price": 55,
+    "impressions": 1000,
+    "promisedPer1000": 7
+   },
+   {
+    "supplier": "devnewsletter",
+    "price": 60,
+    "impressions": 1000,
+    "promisedPer1000": 10
+   },
+   {
+    "supplier": "gamingforum",
+    "price": 20,
+    "impressions": 500,
+    "promisedPer1000": 4
+   }
+  ],
+  "verification": {
+   "verified": {
+    "codepodcast": 6,
+    "techblog": 8
+   }
+  },
+  "verdicts": [
+   {
+    "supplier": "devnewsletter",
+    "kind": "under_gate",
+    "delivered": 0,
+    "promised": 10,
+    "gate": 5,
+    "award": 60,
+    "bond": 15,
+    "hash": "d69efe632954257f9e1fc9acbc957df0d26673b54f7e4dbc96c0234b0d63ce71"
+   },
+   {
+    "supplier": "codepodcast",
+    "kind": "short_of_promise",
+    "delivered": 6,
+    "promised": 7,
+    "gate": 5,
+    "award": 55,
+    "bond": 13.75,
+    "hash": "5271bd6782371b8af0c5b14c7f7806f0d23a6bffd842814d875bca9ede0df276"
+   },
+   {
+    "supplier": "techblog",
+    "kind": "pass",
+    "delivered": 8,
+    "promised": 5,
+    "gate": 5,
+    "award": 65,
+    "bond": 16.25,
+    "hash": "ec4808dfd75a8d1a7b57ae5448318d1c1489ae68465dbbcbf11b9f547eb8007e"
+   }
+  ],
+  "steps": {},
+  "settlement": {
+   "status": "done",
+   "phase": "done",
+   "fallback": "timeout",
+   "transfers": [
+    {
+     "badge": "REAL",
+     "action": "award_reclaim",
+     "amount": 60,
+     "from": "devnewsletter",
+     "to": "consumer",
+     "txHash": "b4854bc3d603c1ceec700ea7ac5ccdb674c3c74a962459cdf2caf935f71a84da",
+     "explorerUrl": "https://preprod.cardanoscan.io/transaction/b4854bc3d603c1ceec700ea7ac5ccdb674c3c74a962459cdf2caf935f71a84da",
+     "state": "RefundWithdrawn",
+     "supplier": "devnewsletter",
+     "id": "settlement:award_reclaim:devnewsletter"
+    },
+    {
+     "badge": "REAL",
+     "action": "bond_forfeit",
+     "amount": 15,
+     "from": "board",
+     "to": "consumer",
+     "txHash": "83c3fa9dcbefcf88bddca80eeca15890cf7e7af261758e8fe4e96534c755f370",
+     "explorerUrl": "https://preprod.cardanoscan.io/transaction/83c3fa9dcbefcf88bddca80eeca15890cf7e7af261758e8fe4e96534c755f370",
+     "state": "Pending",
+     "supplier": "devnewsletter",
+     "id": "settlement:bond_forfeit:devnewsletter"
+    },
+    {
+     "badge": "REAL",
+     "action": "award_release",
+     "amount": 55,
+     "from": "consumer",
+     "to": "codepodcast",
+     "txHash": "64383b40d355a3f40e9d5895400e8cc5395ad8aa31eb3335286c2b0bc8d4b7a4",
+     "explorerUrl": "https://preprod.cardanoscan.io/transaction/64383b40d355a3f40e9d5895400e8cc5395ad8aa31eb3335286c2b0bc8d4b7a4",
+     "state": "Withdrawn",
+     "supplier": "codepodcast",
+     "id": "settlement:award_release:codepodcast"
+    },
+    {
+     "badge": "REAL",
+     "action": "bond_return",
+     "amount": 11.785714,
+     "from": "board",
+     "to": "codepodcast",
+     "txHash": "6862bb451697b72dfa4037481079f32bd17aae451fe7c2e1dd107ce77761c733",
+     "explorerUrl": "https://preprod.cardanoscan.io/transaction/6862bb451697b72dfa4037481079f32bd17aae451fe7c2e1dd107ce77761c733",
+     "state": "Pending",
+     "supplier": "codepodcast",
+     "id": "settlement:bond_return:codepodcast"
+    },
+    {
+     "badge": "PENDING",
+     "action": "bond_forfeit",
+     "amount": 1.964286,
+     "from": "board",
+     "to": "consumer",
+     "txHash": null,
+     "explorerUrl": null,
+     "state": "BelowMinimum",
+     "supplier": "codepodcast",
+     "id": "settlement:bond_forfeit:codepodcast"
+    },
+    {
+     "badge": "REAL",
+     "action": "award_release",
+     "amount": 65,
+     "from": "consumer",
+     "to": "techblog",
+     "txHash": "6a8c5cab80e4d583dbd6e654816b1ea6945fc4b9a4f1db81db6c4cf2dec383b6",
+     "explorerUrl": "https://preprod.cardanoscan.io/transaction/6a8c5cab80e4d583dbd6e654816b1ea6945fc4b9a4f1db81db6c4cf2dec383b6",
+     "state": "Withdrawn",
+     "supplier": "techblog",
+     "id": "settlement:award_release:techblog"
+    },
+    {
+     "badge": "REAL",
+     "action": "bond_return",
+     "amount": 16.25,
+     "from": "board",
+     "to": "techblog",
+     "txHash": "f04d859e67abc497d7f95aa60e463ea61ec9efed744c69fe64a2716aa7043e5f",
+     "explorerUrl": "https://preprod.cardanoscan.io/transaction/f04d859e67abc497d7f95aa60e463ea61ec9efed744c69fe64a2716aa7043e5f",
+     "state": "RefundWithdrawn",
+     "supplier": "techblog",
+     "id": "settlement:bond_return:techblog"
+    }
+   ]
+  },
+  "ledger": [
+   {
+    "badge": "REAL",
+    "action": "bid_fee",
+    "amount": 2,
+    "from": "techblog",
+    "to": "board",
+    "txHash": "9ec76e214c4293c04bb5252cf30700906c6dd0fa6cb5338aca37b9fb8b8c0a97",
+    "explorerUrl": "https://preprod.cardanoscan.io/transaction/9ec76e214c4293c04bb5252cf30700906c6dd0fa6cb5338aca37b9fb8b8c0a97",
+    "state": "FundsLocked",
+    "phase": "bid_fee",
+    "supplier": "techblog",
+    "id": "bid_fee:bid_fee:techblog"
+   },
+   {
+    "badge": "REAL",
+    "action": "bid_fee",
+    "amount": 2,
+    "from": "codepodcast",
+    "to": "board",
+    "txHash": "b2ebaefb698c233cf0caf454342ebd0f4fe61023e2b942a847296cbb51184f0d",
+    "explorerUrl": "https://preprod.cardanoscan.io/transaction/b2ebaefb698c233cf0caf454342ebd0f4fe61023e2b942a847296cbb51184f0d",
+    "state": "FundsLocked",
+    "phase": "bid_fee",
+    "supplier": "codepodcast",
+    "id": "bid_fee:bid_fee:codepodcast"
+   },
+   {
+    "badge": "REAL",
+    "action": "bid_fee",
+    "amount": 2,
+    "from": "devnewsletter",
+    "to": "board",
+    "txHash": "14f5ceb13a6d55c9d8dc3283fcffe753c09ceed67c3b184002e158dda00e5953",
+    "explorerUrl": "https://preprod.cardanoscan.io/transaction/14f5ceb13a6d55c9d8dc3283fcffe753c09ceed67c3b184002e158dda00e5953",
+    "state": "FundsLocked",
+    "phase": "bid_fee",
+    "supplier": "devnewsletter",
+    "id": "bid_fee:bid_fee:devnewsletter"
+   },
+   {
+    "badge": "REAL",
+    "action": "bid_fee",
+    "amount": 2,
+    "from": "gamingforum",
+    "to": "board",
+    "txHash": "9d5c245b89a4deacee45fa74e3b9b4ee03f9226b1e85813a335c91c8498df0e9",
+    "explorerUrl": "https://preprod.cardanoscan.io/transaction/9d5c245b89a4deacee45fa74e3b9b4ee03f9226b1e85813a335c91c8498df0e9",
+    "state": "FundsLocked",
+    "phase": "bid_fee",
+    "supplier": "gamingforum",
+    "id": "bid_fee:bid_fee:gamingforum"
+   },
+   {
+    "badge": "REAL",
+    "action": "award",
+    "amount": 60,
+    "from": "consumer",
+    "to": "devnewsletter",
+    "txHash": "3bd1ae093a8ee9970e31fbcf130588001188842fbe25885dcb4623c74eee8bae",
+    "explorerUrl": "https://preprod.cardanoscan.io/transaction/3bd1ae093a8ee9970e31fbcf130588001188842fbe25885dcb4623c74eee8bae",
+    "state": "FundsLocked",
+    "phase": "lock",
+    "supplier": "devnewsletter",
+    "id": "lock:award:devnewsletter"
+   },
+   {
+    "badge": "REAL",
+    "action": "bond",
+    "amount": 15,
+    "from": "devnewsletter",
+    "to": "board",
+    "txHash": "14f5ceb13a6d55c9d8dc3283fcffe753c09ceed67c3b184002e158dda00e5953",
+    "explorerUrl": "https://preprod.cardanoscan.io/transaction/14f5ceb13a6d55c9d8dc3283fcffe753c09ceed67c3b184002e158dda00e5953",
+    "state": "FundsLocked",
+    "phase": "lock",
+    "supplier": "devnewsletter",
+    "id": "lock:bond:devnewsletter"
+   },
+   {
+    "badge": "REAL",
+    "action": "award",
+    "amount": 55,
+    "from": "consumer",
+    "to": "codepodcast",
+    "txHash": "3bd1ae093a8ee9970e31fbcf130588001188842fbe25885dcb4623c74eee8bae",
+    "explorerUrl": "https://preprod.cardanoscan.io/transaction/3bd1ae093a8ee9970e31fbcf130588001188842fbe25885dcb4623c74eee8bae",
+    "state": "FundsLocked",
+    "phase": "lock",
+    "supplier": "codepodcast",
+    "id": "lock:award:codepodcast"
+   },
+   {
+    "badge": "REAL",
+    "action": "bond",
+    "amount": 13.75,
+    "from": "codepodcast",
+    "to": "board",
+    "txHash": "b2ebaefb698c233cf0caf454342ebd0f4fe61023e2b942a847296cbb51184f0d",
+    "explorerUrl": "https://preprod.cardanoscan.io/transaction/b2ebaefb698c233cf0caf454342ebd0f4fe61023e2b942a847296cbb51184f0d",
+    "state": "FundsLocked",
+    "phase": "lock",
+    "supplier": "codepodcast",
+    "id": "lock:bond:codepodcast"
+   },
+   {
+    "badge": "REAL",
+    "action": "award",
+    "amount": 65,
+    "from": "consumer",
+    "to": "techblog",
+    "txHash": "3bd1ae093a8ee9970e31fbcf130588001188842fbe25885dcb4623c74eee8bae",
+    "explorerUrl": "https://preprod.cardanoscan.io/transaction/3bd1ae093a8ee9970e31fbcf130588001188842fbe25885dcb4623c74eee8bae",
+    "state": "FundsLocked",
+    "phase": "lock",
+    "supplier": "techblog",
+    "id": "lock:award:techblog"
+   },
+   {
+    "badge": "REAL",
+    "action": "bond",
+    "amount": 16.25,
+    "from": "techblog",
+    "to": "board",
+    "txHash": "9ec76e214c4293c04bb5252cf30700906c6dd0fa6cb5338aca37b9fb8b8c0a97",
+    "explorerUrl": "https://preprod.cardanoscan.io/transaction/9ec76e214c4293c04bb5252cf30700906c6dd0fa6cb5338aca37b9fb8b8c0a97",
+    "state": "FundsLocked",
+    "phase": "lock",
+    "supplier": "techblog",
+    "id": "lock:bond:techblog"
+   },
+   {
+    "badge": "REAL",
+    "action": "award_reclaim",
+    "amount": 60,
+    "from": "devnewsletter",
+    "to": "consumer",
+    "txHash": "b4854bc3d603c1ceec700ea7ac5ccdb674c3c74a962459cdf2caf935f71a84da",
+    "explorerUrl": "https://preprod.cardanoscan.io/transaction/b4854bc3d603c1ceec700ea7ac5ccdb674c3c74a962459cdf2caf935f71a84da",
+    "state": "RefundWithdrawn",
+    "phase": "settlement",
+    "supplier": "devnewsletter",
+    "id": "settlement:award_reclaim:devnewsletter"
+   },
+   {
+    "badge": "REAL",
+    "action": "bond_forfeit",
+    "amount": 15,
+    "from": "board",
+    "to": "consumer",
+    "txHash": "83c3fa9dcbefcf88bddca80eeca15890cf7e7af261758e8fe4e96534c755f370",
+    "explorerUrl": "https://preprod.cardanoscan.io/transaction/83c3fa9dcbefcf88bddca80eeca15890cf7e7af261758e8fe4e96534c755f370",
+    "state": "Pending",
+    "phase": "settlement",
+    "supplier": "devnewsletter",
+    "id": "settlement:bond_forfeit:devnewsletter"
+   },
+   {
+    "badge": "REAL",
+    "action": "award_release",
+    "amount": 55,
+    "from": "consumer",
+    "to": "codepodcast",
+    "txHash": "64383b40d355a3f40e9d5895400e8cc5395ad8aa31eb3335286c2b0bc8d4b7a4",
+    "explorerUrl": "https://preprod.cardanoscan.io/transaction/64383b40d355a3f40e9d5895400e8cc5395ad8aa31eb3335286c2b0bc8d4b7a4",
+    "state": "Withdrawn",
+    "phase": "settlement",
+    "supplier": "codepodcast",
+    "id": "settlement:award_release:codepodcast"
+   },
+   {
+    "badge": "REAL",
+    "action": "bond_return",
+    "amount": 11.785714,
+    "from": "board",
+    "to": "codepodcast",
+    "txHash": "6862bb451697b72dfa4037481079f32bd17aae451fe7c2e1dd107ce77761c733",
+    "explorerUrl": "https://preprod.cardanoscan.io/transaction/6862bb451697b72dfa4037481079f32bd17aae451fe7c2e1dd107ce77761c733",
+    "state": "Pending",
+    "phase": "settlement",
+    "supplier": "codepodcast",
+    "id": "settlement:bond_return:codepodcast"
+   },
+   {
+    "badge": "PENDING",
+    "action": "bond_forfeit",
+    "amount": 1.964286,
+    "from": "board",
+    "to": "consumer",
+    "txHash": null,
+    "explorerUrl": null,
+    "state": "BelowMinimum",
+    "phase": "settlement",
+    "supplier": "codepodcast",
+    "id": "settlement:bond_forfeit:codepodcast"
+   },
+   {
+    "badge": "REAL",
+    "action": "award_release",
+    "amount": 65,
+    "from": "consumer",
+    "to": "techblog",
+    "txHash": "6a8c5cab80e4d583dbd6e654816b1ea6945fc4b9a4f1db81db6c4cf2dec383b6",
+    "explorerUrl": "https://preprod.cardanoscan.io/transaction/6a8c5cab80e4d583dbd6e654816b1ea6945fc4b9a4f1db81db6c4cf2dec383b6",
+    "state": "Withdrawn",
+    "phase": "settlement",
+    "supplier": "techblog",
+    "id": "settlement:award_release:techblog"
+   },
+   {
+    "badge": "REAL",
+    "action": "bond_return",
+    "amount": 16.25,
+    "from": "board",
+    "to": "techblog",
+    "txHash": "f04d859e67abc497d7f95aa60e463ea61ec9efed744c69fe64a2716aa7043e5f",
+    "explorerUrl": "https://preprod.cardanoscan.io/transaction/f04d859e67abc497d7f95aa60e463ea61ec9efed744c69fe64a2716aa7043e5f",
+    "state": "RefundWithdrawn",
+    "phase": "settlement",
+    "supplier": "techblog",
+    "id": "settlement:bond_return:techblog"
+   }
+  ],
+  "receipt": null
+ }
+}
