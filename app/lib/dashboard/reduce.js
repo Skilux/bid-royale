@@ -102,6 +102,9 @@ function upsertMoney(state, phase, supplier, receipt) {
   else Object.assign(row, { ...next, amount: next.amount ?? row.amount, from: next.from ?? row.from, to: next.to ?? row.to, action: next.action ?? row.action, seq: row.seq });
 }
 
+/** Board ledger phases a `settlement.progress` update can target. Anything else is a settlement transfer. */
+const PROGRESS_PHASES = ["lock", "bid_fee", "bid_fee_collect"];
+
 function reset(state, keep) {
   const fresh = initialState({ replay: state.replay });
   Object.assign(state, fresh, keep);
@@ -201,7 +204,7 @@ function apply(state, e) {
       upsertMoney(state, "settlement", d.supplier, d.receipt);
       break;
     case EVENTS.settlementProgress: {
-      const phase = d.phase === "lock" ? "lock" : "settlement";
+      const phase = PROGRESS_PHASES.includes(d.phase) ? d.phase : "settlement";
       upsertMoney(state, phase, d.supplier, {
         id: d.receiptId,
         action: d.action,
