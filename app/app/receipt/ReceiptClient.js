@@ -2,6 +2,7 @@
 
 import { animate, motion as Motion, useReducedMotion } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { formatConversion } from "@/lib/conversion";
 import { buildReceiptView, buildTimeline } from "@/lib/receipt-view";
 import { Badge, Badges } from "../_components/Badge";
 import { Chip } from "../_components/Chip";
@@ -234,12 +235,12 @@ function VerdictHash({ hash }) {
 function VerdictBubble({ s }) {
   const verb =
     s.kind === "pass"
-      ? `delivered ${s.delivered}. I paid the full ${formatAmount(s.paid)} and returned its ${formatAmount(s.bondReturned)} deposit.`
-      : `delivered ${s.delivered}. That clears the minimum of ${s.gate}, so I paid the full ${formatAmount(s.paid)}. It loses ${formatAmount(s.bondForfeitOwed)} of its deposit.`;
+      ? `delivered ${formatConversion(s.delivered)}. I paid the full ${formatAmount(s.paid)} and returned its ${formatAmount(s.bondReturned)} deposit.`
+      : `delivered ${formatConversion(s.delivered)}. That clears the minimum of ${formatConversion(s.gate)}, so I paid the full ${formatAmount(s.paid)}. It loses ${formatAmount(s.bondForfeitOwed)} of its deposit.`;
   return (
     <div className="rounded-[4px_14px_14px_14px] bg-wash px-4 py-3 text-base">
       <Tag kind={s.kind}>{s.kindLabel}</Tag>
-      <strong>{s.name}</strong> promised {s.promised} signups per 1,000 and {verb}
+      <strong>{s.name}</strong> promised a {formatConversion(s.promised)} conversion and {verb}
       <div className="mt-2 flex flex-wrap gap-x-3.5 gap-y-1.5 border-t border-line pt-2 text-[13.5px] tabular-nums">
         {s.transfers.map((t) => (
           <span key={t.id} data-moved={t.moved ? "true" : "false"}>
@@ -270,16 +271,16 @@ function UnderGate({ s, shown, reduced, currency }) {
   return (
     <div className="rounded-[6px_18px_18px_18px] border-2 border-under bg-under-bg px-3.5 py-4 text-lg leading-[1.4] sm:px-[22px] sm:py-5 sm:text-xl">
       <Tag kind="under_gate">Under gate</Tag>
-      <strong>{s.name}</strong> promised {s.promised} signups per 1,000. It delivered{" "}
-      <strong>{s.delivered > 0 ? s.delivered : "none"}</strong>
-      {s.delivered > 0 ? `, below the minimum of ${s.gate}` : ""}. I do not pay for promises, so everything comes back to me.
+      <strong>{s.name}</strong> promised a {formatConversion(s.promised)} conversion. It delivered{" "}
+      <strong>{s.delivered > 0 ? formatConversion(s.delivered) : "none"}</strong>
+      {s.delivered > 0 ? `, below the minimum of ${formatConversion(s.gate)}` : ""}. I do not pay for promises, so everything comes back to me.
       <div className="mb-1 mt-3.5 flex items-center gap-2.5 text-sm">
-        <span>0</span>
+        <span>0%</span>
         <div className="relative h-2.5 flex-1 rounded-[5px] border border-line bg-card">
           <div className="h-full rounded-[4px] bg-under" style={{ width: `${fill}%` }} />
           <i className="absolute -bottom-[5px] -top-[5px] w-0.5 bg-ink" style={{ left: `${markerAt}%` }} />
         </div>
-        <span>{s.promised} promised · minimum {s.gate}</span>
+        <span>{formatConversion(s.promised)} promised · minimum {formatConversion(s.gate)}</span>
       </div>
       {shown.has(`slip:${s.supplier}:0`) ? (
         <div className="mt-4 rounded-xl border border-line bg-card px-3 py-3 text-[15px] sm:px-[18px] sm:py-4 sm:text-base">

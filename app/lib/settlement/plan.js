@@ -4,9 +4,9 @@
  * @typedef {Object} Verdict
  * @property {string} supplier        supplier id, e.g. "techblog"
  * @property {VerdictKind} kind
- * @property {number} delivered       verified signups per 1,000 impressions
- * @property {number} promised        promised signups per 1,000 impressions
- * @property {number} gate            5 per 1,000 for the demo
+ * @property {number} delivered       verified conversion, signups per 1,000 impressions (8 = 0.8%)
+ * @property {number} promised        promised conversion, signups per 1,000 impressions
+ * @property {number} gate            5 for the demo, a 0.5% conversion
  * @property {number} award           winning bid price, tADA
  * @property {number} bond            25% of award, tADA
  * @property {string} [hash]          hash of the signed verdict (decision log)

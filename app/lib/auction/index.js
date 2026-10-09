@@ -6,7 +6,7 @@ import { TENDER } from "../config.js";
  * @property {string} supplier         supplier id, e.g. "techblog"
  * @property {number} price            bid price, tADA (this is also the award if the bid wins)
  * @property {number} impressions      impressions offered
- * @property {number} promisedPer1000  promised signups per 1,000 impressions
+ * @property {number} promisedPer1000  promised conversion in signups per 1,000 impressions (7 = 0.7%)
  * @property {string} salt             random secret used in the commit
  * @property {string} commit           SHA-256 hex from commit(), posted before the deadline
  * @property {number} committedAt      epoch ms when the Board received the commit

@@ -10,7 +10,7 @@ export const realPayments = () => process.env.SIMULATE_PAYMENTS === "false";
 
 export const TENDER = {
   budget: 200,
-  gate: 5,
+  gate: 5, // conversion in signups per 1,000 impressions: 0.5%
   bondRate: 0.25,
   bidFee: 2,
   currency: "tADA",

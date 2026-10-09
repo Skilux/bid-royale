@@ -1,4 +1,5 @@
 import { EVENTS } from "../board/events.js";
+import { formatConversion } from "../conversion/index.js";
 
 /**
  * Dashboard state = reduceEvents(Board SSE events so far). This file is the only place that maps Board event
@@ -256,7 +257,7 @@ export function describeEvent(state, e) {
     case EVENTS.runCreated:
       return "run created";
     case EVENTS.tenderPublished:
-      return `tender published, gate ${d.tender?.gate} per 1,000, bond ${Math.round((d.tender?.bondRate ?? 0) * 100)}%`;
+      return `tender published, gate ${formatConversion(d.tender?.gate)} conversion, bond ${Math.round((d.tender?.bondRate ?? 0) * 100)}%`;
     case EVENTS.registryDiscovered:
       return d.source === "live"
         ? `discovery: ${d.agents?.length ?? 0} supplier agents from the Masumi registry`
@@ -266,7 +267,7 @@ export function describeEvent(state, e) {
     case EVENTS.bidFeeLocked:
       return `${nm(d.supplier)} paid the bid fee`;
     case EVENTS.bidRevealed:
-      return `${nm(d.supplier)} revealed ${d.promisedPer1000} per 1,000`;
+      return `${nm(d.supplier)} revealed ${formatConversion(d.promisedPer1000)} conversion`;
     case EVENTS.bidRejected:
       return `${nm(d.supplier)} rejected: ${String(d.reason ?? "").replaceAll("_", " ")}`;
     case EVENTS.auctionRanked:

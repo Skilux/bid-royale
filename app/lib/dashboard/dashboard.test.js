@@ -25,7 +25,7 @@ test("worked example: tender, four bids, GamingForum rejected below the gate", (
   assert.equal(v.gate, 5);
   const gf = sup(v, "gamingforum");
   assert.equal(gf.chip.kind, "lost_bid");
-  assert.equal(gf.rejectedNote, "promises 4 per 1,000, gate is 5");
+  assert.equal(gf.rejectedNote, "promises 0.4% conversion, gate is 0.5%");
   assert.equal(gf.cells, null);
 });
 

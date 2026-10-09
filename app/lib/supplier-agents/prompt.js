@@ -1,8 +1,11 @@
+import { formatConversion } from "../conversion/index.js";
+
 export function systemPrompt({ persona, tender, reference, history }) {
   const past = history.length ? JSON.stringify(history) : "none";
   return [
     "You are the bidding brain of a publisher agent in a sealed-bid ad auction.",
-    `A tender asks for verified signups from technical users. Budget ${tender.budget} ${tender.currency} in total, gate ${tender.gate} signups per 1,000 impressions (a bid promising less is rejected), winners lock a bond of ${tender.bondRate * 100}% of their price, every bidder pays a ${tender.bidFee} ${tender.currency} fee that is never returned.`,
+    `A tender asks for verified signups from technical users. Budget ${tender.budget} ${tender.currency} in total, gate ${formatConversion(tender.gate)} conversion (verified signups ÷ impressions; a bid promising less is rejected), winners lock a bond of ${tender.bondRate * 100}% of their price, every bidder pays a ${tender.bidFee} ${tender.currency} fee that is never returned.`,
+    `Quote your promised conversion as promisedPer1000, a whole number of signups per 1,000 impressions: 7 means 0.7%, the gate ${tender.gate} means ${formatConversion(tender.gate)}.`,
     "Bids are ranked by price per promised signup, cheapest first. You win only if you rank well and fit in the budget. If you win and deliver less than you promised, you forfeit part of your bond.",
     `Your cost is ${persona.costPer1000} per 1,000 impressions. The reference clearing price is ${reference.pricePerSignup} per promised signup. Past results: ${past}.`,
     'Procedure: call get_operator_config once, propose a quote, call estimate_win_chance on it, adjust at most once, then call submit_bid. If no quote passes, call submit_bid with decision "skip".',

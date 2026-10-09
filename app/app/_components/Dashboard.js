@@ -3,6 +3,7 @@
 import { motion as Motion, useReducedMotion } from "motion/react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { coinFor } from "@/lib/dashboard/coins";
+import { formatConversion } from "@/lib/conversion";
 import { shortHash } from "@/lib/dashboard/reduce";
 import { Badge } from "./Badge";
 import { Chip } from "./Chip";
@@ -344,7 +345,7 @@ function ConsumerNode({ view, refEl, stamp }) {
       </p>
       <div className="flex flex-wrap gap-1 text-[10px]">
         <Chip tone="neutral">
-          gate <b>{tender.gate}</b>/1,000
+          gate <b>{formatConversion(tender.gate)}</b> conversion
         </Chip>
         <Chip tone="neutral">
           bond <b>{Math.round(tender.bondRate * 100)}%</b>
@@ -527,7 +528,7 @@ function SupplierCard({ s, i, view, refEl }) {
             <span>{s.rejectedNote}</span>
           ) : s.bid ? (
             <span title={`commit ${s.commit}`}>
-              <Money amount={s.bid.price} badges={s.quoteBadges} /> · {s.bid.impressions.toLocaleString("en-US")} impr. · <b className="text-ink">{s.bid.promisedPer1000}</b>/1,000
+              <Money amount={s.bid.price} badges={s.quoteBadges} /> · {s.bid.impressions.toLocaleString("en-US")} impr. · <b className="text-ink">{formatConversion(s.bid.promisedPer1000)}</b> conversion
               {s.pricePerSignup !== null ? (
                 <>
                   {" "}
@@ -546,11 +547,11 @@ function SupplierCard({ s, i, view, refEl }) {
             <div className="relative mt-3 h-[11px] rounded bg-wash" aria-hidden="true">
               <div className={`h-full rounded-l transition-[width] duration-700 ${s.verifiedKnown ? "bg-pass" : "bg-ink-3"}`} style={{ width: `${fillPct}%` }} />
               <u className="absolute -bottom-[3px] -top-[3px] w-0.5 bg-under no-underline" style={{ left: `${gatePct}%` }}>
-                <span className="absolute left-[-12px] top-[15px] whitespace-nowrap font-mono text-[8px] text-under">gate {view.gate}</span>
+                <span className="absolute left-[-12px] top-[15px] whitespace-nowrap font-mono text-[8px] text-under">gate {formatConversion(view.gate)}</span>
               </u>
               {promisedPct !== null ? (
                 <u className="absolute -bottom-[3px] -top-[3px] w-0.5 bg-cobalt no-underline" style={{ left: `${promisedPct}%` }}>
-                  <span className="absolute left-[-18px] top-[-12px] whitespace-nowrap font-mono text-[8px] text-cobalt">promised {s.promised}</span>
+                  <span className="absolute left-[-18px] top-[-12px] whitespace-nowrap font-mono text-[8px] text-cobalt">promised {formatConversion(s.promised)}</span>
                 </u>
               ) : null}
             </div>

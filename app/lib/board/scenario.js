@@ -32,7 +32,7 @@ export async function pinnedBids() {
   return PINNED.map((b) => ({ ...b, salt: `salt-${b.supplier}` }));
 }
 
-/** Signups per 1,000 each supplier delivers in the scripted feed. Suppliers not listed deliver what they promised. */
+/** Conversion (signups per 1,000, 8 = 0.8%) each supplier delivers in the scripted feed. Suppliers not listed deliver what they promised. */
 export function scriptedDelivery(bid) {
   return WORKED_EXAMPLE.find((s) => s.id === bid.supplier)?.signupsPer1000 ?? bid.promisedPer1000;
 }

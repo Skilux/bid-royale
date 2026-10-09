@@ -45,8 +45,8 @@ const verdictBody = (v) =>
 
 /**
  * Builds the Board-signed Verdict (type in settlement/plan.js).
- * delivered = verified signups / impressions * 1,000. hash = SHA-256 of the verdict fields,
- * signature = Board Ed25519 over the hash.
+ * delivered = verified signups / impressions * 1,000, the conversion in signups per 1,000 (8 = 0.8%).
+ * hash = SHA-256 of the verdict fields, signature = Board Ed25519 over the hash.
  */
 export function buildVerdict({
   supplier,

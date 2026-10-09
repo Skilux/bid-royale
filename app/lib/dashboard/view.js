@@ -1,4 +1,5 @@
 import { deriveBadge, derivePayMode, explorerFor, rowNote, termBadges, uniqueBadges, FALLBACK_BADGE, KIND_LABEL } from "../receipt-view/index.js";
+import { formatConversion } from "../conversion/index.js";
 import { SEED_TENDER } from "./reduce.js";
 
 const round = (n) => Math.round(n * 1e6) / 1e6;
@@ -129,7 +130,7 @@ export function buildDashboardView(state, { signals = null } = {}) {
       rejectedNote:
         lost && s.bid
           ? s.rejected === "below_gate"
-            ? `promises ${s.bid.promisedPer1000} per 1,000, gate is ${gate}`
+            ? `promises ${formatConversion(s.bid.promisedPer1000)} conversion, gate is ${formatConversion(gate)}`
             : `rejected: ${String(s.rejected).replaceAll("_", " ")}`
           : lost
             ? `rejected: ${String(s.rejected).replaceAll("_", " ")}`

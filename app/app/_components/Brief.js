@@ -1,3 +1,4 @@
+import { formatConversion } from "@/lib/conversion";
 import { Badge } from "./Badge";
 import { Chip } from "./Chip";
 import { Money } from "./Money";
@@ -41,7 +42,7 @@ export function Brief({ quoteBadge }) {
         </Field>
         <Field label="Audience">{BRIEF.audience}</Field>
         <Field label="Outcome">{BRIEF.outcome}</Field>
-        <Field label="Gate">{BRIEF.gate} per 1,000 impressions</Field>
+        <Field label="Gate">{formatConversion(BRIEF.gate)} conversion</Field>
         <Field label="Bond">{BRIEF.bondPercent}% of award</Field>
       </dl>
       <div className="flex flex-wrap items-center gap-1.5 text-[12px] text-ink-2">
