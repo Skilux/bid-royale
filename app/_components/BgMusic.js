@@ -2,20 +2,18 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-// iOS Safari silently ignores HTMLMediaElement.volume, so loudness is
-// controlled with a Web Audio GainNode instead — that works on every platform.
-const GAIN = 0.15;
-const STORAGE_KEY = "bid-royale:bg-music-muted";
+// The MP3 itself is mastered quietly (-25 dB mean), so no runtime volume
+// control is needed — iOS Safari ignores HTMLMediaElement.volume anyway.
+const STORAGE_KEY = "bid-royale:bg-music-muted:v2";
 
 /**
- * Background music for the demo site: loops the bundled track quietly.
+ * Background music for the demo site: loops the bundled track.
  * Browsers block autoplay with sound, so playback starts on the visitor's
  * first interaction (click / keypress). The speaker toggle mutes and unmutes;
  * the choice persists in localStorage.
  */
 export function BgMusic() {
   const audioRef = useRef(null);
-  const gainRef = useRef(null);
   const [muted, setMuted] = useState(() => {
     try {
       return localStorage.getItem(STORAGE_KEY) === "1";
@@ -28,30 +26,7 @@ export function BgMusic() {
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-
-    // Route the element through a GainNode: the only loudness control iOS honors.
-    let ctx = null;
-    try {
-      const AC = window.AudioContext || window.webkitAudioContext;
-      if (AC) {
-        ctx = new AC();
-        const src = ctx.createMediaElementSource(audio);
-        const gain = ctx.createGain();
-        gain.gain.value = GAIN;
-        src.connect(gain);
-        gain.connect(ctx.destination);
-        gainRef.current = gain;
-      }
-    } catch {
-      gainRef.current = null;
-    }
-    if (!gainRef.current) {
-      // Web Audio unavailable — fall back to element volume (desktop only).
-      audio.volume = GAIN;
-    }
-
     const begin = () => {
-      if (ctx && ctx.state === "suspended") ctx.resume().catch(() => {});
       audio.play().catch(() => {});
       window.removeEventListener("pointerdown", begin);
       window.removeEventListener("keydown", begin);
@@ -61,18 +36,13 @@ export function BgMusic() {
     return () => {
       window.removeEventListener("pointerdown", begin);
       window.removeEventListener("keydown", begin);
-      if (ctx) ctx.close().catch(() => {});
     };
   }, []);
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    if (gainRef.current) {
-      gainRef.current.gain.value = muted ? 0 : GAIN;
-    } else {
-      audio.muted = muted;
-    }
+    audio.muted = muted;
     try {
       localStorage.setItem(STORAGE_KEY, muted ? "1" : "0");
     } catch {
