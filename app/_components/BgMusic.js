@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const VOLUME = 0.3;
+const VOLUME = 0.15;
 const STORAGE_KEY = "bid-royale:bg-music-muted";
 
 /**
- * Background music for the demo site: loops the bundled track at 30% volume.
+ * Background music for the demo site: loops the bundled track at 15% volume.
  * Browsers block autoplay with sound, so playback starts on the visitor's
  * first interaction (click / keypress). The speaker toggle mutes and unmutes;
  * the choice persists in localStorage.
