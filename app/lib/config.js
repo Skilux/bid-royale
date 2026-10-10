@@ -2,6 +2,8 @@ export function getFlags() {
   return {
     simulatePayments: process.env.SIMULATE_PAYMENTS === "true",
     demoMode: process.env.DEMO_MODE === "canned" ? "canned" : "live",
+    /** Demo-only deployments: replay bundled recordings, reject every API write. */
+    readOnly: process.env.READ_ONLY === "true",
   };
 }
 

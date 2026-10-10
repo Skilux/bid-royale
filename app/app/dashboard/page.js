@@ -13,7 +13,9 @@ const RUN_ID = /^[A-Za-z0-9_-]{1,64}$/;
 export default async function DashboardPage({ searchParams }) {
   const { run, mode, replay } = await searchParams;
   const runId = typeof run === "string" && RUN_ID.test(run) ? run : null;
-  const initialMode = runId ? "attach" : mode === "live" ? "live" : "canned";
+  const flags = getFlags();
+  const readOnly = flags.readOnly;
+  const initialMode = readOnly ? "canned" : runId ? "attach" : mode === "live" ? "live" : "canned";
   const replayId = typeof replay === "string" && isRecordingId(replay) ? replay : null;
-  return <DashboardClient initialMode={initialMode} runId={runId} replayId={replayId} demoMode={getFlags().demoMode} realPayments={realPayments()} />;
+  return <DashboardClient initialMode={initialMode} runId={runId} replayId={replayId} demoMode={flags.demoMode} realPayments={realPayments()} readOnly={readOnly} />;
 }

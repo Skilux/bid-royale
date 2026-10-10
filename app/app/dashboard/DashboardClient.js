@@ -5,6 +5,7 @@ import { SPEEDS } from "@/lib/dashboard/pace";
 import { DEFAULT_RECORDING_ID, listRecordings } from "@/lib/replay/catalog";
 import { liveKind } from "@/lib/run-source/live-gate";
 import { Badge } from "../_components/Badge";
+import { Chip } from "../_components/Chip";
 import { ConfirmLiveDialog } from "../_components/ConfirmLiveDialog";
 import { Dashboard } from "../_components/Dashboard";
 import { flowFontClass } from "../_components/flowFonts";
@@ -16,7 +17,7 @@ const RECORDINGS = listRecordings();
 
 const btn = "cursor-pointer rounded-full border border-line bg-card px-3.5 py-[6px] font-mono text-[11px] uppercase tracking-[0.08em] hover:border-ink disabled:cursor-default disabled:opacity-40";
 
-export function DashboardClient({ initialMode, runId, replayId: linkedReplay = null, demoMode = "live", realPayments = false }) {
+export function DashboardClient({ initialMode, runId, replayId: linkedReplay = null, demoMode = "live", realPayments = false, readOnly = false }) {
   const [mode, setMode] = useState(initialMode === "live" ? "canned" : initialMode);
   const [attach, setAttach] = useState(runId);
   const [replayId, setReplayId] = useState(linkedReplay ?? DEFAULT_RECORDING_ID);
@@ -60,6 +61,7 @@ export function DashboardClient({ initialMode, runId, replayId: linkedReplay = n
           <b className="font-display text-[22px] font-extrabold uppercase tracking-[0.04em]">Bid Royale</b>
           <em className="font-serif text-[22px] text-under">money flow</em>
         </h1>
+        {readOnly ? <Chip>Demo replay · read-only</Chip> : null}
         <span data-testid="run-badge" className="text-[12px]">
           <Badge kind={p.view.runBadge} />
         </span>
@@ -71,9 +73,11 @@ export function DashboardClient({ initialMode, runId, replayId: linkedReplay = n
             Run recorded
           </button>
           <RecordingPicker variant="select" value={replayId} onChange={(id) => run("canned", { replay: id })} />
+          {readOnly ? null : (
           <button type="button" className={btn} onClick={gate.request} data-testid="run-live">
             Run live
           </button>
+          )}
           <button type="button" className={btn} onClick={() => p.setPlaying(!p.playing)} disabled={p.finished}>
             {p.playing ? "Pause" : "Play"}
           </button>

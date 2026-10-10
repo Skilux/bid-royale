@@ -28,7 +28,7 @@ const HIDE = {
   simulated: new Set(),
 };
 
-export function JudgeClient({ demoMode, attachId, replayId: linkedReplay = null, realPayments = false }) {
+export function JudgeClient({ demoMode, attachId, replayId: linkedReplay = null, realPayments = false, readOnly = false }) {
   const [replayId, setReplayId] = useState(linkedReplay ?? DEFAULT_RECORDING_ID);
   const [mode, setMode] = useState(attachId ? "attach" : "canned");
   const [attach, setAttach] = useState(attachId);
@@ -122,14 +122,16 @@ export function JudgeClient({ demoMode, attachId, replayId: linkedReplay = null,
     <BadgePolicyContext.Provider value={policy}>
       <main className={`flow ${flowFontClass} min-h-screen`}>
         <div className="mx-auto max-w-[1280px] p-4">
-          <Header />
+          <Header readOnly={readOnly} />
           <div className="mb-3 mt-3 flex flex-wrap items-center gap-2" data-testid="controls">
             <button type="button" className={primary} onClick={onPlay} disabled={!p.meta.kind || (liveRun && p.finished)} data-testid="play">
               {playLabel}
             </button>
-            <button type="button" className={btn} onClick={gate.request} data-testid="run-live">
-              Run live
-            </button>
+            {readOnly ? null : (
+              <button type="button" className={btn} onClick={gate.request} data-testid="run-live">
+                Run live
+              </button>
+            )}
             <a className={btn} href="/demo" data-testid="guided-demo">
               Guided demo
             </a>
@@ -161,6 +163,7 @@ export function JudgeClient({ demoMode, attachId, replayId: linkedReplay = null,
                     <RecordingPicker variant="select" value={replayId} onChange={pickRecording} />
                   </div>
                 ) : null}
+                {readOnly ? null : (
                 <form
                   className="space-y-1.5"
                   onSubmit={(e) => {
@@ -182,6 +185,7 @@ export function JudgeClient({ demoMode, attachId, replayId: linkedReplay = null,
                     </button>
                   </div>
                 </form>
+                )}
               </div>
             </details>
             <span className="ml-1 text-[12px] text-ink-3" data-testid="source">
@@ -235,12 +239,13 @@ export function JudgeClient({ demoMode, attachId, replayId: linkedReplay = null,
   );
 }
 
-function Header() {
+function Header({ readOnly = false }) {
   return (
     <header>
       <h1 className="flex flex-wrap items-baseline gap-x-2 leading-none">
         <b className="font-display text-[26px] font-extrabold uppercase tracking-[0.04em]">Bid Royale</b>
         <em className="font-serif text-[26px] text-under">money flow</em>
+        {readOnly ? <Chip>Demo replay · read-only</Chip> : null}
         <span className="ml-2 text-[13px] font-normal text-ink-2">AI agents bid for ad budget and get paid only for verified signups</span>
       </h1>
       <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px]" data-testid="track-chips">

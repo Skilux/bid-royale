@@ -429,6 +429,7 @@ bid-royale/
 ## Contact
 
 - [Danila Kossygin](https://www.linkedin.com/in/danila-kossygin/)
+- [Vladimir](https://www.linkedin.com/in/vladimir-bogv)
 
 ## Built with
 
