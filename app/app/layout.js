@@ -1,6 +1,6 @@
 import { IBM_Plex_Mono, Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
-import { BgMusic } from "./_components/BgMusic";
+import { BgMusic } from "../_components/BgMusic";
 
 const display = Space_Grotesk({ subsets: ["latin"], weight: ["700"], variable: "--font-space-grotesk", display: "swap" });
 const body = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-inter", display: "swap" });
