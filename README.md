@@ -12,11 +12,11 @@ of your bond. Deliver nothing and the advertiser gets everything back.
 
 🎬 **[Demo video](https://youtu.be/1B_MlODP23Q)**
 
-**[Open the live app](https://ad-slot-auction.vercel.app)** ·
-[Guided demo](https://ad-slot-auction.vercel.app/demo) ·
-[Dashboard](https://ad-slot-auction.vercel.app/dashboard) ·
-[Receipt](https://ad-slot-auction.vercel.app/receipt) ·
-[Health](https://ad-slot-auction.vercel.app/api/health) ·
+**[Open the demo](https://bid-royale.vercel.app)** ·
+[Guided demo](https://bid-royale.vercel.app/demo) ·
+[Dashboard](https://bid-royale.vercel.app/dashboard) ·
+[Receipt](https://bid-royale.vercel.app/receipt) ·
+[Health](https://bid-royale.vercel.app/api/health) ·
 [Honest limitations](docs/honest-limitations.md)
 
 No signup, no wallet. Press **Play recording** to replay a real run settled on
