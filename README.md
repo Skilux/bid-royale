@@ -426,6 +426,10 @@ bid-royale/
 └── GLOSSARY.md              terms used across the code and docs
 ```
 
+## Contact
+
+- [Danila Kossygin](https://www.linkedin.com/in/danila-kossygin/)
+
 ## Built with
 
 Next.js 16 and Tailwind on Vercel · Masumi Payment Service on Railway ·
