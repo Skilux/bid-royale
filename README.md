@@ -10,14 +10,12 @@ of your bond. Deliver nothing and the advertiser gets everything back.
 
 *Don't pay for impressions. Pay for outcomes.*
 
-[![🎬 Watch the demo video](https://i.ytimg.com/vi/1B_MlODP23Q/maxresdefault.jpg)](https://youtu.be/1B_MlODP23Q)
+🎬 **[Demo video](https://youtu.be/1B_MlODP23Q)**
 
-**[Open the demo](https://bid-royale.vercel.app)** ·
-[Guided demo](https://bid-royale.vercel.app/demo) ·
-[Dashboard](https://bid-royale.vercel.app/dashboard) ·
-[Receipt](https://bid-royale.vercel.app/receipt) ·
-[Health](https://bid-royale.vercel.app/api/health) ·
-[Honest limitations](docs/honest-limitations.md)
+🚀 **[Open the demo](https://bid-royale.vercel.app)** ·
+
+🧭 [Guided demo](https://bid-royale.vercel.app/demo) · 📊 [Dashboard](https://bid-royale.vercel.app/dashboard) · 🧾 [Receipt](https://bid-royale.vercel.app/receipt) · ✅ [Health](https://bid-royale.vercel.app/api/health) ·
+⚠️ [Honest limitations](docs/honest-limitations.md)
 
 No signup, no wallet. Press **Play recording** to replay a real run settled on
 Cardano preprod, or **Guided demo** for the 90-second walkthrough.
