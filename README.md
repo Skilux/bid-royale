@@ -10,7 +10,7 @@ of your bond. Deliver nothing and the advertiser gets everything back.
 
 *Don't pay for impressions. Pay for outcomes.*
 
-🎬 **[Demo video](https://youtu.be/1B_MlODP23Q)**
+[![🎬 Watch the demo video](https://i.ytimg.com/vi/1B_MlODP23Q/maxresdefault.jpg)](https://youtu.be/1B_MlODP23Q)
 
 **[Open the demo](https://bid-royale.vercel.app)** ·
 [Guided demo](https://bid-royale.vercel.app/demo) ·
